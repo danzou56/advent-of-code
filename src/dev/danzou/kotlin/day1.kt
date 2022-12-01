@@ -1,21 +1,25 @@
 package dev.danzou.kotlin
 
-import dev.danzou.utils.Utils.readInput
+import dev.danzou.utils.Utils.readInputString
 import kotlin.test.assertEquals
 
 fun main() {
-    val lines = readInput()
+    val input = readInputString()
 
-    val sum = lines.joinToString(",")
-        .split(",,")
+    val sums = input
+        .split("\n\n")
         .map { it.split(",").map { it.toLong() } }
         .map { it.sum() }
+
+    val part1 = sums.max()
+
+    println("Part 1: $part1")
+
+    val part2 = sums
         .sorted()
         .takeLast(3)
         .sum()
 
-    println(sum)
-
-    assertEquals(0, 0) // Part 1
-    assertEquals(209481, sum) // Part 2
+    println("Part 2: $part2")
+    assertEquals(209481, part2) // Part 2
 }
