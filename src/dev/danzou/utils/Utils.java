@@ -1,13 +1,16 @@
 package dev.danzou.utils;
 
-import java.io.File;
+import org.jetbrains.annotations.NotNull;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
+/**
+ * Java implementation of Kotlin Advent Utils to allow for use in Scala
+ */
 final public class Utils {
     private Utils() {
     }
@@ -26,10 +29,21 @@ final public class Utils {
         return Files.readAllLines(Path.of(name));
     }
 
+    static public @NotNull
+    List<String> readInputLines() throws IOException {
+        return readInput();
+    }
+
+    static public @NotNull
+    String readInputString() throws IOException {
+        return String.join(",", readInputLines());
+    }
+
     static public int getExecutingDayNumber() {
         try {
             throw new Exception();
         } catch (Exception e) {
+            //noinspection OptionalGetWithoutIsPresent
             var fileName = Arrays.stream(e.getStackTrace())
                     .filter(stackTraceElement -> {
                         assert stackTraceElement.getFileName() != null;
