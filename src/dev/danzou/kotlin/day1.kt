@@ -8,7 +8,7 @@ fun main() {
 
     val sums = input
         .split("\n\n")
-        .map { it.split(",").map { it.toLong() } }
+        .map { it.split("\n").map { it.toLong() } }
         .map { it.sum() }
 
     val part1 = sums.max()
