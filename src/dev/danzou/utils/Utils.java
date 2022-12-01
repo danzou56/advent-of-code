@@ -36,7 +36,7 @@ final public class Utils {
 
     static public @NotNull
     String readInputString() throws IOException {
-        return String.join(",", readInputLines());
+        return String.join("\n", readInputLines());
     }
 
     static public int getExecutingDayNumber() {
