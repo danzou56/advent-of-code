@@ -8,15 +8,15 @@ internal class Day2 : AdventTestRunner() {
     override fun part1() {
         fun getScore(opponent: String, you: String): Int {
             val scores = mapOf("X" to 1, "Y" to 2, "Z" to 3)
-            val score = if (opponent == "A" && you == "X" ||
-                    opponent == "B" && you == "Y" ||
-                    opponent == "C" && you == "Z") scores[you]!! + 3
+            return if (opponent == "A" && you == "X" ||
+                opponent == "B" && you == "Y" ||
+                opponent == "C" && you == "Z"
+            ) scores[you]!! + 3
             else if (opponent == "A" && you == "Z" ||
                 opponent == "B" && you == "X" ||
-                opponent == "C" && you == "Y") scores[you]!!
+                opponent == "C" && you == "Y"
+            ) scores[you]!!
             else scores[you]!! + 6
-            println(score)
-            return score
         }
 
         val rows = inputLines.map { it.split(" ") }
