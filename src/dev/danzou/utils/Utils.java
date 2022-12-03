@@ -6,39 +6,58 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Java implementation of Kotlin Advent Utils to allow for use in Scala
  */
 final public class Utils {
+    private final static String FILE_PREFIX = "day";
+
     private Utils() {
     }
 
-    private final static String BASE_PATH = "inputs";
-    private final static String FILE_PREFIX = "day";
-    private final static String FILE_SUFFIX = ".in";
+    static public List<String> readFileLines(String name) {
+        try {
+            return Files.readAllLines(Path.of(name));
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("occurred while reading " + name + "; returning empty list instead");
+            return Collections.emptyList();
+        }
+    }
 
-    static public List<String> readInput() throws IOException {
-        return readInput(
-                BASE_PATH + "/" + FILE_PREFIX + getExecutingDayNumber() + FILE_SUFFIX
+    static public @NotNull
+    List<Long> readOutputLines() {
+        var fileName = "outputs/" + FILE_PREFIX + getExecutingDayNumber() + ".out";
+        var lines = readFileLines(fileName);
+        if (lines.size() != 2) {
+            System.out.println("Expected 2 lines in file " + fileName + " but there were actually " + lines.size());
+            return Arrays.asList(null, null);
+        }
+        else return lines.stream().map(Long::parseLong).collect(Collectors.toList());
+    }
+
+    static public @NotNull
+    List<String> readInputLines() {
+        return readFileLines(
+                "inputs/" + FILE_PREFIX + getExecutingDayNumber() + ".in"
         );
     }
 
-    static public List<String> readInput(String name) throws IOException {
-        return Files.readAllLines(Path.of(name));
-    }
-
     static public @NotNull
-    List<String> readInputLines() throws IOException {
-        return readInput();
-    }
-
-    static public @NotNull
-    String readInputString() throws IOException {
+    String readInputString() {
         return String.join("\n", readInputLines());
     }
 
+    /**
+     * Returns day number that is currently executing. A pretty big hack.
+     * @throws java.util.NoSuchElementException if no stack trace file name starts with "Day" or
+     * "day"
+     * @return executing day number
+     */
     static public int getExecutingDayNumber() {
         try {
             throw new Exception();
@@ -47,8 +66,7 @@ final public class Utils {
             var fileName = Arrays.stream(e.getStackTrace())
                     .filter(stackTraceElement -> {
                         assert stackTraceElement.getFileName() != null;
-                        return stackTraceElement.getFileName().startsWith("Day") ||
-                                stackTraceElement.getFileName().startsWith("day");
+                        return stackTraceElement.getFileName().toLowerCase().startsWith("day");
                     })
                     .findFirst()
                     .get()
