@@ -1,4 +1,4 @@
-package dev.danzou.kotlin.utils
+package dev.danzou.utils
 
 import java.util.*
 
