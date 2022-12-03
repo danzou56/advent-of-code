@@ -1,8 +1,6 @@
 package dev.danzou.scala
 
-import dev.danzou.utils.Utils.{readInput, readInputString}
-
-import scala.jdk.CollectionConverters.ListHasAsScala
+import dev.danzou.utils.Utils.readInputString
 
 object Day1 {
   def main(args: Array[String]): Unit = {
