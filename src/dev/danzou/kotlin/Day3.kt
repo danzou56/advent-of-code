@@ -11,9 +11,8 @@ internal class Day3 : AdventTestRunner() {
         return input.split("\n")
             .map { it.toList() }
             .map { Pair(it.subList(0, it.size / 2), it.subList(it.size / 2, it.size)) }
-            .map { Pair(it.first.toSet(), it.second.toSet()) }
             .map { it.first.intersect(it.second) }
-            .map { priorityOf(it.toList().first()) }
+            .map { priorityOf(it.first()) }
             .sum()
     }
 
@@ -21,9 +20,8 @@ internal class Day3 : AdventTestRunner() {
         return input.split("\n")
             .map { it.toList() }
             .chunked(3)
-            .map { it.map { it.toSet() } }
-            .map { it.reduce(Set<Char>::intersect) }
-            .map { priorityOf(it.toList().first()) }
+            .map { it.reduce(Iterable<Char>::intersect) }
+            .map { priorityOf(it.first()) }
             .sum()
     }
 }
