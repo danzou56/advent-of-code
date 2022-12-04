@@ -10,8 +10,7 @@ internal class Day3 : AdventTestRunner() {
     override fun part1(input: String): Number {
         return input.split("\n")
             .map { it.toList() }
-            .map { Pair(it.subList(0, it.size / 2), it.subList(it.size / 2, it.size)) }
-            .map { it.first.intersect(it.second) }
+            .map { it.chunked(it.size / 2).reduce(Iterable<Char>::intersect) }
             .map { priorityOf(it.first()) }
             .sum()
     }
