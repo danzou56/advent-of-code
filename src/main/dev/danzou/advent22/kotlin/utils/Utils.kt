@@ -38,6 +38,7 @@ fun getExecutingDayNumber(): Int {
  */
 fun String.md5(): String = BigInteger(1, MessageDigest.getInstance("MD5").digest(toByteArray())).toString(16)
 
+typealias RaggedMatrix<T> = List<List<T>>
 typealias Matrix<T> = List<List<T>>
 fun <T> Matrix<T>.getCellNeighbors(i: Int, j: Int): List<T> = listOfNotNull(
     this.getOrNull(i - 1)?.get(j),
@@ -45,6 +46,23 @@ fun <T> Matrix<T>.getCellNeighbors(i: Int, j: Int): List<T> = listOfNotNull(
     this.get(i).getOrNull(j - 1),
     this.get(i).getOrNull(j + 1),
 )
+
+fun <T> Matrix<T>.transpose(): Matrix<T> {
+    // Make sure matrix isn't ragged
+    assert(this.map { it.size }.toSet().size == 1)
+    return this[0].indices.map { j ->
+        this.indices.map { i ->
+            this[i][j]
+        }
+    }
+}
+
+fun <T> RaggedMatrix<T>.padRowEnds(defaultValue: (Int, Int) -> T): Matrix<T> {
+    val maxRowLen = this.maxOf { it.size }
+    return this.mapIndexed { i, it ->
+        it + (it.size until maxRowLen).map { j -> defaultValue(i, j) }
+    }
+}
 
 fun <T> List<T>.toPair(): Pair<T, T> {
     if (this.size != 2) {

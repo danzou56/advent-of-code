@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -30,14 +31,14 @@ final public class Utils {
     }
 
     static public @NotNull
-    List<Long> readOutputLines() {
+    List<String> readOutputLines() {
         var fileName = "outputs/" + FILE_PREFIX + getExecutingDayNumber() + ".out";
         var lines = readFileLines(fileName);
         if (lines.size() != 2) {
             System.out.println("Expected 2 lines in file " + fileName + " but there were actually " + lines.size());
             return Arrays.asList(null, null);
         }
-        else return lines.stream().map(Long::parseLong).collect(Collectors.toList());
+        else return new ArrayList<>(lines);
     }
 
     static public @NotNull

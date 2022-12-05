@@ -7,34 +7,27 @@ import kotlin.test.assertEquals
 abstract class AdventTestRunner {
     private val inputLines: List<String> = readInputLines()
     private val inputString: String = readInputString()
-    private val expected: List<Long?> = readOutputLines()
+    private val expected: List<String?> = readOutputLines()
 
     abstract fun part1(
         input: String = this.inputString,
-    ): Number
+    ): Any
 
     abstract fun part2(
         input: String = this.inputString,
-    ): Number
+    ): Any
 
     @Test
     fun testPart1() {
-        val part1 = part1().toLongAndWarn()
+        val part1 = part1()
         println(part1)
-        assertEquals(expected.component1(), part1)
+        assertEquals(expected.component1(), part1.toString())
     }
 
     @Test
     fun testPart2() {
-        val part2 = part2().toLongAndWarn()
+        val part2 = part2()
         println(part2)
-        assertEquals(expected.component2(), part2)
-    }
-
-    fun Number.toLongAndWarn(): Long {
-        if (this !is Long) {
-            println("Your implementation didn't use Long! Are you sure you didn't over/underflow?")
-        }
-        return this.toLong()
+        assertEquals(expected.component2(), part2.toString())
     }
 }
