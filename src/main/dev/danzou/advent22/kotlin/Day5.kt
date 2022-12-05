@@ -11,8 +11,8 @@ internal class Day5 : AdventTestRunner() {
             Instruction(it[1].toInt(), it[3].toInt() - 1, it[5].toInt() - 1)
         }
 
-    fun getCrates(input: String): Matrix<Char> {
-        val (crateInput, _) = input.split("\n\n").toPair()
+    fun getCrates(input: String): RaggedMatrix<Char> {
+        val crateInput = input.split("\n\n").first()
         val crateMatrix: RaggedMatrix<Char> =
             crateInput.split("\n")
                 .dropLast(1)
@@ -24,7 +24,7 @@ internal class Day5 : AdventTestRunner() {
     }
 
     fun getInstructions(input: String): List<Instruction> {
-        val (_, procedureInput) = input.split("\n\n").toPair()
+        val procedureInput = input.split("\n\n").last()
         return procedureInput.split("\n")
             .map { it.toInstruction() }
     }
