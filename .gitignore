@@ -124,3 +124,5 @@ replay_pid*
 
 inputs
 outputs
+*.in
+*.out
