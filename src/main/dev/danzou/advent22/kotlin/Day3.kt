@@ -1,6 +1,6 @@
-package dev.danzou.kotlin
+package dev.danzou.advent22.kotlin
 
-import dev.danzou.kotlin.utils.AdventTestRunner
+import dev.danzou.advent22.kotlin.utils.AdventTestRunner
 
 internal class Day3 : AdventTestRunner() {
     fun priorityOf(char: Char): Int =

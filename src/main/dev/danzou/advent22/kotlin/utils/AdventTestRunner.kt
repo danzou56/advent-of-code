@@ -1,4 +1,4 @@
-package dev.danzou.kotlin.utils
+package dev.danzou.advent22.kotlin.utils
 
 import dev.danzou.utils.Utils.*
 import org.junit.jupiter.api.Test

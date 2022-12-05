@@ -6,17 +6,19 @@ private const val BASE_PATH = "inputs"
 private const val FILE_PREFIX = "day"
 private const val FILE_SUFFIX = ".in"
 
+private const val RELOCATED_UTILS = "Use dev.danzou.utils.Utils instead"
+
 /**
  * Reads lines from the given input txt file.
  */
+@Deprecated(RELOCATED_UTILS)
+fun readInput(name: String) = File(name).readLines()
+
+@Deprecated(RELOCATED_UTILS)
 fun readInput() = readInput("${BASE_PATH.removeSuffix("/")}/" +
         "$FILE_PREFIX${getExecutingDayNumber()}$FILE_SUFFIX")
 
-fun readInput(name: String) = File(name).readLines()
-
-/**
- *
- */
+@Deprecated(RELOCATED_UTILS)
 fun getExecutingDayNumber(): Int {
     try {
         throw Exception()
@@ -44,3 +46,9 @@ fun <T> Matrix<T>.getCellNeighbors(i: Int, j: Int): List<T> = listOfNotNull(
     this.get(i).getOrNull(j + 1),
 )
 
+fun <T> List<T>.toPair(): Pair<T, T> {
+    if (this.size != 2) {
+        throw IllegalArgumentException("List is not of length 2!")
+    }
+    return Pair(this[0], this[1])
+}

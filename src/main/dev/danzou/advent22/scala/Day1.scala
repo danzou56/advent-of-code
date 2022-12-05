@@ -1,4 +1,4 @@
-package dev.danzou.scala
+package dev.danzou.advent22.scala
 
 import dev.danzou.utils.Utils.readInputString
 

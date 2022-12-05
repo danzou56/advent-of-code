@@ -1,8 +1,8 @@
-package dev.danzou.kotlin
+package dev.danzou.advent22.kotlin
 
-import dev.danzou.kotlin.utils.AdventTestRunner
+import dev.danzou.advent22.kotlin.utils.AdventTestRunner
 
-class Day4 : AdventTestRunner() {
+internal class Day4 : AdventTestRunner() {
     override fun part1(input: String): Number =
         input.split("\n").map {
             it.split(",", "-").map(String::toInt)
