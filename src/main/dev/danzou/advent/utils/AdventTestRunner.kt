@@ -1,6 +1,5 @@
-package dev.danzou.advent22.kotlin.utils
+package dev.danzou.advent.utils
 
-import dev.danzou.utils.Utils.*
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 

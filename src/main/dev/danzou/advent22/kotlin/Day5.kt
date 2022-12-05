@@ -1,11 +1,6 @@
 package dev.danzou.advent22.kotlin
 
-import Matrix
-import RaggedMatrix
-import dev.danzou.advent22.kotlin.utils.AdventTestRunner
-import padRowEnds
-import toPair
-import transpose
+import dev.danzou.advent.utils.*
 
 
 internal class Day5 : AdventTestRunner() {

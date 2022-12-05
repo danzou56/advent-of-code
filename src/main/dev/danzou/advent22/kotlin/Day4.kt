@@ -1,6 +1,6 @@
 package dev.danzou.advent22.kotlin
 
-import dev.danzou.advent22.kotlin.utils.AdventTestRunner
+import dev.danzou.advent.utils.AdventTestRunner
 
 internal class Day4 : AdventTestRunner() {
     override fun part1(input: String): Number =

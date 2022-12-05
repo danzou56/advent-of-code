@@ -1,4 +1,4 @@
-package dev.danzou.utils
+package dev.danzou.advent.utils
 
 import java.util.*
 

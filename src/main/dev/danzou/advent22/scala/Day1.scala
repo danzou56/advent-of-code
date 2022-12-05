@@ -1,6 +1,6 @@
 package dev.danzou.advent22.scala
 
-import dev.danzou.utils.Utils.readInputString
+import dev.danzou.advent.utils.UtilsKt._
 
 object Day1 {
   def main(args: Array[String]): Unit = {
