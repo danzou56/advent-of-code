@@ -25,6 +25,18 @@ fun <T> Matrix<T>.transpose(): Matrix<T> {
     }
 }
 
+fun <T, R> Matrix<T>.map2D(transform: (T) -> R): Matrix<R> =
+    this.map { it.map { transform(it) } }
+
+fun <T, R> Matrix<T>.mapIndexed2D(transform: (Pair<Int, Int>, T) -> R): Matrix<R> =
+    this.mapIndexed { i, it -> it.mapIndexed { j, it -> transform(Pair(i, j), it) } }
+
+fun <T, R> Matrix<T>.mapIndexed2D(transform: (Int, Int, T) -> R): Matrix<R> =
+    this.mapIndexed { i, it -> it.mapIndexed { j, it -> transform(i, j, it) } }
+
+val <T> Matrix<T>.indices2D: List<Pair<Int, Int>>
+    get() = this.mapIndexed { i, it -> it.indices.map { j -> Pair(i, j) } }.flatten()
+
 fun <T> RaggedMatrix<T>.padRowEnds(defaultValue: (Int, Int) -> T): Matrix<T> {
     val maxRowLen = this.maxOf { it.size }
     return this.mapIndexed { i, it ->
