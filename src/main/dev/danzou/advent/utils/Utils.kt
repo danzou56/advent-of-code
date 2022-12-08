@@ -3,13 +3,9 @@ package dev.danzou.advent.utils
 import java.nio.file.Files
 import java.io.IOException
 import java.lang.Exception
-import java.util.Arrays
-import java.lang.StackTraceElement
 import java.math.BigInteger
 import java.nio.file.Path
 import java.security.MessageDigest
-import java.util.ArrayList
-import java.util.Locale
 
 private const val FILE_PREFIX = "day"
 
@@ -66,31 +62,7 @@ val executingDayNumber: Int
  */
 fun String.md5(): String = BigInteger(1, MessageDigest.getInstance("MD5").digest(toByteArray())).toString(16)
 
-typealias RaggedMatrix<T> = List<List<T>>
-typealias Matrix<T> = List<List<T>>
-fun <T> Matrix<T>.getCellNeighbors(i: Int, j: Int): List<T> = listOfNotNull(
-    this.getOrNull(i - 1)?.get(j),
-    this.getOrNull(i + 1)?.get(j),
-    this.get(i).getOrNull(j - 1),
-    this.get(i).getOrNull(j + 1),
-)
-
-fun <T> Matrix<T>.transpose(): Matrix<T> {
-    // Make sure matrix isn't ragged
-    assert(this.map { it.size }.toSet().size == 1)
-    return this[0].indices.map { j ->
-        this.indices.map { i ->
-            this[i][j]
-        }
-    }
-}
-
-fun <T> RaggedMatrix<T>.padRowEnds(defaultValue: (Int, Int) -> T): Matrix<T> {
-    val maxRowLen = this.maxOf { it.size }
-    return this.mapIndexed { i, it ->
-        it + (it.size until maxRowLen).map { j -> defaultValue(i, j) }
-    }
-}
+operator fun Pair<Int, Int>.plus(other: Pair<Int, Int>): Pair<Int, Int> = Pair(this.first + other.first, this.second + other.second)
 
 fun <T> List<T>.toPair(): Pair<T, T> {
     if (this.size != 2) {
