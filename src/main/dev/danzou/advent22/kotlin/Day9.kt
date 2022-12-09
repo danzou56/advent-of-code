@@ -8,21 +8,25 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import kotlin.math.absoluteValue
 
+typealias Knot = Pair<Int, Int>
+typealias Rope = List<Knot>
+
 internal class Day9 : AdventTestRunner() {
 
-    fun simulate(newHead: Pair<Int, Int>, oldTail: Pair<Int, Int>): Rope =
+    /**
+     * Returns new tail knot given new head knot
+     */
+    fun moveKnot(newHead: Knot, oldTail: Knot): Knot =
         (newHead - oldTail).toList().let { diffAsList ->
-            Rope(newHead, oldTail + when {
+            oldTail + when {
                 diffAsList.maxOf { it.absoluteValue } > 1 ->
                     diffAsList.map {
                         if (it == 0) it
                         else it.absoluteValue / it
                     }.toPair()
                 else -> Pair(0, 0)
-            })
-    }
-
-    data class Rope(val head: Pair<Int, Int> = Pair(0, 0), val tail: Pair<Int, Int> = Pair(0, 0))
+            }
+        }
 
     fun parse(input: String) = input.split("\n")
         .map { it.split(" ").toPair() }
@@ -37,34 +41,47 @@ internal class Day9 : AdventTestRunner() {
             amt.toInt()
         ) }
 
+    // You could actually do this with the code from part 2 and different rope
+    // length but this more closely resembels the original solution written for
+    // part 1
     override fun part1(input: String): Any {
-        val res = parse(input)
-            .fold(Pair(Rope(), emptySet<Pair<Int, Int>>())) { (rope, visited), (dir, amt) ->
-                (0 until amt).fold(Pair(rope, visited)) { (rope, visited), _ ->
-                    simulate(rope.head + dir, rope.tail).let { newRope ->
-                        Pair(newRope, visited + newRope.tail)
-                    }
+        val res = parse(input).fold(Pair(
+            Pair(Knot(0, 0), Knot(0, 0)),
+            emptySet<Knot>())
+        ) { (rope, visited), (dir, amt) ->
+            (0 until amt).fold(Pair(rope, visited)) { (rope, visited), _ ->
+                Pair(
+                    rope.first + dir,
+                    moveKnot(rope.first + dir, rope.second)
+                ).let { rope ->
+                    Pair(rope, visited + rope.second)
                 }
             }
+        }
         return res.second.size
     }
 
     override fun part2(input: String): Any {
-        val res = parse(input)
-            .fold(Pair(
-                List(9) { Rope() },
-                emptySet<Pair<Int, Int>>()
-            )) { (ropes, visited), (dir, amt) ->
-                (0 until amt).fold(Pair(ropes, visited)) { (ropes, visited), _ ->
-                    ropes.drop(1).fold(
-                        listOf(simulate(ropes.first().head + dir, ropes.first().tail))
-                    ) { ropes, rope ->
-                        ropes + simulate(ropes.last().tail, rope.tail)
-                    }.let { newRopes ->
-                        Pair(newRopes, visited + newRopes.last().tail)
-                    }
+        val ropeLength = 10
+        // get visited set by folding over each instruction; also keep track of
+        // rope state while folding
+        val res = parse(input).fold(Pair(
+            List(ropeLength) { Knot(0, 0) },
+            emptySet<Knot>()
+        )) { (rope, visited), (dir, amt) ->
+            // get rope state after movement by folding over the number of moves
+            // that needs to be made
+            (0 until amt).fold(Pair(rope, visited)) { (rope, visited), _ ->
+                // construct new rope by folding over each knot in the rope
+                rope.drop(1).fold(
+                    listOf(rope.first() + dir)
+                ) { rope, knot ->
+                    rope + moveKnot(rope.last(), knot)
+                }.let { rope ->
+                    Pair(rope, visited + rope.last())
                 }
             }
+        }
         return res.second.size
     }
 
@@ -101,5 +118,3 @@ internal class Day9 : AdventTestRunner() {
         assertEquals(36, part2(input))
     }
 }
-
-
