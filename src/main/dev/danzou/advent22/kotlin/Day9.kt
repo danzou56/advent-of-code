@@ -4,35 +4,28 @@ import dev.danzou.advent.utils.AdventTestRunner
 import dev.danzou.advent.utils.minus
 import dev.danzou.advent.utils.plus
 import dev.danzou.advent.utils.toPair
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 import kotlin.math.absoluteValue
 
 internal class Day9 : AdventTestRunner() {
 
     fun simulate(rope: Rope, dir: Pair<Int, Int>): Rope {
-        dir.toList().map { it.absoluteValue }.sum().let { sum ->
-//            if (sum > 1) println(sum)
-        }
         val newHead = rope.head + dir
-        return when {
-//            (rope.tail - newHead).toList().map { it.absoluteValue }.sum() > 1 -> {
-//                Rope(newHead, rope.head + dir.toList().map { it.absoluteValue / it }.toPair())
-//            }
-            (rope.tail - newHead).toList().map { it.absoluteValue }.max() > 1 -> {
-                if (dir.toList().map { it.absoluteValue }.sum() > 1) {
-                    Rope(newHead, rope.head + dir.toList().map {
-                        if (it == 0) it
-                        else it.absoluteValue / it
-                    }.toPair())
-                } else {
-                    Rope(newHead, newHead - dir)
-                }
-            }
-            else -> Rope(newHead, rope.tail)
+        val oldTail = rope.tail
+        val diff = newHead - oldTail
+
+        val offset = when {
+            (diff.toList().map { it.absoluteValue }.max() > 1) -> (newHead - oldTail).toList()
+                .map {
+                    if (it == 0) it
+                    else it.absoluteValue / it
+                }.toPair()
+            else -> Pair(0, 0)
         }
+        return Rope(newHead, oldTail + offset)
     }
 
-//    fun getNewTailPosition(rope: Rope, di)
-//
     data class Rope(val head: Pair<Int, Int> = Pair(0, 0), val tail: Pair<Int, Int> = Pair(0, 0))
 
     fun parse(input: String) = input.split("\n")
@@ -58,6 +51,14 @@ internal class Day9 : AdventTestRunner() {
                 }.also { (rope, _) -> /*println(rope.head)*/ }
             }
         return res.second.size
+    }
+
+    fun simulate(newHead: Pair<Int, Int>, oldTail: Pair<Int, Int>): Rope {
+        return Rope(newHead, oldTail + (newHead - oldTail).toList()
+            .map {
+                if (it == 0) it
+                else it.absoluteValue / it
+            }.toPair())
     }
 
     override fun part2(input: String): Any {
@@ -98,6 +99,39 @@ internal class Day9 : AdventTestRunner() {
                 }
             }
         return res.second.size
+    }
+
+    @Test
+    fun testSmallExample() {
+        val input = """
+            R 4
+            U 4
+            L 3
+            D 1
+            R 4
+            D 1
+            L 5
+            R 2
+        """.trimIndent()
+
+        assertEquals(13, part1(input))
+        assertEquals(1, part2(input))
+    }
+
+    @Test
+    fun testBigExample() {
+        val input = """
+            R 5
+            U 8
+            L 8
+            D 3
+            R 17
+            D 10
+            L 25
+            U 20
+        """.trimIndent()
+
+        assertEquals(36, part2(input))
     }
 }
 
