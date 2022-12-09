@@ -34,6 +34,13 @@ fun <T, R> Matrix<T>.mapIndexed2D(transform: (Pair<Int, Int>, T) -> R): Matrix<R
 fun <T, R> Matrix<T>.mapIndexed2D(transform: (Int, Int, T) -> R): Matrix<R> =
     this.mapIndexed { i, it -> it.mapIndexed { j, it -> transform(i, j, it) } }
 
+fun <T> Matrix<T>.slice(indices: Iterable<Pair<Int, Int>>): List<T> =
+    indices.map { this[it] }
+
+fun <T> Matrix<T>.row(i: Int): List<T> = this[i]
+
+fun <T> Matrix<T>.col(j: Int): List<T> = this.map { it[j] }
+
 val <T> Matrix<T>.indices2D: List<Pair<Int, Int>>
     get() = this.mapIndexed { i, it -> it.indices.map { j -> Pair(i, j) } }.flatten()
 
