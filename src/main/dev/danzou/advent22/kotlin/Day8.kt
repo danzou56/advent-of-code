@@ -8,9 +8,9 @@ internal class Day8 : AdventTestRunner() {
 
     fun isVisibleInDir(matrix: Matrix<Int>, pos: Pair<Int, Int>, dir: Pair<Int, Int>): Boolean {
         val height = matrix[pos]
-        fun isVisibleInDir(pos: Pair<Int, Int>): Boolean {
+        tailrec fun isVisibleInDir(pos: Pair<Int, Int>): Boolean {
             val nextPos = pos + dir
-            if (nextPos !in matrix.indices2D) return true
+            if (!matrix.containsPos(nextPos)) return true
             if (matrix[nextPos] >= height) return false
             return isVisibleInDir(nextPos)
         }
@@ -30,7 +30,7 @@ internal class Day8 : AdventTestRunner() {
         val height = matrix[pos]
         fun getVisibleDistance(pos: Pair<Int, Int>): Int {
             val nextPos = pos + dir
-            if (nextPos !in matrix.indices2D) return 0
+            if (!matrix.containsPos(nextPos)) return 0
             if (matrix[nextPos] >= height) return 1
             return 1 + getVisibleDistance(nextPos)
         }

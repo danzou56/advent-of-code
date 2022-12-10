@@ -45,6 +45,8 @@ fun <T> Matrix<T>.col(j: Int): List<T> = this.map { it[j] }
 val <T> Matrix<T>.indices2D: List<Pos>
     get() = this.mapIndexed { i, it -> it.indices.map { j -> Pair(i, j) } }.flatten()
 
+fun <T> Matrix<T>.containsPos(p: Pos) = p.first in this.indices && p.second in this[p.first].indices
+
 fun <T> RaggedMatrix<T>.padRowEnds(defaultValue: (Int, Int) -> T): Matrix<T> {
     val maxRowLen = this.maxOf { it.size }
     return this.mapIndexed { i, it ->
