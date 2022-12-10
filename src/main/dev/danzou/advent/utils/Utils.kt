@@ -22,10 +22,8 @@ fun readFileLines(name: String): List<String> {
 fun readOutputLines(): List<String?> {
     val fileName = "outputs/$FILE_PREFIX$executingDayNumber.out"
     val lines = readFileLines(fileName)
-    return if (lines.size != 2) {
-        println("Expected 2 lines in file " + fileName + " but there were actually " + lines.size)
-        listOf(null, null)
-    } else lines
+    if (lines.size <= 2) return lines
+    return listOf(lines.first(), lines.drop(1).joinToString("\n"))
 }
 
 fun readInputLines(): List<String> {
