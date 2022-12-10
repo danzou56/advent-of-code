@@ -4,8 +4,9 @@ val cardinalDirections = setOf(Pair(1, 0), Pair(-1, 0), Pair(0, 1), Pair(0, -1))
 
 typealias RaggedMatrix<T> = List<List<T>>
 typealias Matrix<T> = List<List<T>>
+typealias Pos = Pair<Int, Int>
 
-fun <T> Matrix<T>.getCellNeighbors(p: Pair<Int, Int>) =
+fun <T> Matrix<T>.getCellNeighbors(p: Pos) =
     this.getCellNeighbors(p.first, p.second)
 
 fun <T> Matrix<T>.getCellNeighbors(i: Int, j: Int): List<T> = listOfNotNull(
@@ -28,20 +29,20 @@ fun <T> Matrix<T>.transpose(): Matrix<T> {
 fun <T, R> Matrix<T>.map2D(transform: (T) -> R): Matrix<R> =
     this.map { it.map { transform(it) } }
 
-fun <T, R> Matrix<T>.mapIndexed2D(transform: (Pair<Int, Int>, T) -> R): Matrix<R> =
+fun <T, R> Matrix<T>.mapIndexed2D(transform: (Pos, T) -> R): Matrix<R> =
     this.mapIndexed { i, it -> it.mapIndexed { j, it -> transform(Pair(i, j), it) } }
 
 fun <T, R> Matrix<T>.mapIndexed2D(transform: (Int, Int, T) -> R): Matrix<R> =
     this.mapIndexed { i, it -> it.mapIndexed { j, it -> transform(i, j, it) } }
 
-fun <T> Matrix<T>.slice(indices: Iterable<Pair<Int, Int>>): List<T> =
+fun <T> Matrix<T>.slice(indices: Iterable<Pos>): List<T> =
     indices.map { this[it] }
 
 fun <T> Matrix<T>.row(i: Int): List<T> = this[i]
 
 fun <T> Matrix<T>.col(j: Int): List<T> = this.map { it[j] }
 
-val <T> Matrix<T>.indices2D: List<Pair<Int, Int>>
+val <T> Matrix<T>.indices2D: List<Pos>
     get() = this.mapIndexed { i, it -> it.indices.map { j -> Pair(i, j) } }.flatten()
 
 fun <T> RaggedMatrix<T>.padRowEnds(defaultValue: (Int, Int) -> T): Matrix<T> {
@@ -51,4 +52,4 @@ fun <T> RaggedMatrix<T>.padRowEnds(defaultValue: (Int, Int) -> T): Matrix<T> {
     }
 }
 
-operator fun <T> Matrix<T>.get(p: Pair<Int, Int>): T = this[p.first][p.second]
+operator fun <T> Matrix<T>.get(p: Pos): T = this[p.first][p.second]
