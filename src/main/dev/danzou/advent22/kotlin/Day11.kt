@@ -30,13 +30,15 @@ internal class Day11 : AdventTestRunner() {
             Monkey(
                 data[1].drop("  Starting items: ".length).split(", ").map { Item(it.toLong()) },
                 data[2].drop("  Operation: new = old ".length).split(" ").toPair().let { (operator, operand) ->
-                    val opMap = mapOf(
-                        "+" to { x: Long, y: Long -> x + y },
-                        "*" to { x: Long, y: Long -> x * y }
+                    // The previous solution's better and clearer, but I
+                    // couldn't resist currying
+                    val opMap = mapOf<String, (Long) -> ((Long) -> Long)>(
+                        "+" to { x -> { y -> x + y } },
+                        "*" to { x -> { y -> x * y } }
                     )
                     when (operand) {
-                        "old" -> { old -> opMap[operator]!!(old, old) }
-                        else -> { old -> opMap[operator]!!(old, operand.toLong()) }
+                        "old" -> { old -> opMap[operator]!!(old)(old) }
+                        else -> opMap[operator]!!(operand.toLong())
                     }
                 },
                 data[3].drop("  Test: divisible by ".length).toLong(),
@@ -53,48 +55,52 @@ internal class Day11 : AdventTestRunner() {
     override fun part1(input: String): Any {
         val rounds = 20
         val monkeys = parse(input)
-        val counters = mutableMapOf(*(List(monkeys.size) { it to 0L }).toTypedArray())
+        val counters = List(10) { 0L }.toMutableList()
         (1..rounds).fold(monkeys) { monkeys, _ ->
-            monkeys.indices.fold(monkeys) { monkeys, i ->
-                monkeys[i].let { monkey -> monkey.items.fold(monkeys) { monkeys, item ->
-                    counters[i] = counters[i]!! + 1
-                    val worryLevel = (monkey.operation(item.worryLevel) / 3)
+            // Essentially, we need to fold over the monkeys while also being
+            // able to modify the underlying list (which mapIndexed normally
+            // wouldn't let us do). Instead, update the entire list at the end
+            // and pass that on to the next iteration of fold. Now this truly
+            // is a loop with extra steps and no more elegant either.
+            monkeys.indices.fold(monkeys) { monkeys, i -> monkeys[i].let { monkey ->
+                // Go through all the items the monkey has and update the
+                // monkeys list accordingly
+                monkey.items.fold(monkeys) { monkeys, item ->
+                    counters[i] += 1L
+                    val worryLevel = monkey.operation(item.worryLevel) / 3L
                     val targetMonkey = monkey.test(worryLevel % monkey.divisor == 0L)
-                    monkeys.mapIndexed { curI, curMonkey ->
-                        when (curI) {
-                            targetMonkey -> curMonkey.withItems(curMonkey.items + Item(worryLevel))
-                            i -> curMonkey.withItems(curMonkey.items.drop(1))
-                            else -> curMonkey
-                        }
-                    }
+                    monkeys.mapIndexed { curI, monkey -> when (curI) {
+                        targetMonkey -> monkey.withItems(monkey.items + Item(worryLevel))
+                        i -> monkey.withItems(monkey.items.drop(1))
+                        else -> monkey
+                    } }
                 } }
             }
         }
-        return counters.values.sorted().takeLast(2).reduce(Long::times)
+        return counters.sorted().takeLast(2).reduce(Long::times)
     }
 
     override fun part2(input: String): Any {
         val rounds = 10000
         val monkeys = parse(input)
         val modOperand = monkeys.map { it.divisor }.reduce(Long::times)
-        val counters = mutableMapOf(*(List(monkeys.size) { it to 0L }).toTypedArray())
+        val counters = List(10) { 0L }.toMutableList()
         (1..rounds).fold(monkeys) { monkeys, _ ->
-            monkeys.indices.fold(monkeys) { monkeys, i ->
-                monkeys[i].let { monkey -> monkey.items.fold(monkeys) { monkeys, item ->
-                    counters[i] = counters[i]!! + 1
+            monkeys.indices.fold(monkeys) { monkeys, i -> monkeys[i].let { monkey ->
+                monkey.items.fold(monkeys) { monkeys, item ->
+                    counters[i] += 1L
+                    // This is the only difference between part 1 and 2:
                     val worryLevel = monkey.operation(item.worryLevel) % modOperand
                     val targetMonkey = monkey.test(worryLevel % monkey.divisor == 0L)
-                    monkeys.mapIndexed { curI, curMonkey ->
-                        when (curI) {
-                            targetMonkey -> curMonkey.withItems(curMonkey.items + Item(worryLevel))
-                            i -> curMonkey.withItems(curMonkey.items.drop(1))
-                            else -> curMonkey
-                        }
-                    }
+                    monkeys.mapIndexed { curI, monkey -> when (curI) {
+                        targetMonkey -> monkey.withItems(monkey.items + Item(worryLevel))
+                        i -> monkey.withItems(monkey.items.drop(1))
+                        else -> monkey
+                    } }
                 } }
             }
         }
-        return counters.values.sorted().takeLast(2).reduce(Long::times)
+        return counters.sorted().takeLast(2).reduce(Long::times)
     }
 
     @Test
