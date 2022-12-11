@@ -7,45 +7,35 @@ import kotlin.math.absoluteValue
 
 internal class Day10 : AdventTestRunner() {
     data class CpuState(val cycle: Int = 0, val reg: Int = 1) {
-        fun addx(value: Int): CpuState =
-            CpuState(cycle + 2, reg + value)
-
-        fun noop(): CpuState =
-            CpuState(cycle + 1, reg)
+        fun apply(instruction: Instruction): CpuState =
+            when (instruction) {
+                is Instruction.AddX ->
+                    CpuState(cycle + instruction.cycles, reg + instruction.value)
+                is Instruction.Noop ->
+                    CpuState(cycle + instruction.cycles, reg)
+                else -> throw IllegalStateException()
+            }
     }
 
     abstract class Instruction(val name: String, val cycles: Int) {
-        abstract fun apply(vararg args: Int)
-
-        class AddX(val value: Int) : Instruction("addx", 2) {
-            override fun apply(vararg args: Int) {
-                TODO("Not yet implemented")
-            }
-        }
-
-        class Noop() : Instruction("noop", 1) {
-            override fun apply(vararg args: Int) {
-                TODO("Not yet implemented")
-            }
-        }
+        class AddX(val value: Int) : Instruction("addx", 2)
+        class Noop() : Instruction("noop", 1)
     }
 
     fun parse(input: String): List<Instruction> =
         input.split("\n").map {
-            it.split(" ").let { when (it.first()) {
-                "addx" -> Instruction.AddX(it.component2().toInt())
-                "noop" -> Instruction.Noop()
-                else -> throw IllegalStateException()
-            } }
+            it.split(" ").let {
+                when (it.first()) {
+                    "addx" -> Instruction.AddX(it.component2().toInt())
+                    "noop" -> Instruction.Noop()
+                    else -> throw IllegalStateException()
+                }
+            }
         }
 
     override fun part1(input: String): Any =
         parse(input).fold(Pair(CpuState(), 0)) { (cpuState, sum), instruction ->
-            when (instruction)  {
-                is Instruction.AddX -> cpuState.addx(instruction.value)
-                is Instruction.Noop -> cpuState.noop()
-                else -> throw IllegalStateException()
-            }.let { newState ->
+            cpuState.apply(instruction).let { newState ->
                 if ((newState.cycle - instruction.cycles + 20) % 40 > (newState.cycle + 20) % 40) {
                     Pair(newState, sum + (newState.cycle - (newState.cycle % 40) + 20) * cpuState.reg)
                 } else Pair(newState, sum)
@@ -54,11 +44,7 @@ internal class Day10 : AdventTestRunner() {
 
     override fun part2(input: String): Any =
         parse(input).fold(Pair(CpuState(), "")) { (cpuState, crt), instruction ->
-            when (instruction)  {
-                is Instruction.AddX -> cpuState.addx(instruction.value)
-                is Instruction.Noop -> cpuState.noop()
-                else -> throw IllegalStateException()
-            }.let { newState ->
+            cpuState.apply(instruction).let { newState ->
                 Pair(newState, (cpuState.cycle until newState.cycle).fold(crt) { crt, cycle ->
                     crt + if (((cpuState.reg % 40) - (cycle % 40)).absoluteValue <= 1) "#" else "."
                 })
