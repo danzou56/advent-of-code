@@ -5,14 +5,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 internal class Day12 : AdventTestRunner() {
-//    fun parse(input: String): Graph<Int> {
-//        val offset = 'a'
-//        val startInt = 'S' - offset
-//        val endInt = 'E' - offset
-//        val matrix: Matrix<Int> = input.split("\n").map { it.split("").map { it.first() - offset } }
-//
-//    }
-
     override fun part1(input: String): Any {
         val matrix: Matrix<Char> = input.split("\n").map { it.split("").filter { it.isNotEmpty() }.map { it.first() } }
         val start: Pos = matrix.indexOfFirst { it.contains('S') }.let { i -> Pair(i, matrix[i].indexOfFirst { it == 'S' }) }
