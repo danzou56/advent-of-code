@@ -6,15 +6,17 @@ typealias RaggedMatrix<T> = List<List<T>>
 typealias Matrix<T> = List<List<T>>
 typealias Pos = Pair<Int, Int>
 
-fun <T> Matrix<T>.getCellNeighbors(p: Pos) =
-    this.getCellNeighbors(p.first, p.second)
+fun <T> Matrix<T>.getNeighboring(p: Pos) =
+    this.getNeighboringPos(p).map { this[p] }
 
-fun <T> Matrix<T>.getCellNeighbors(i: Int, j: Int): List<T> = listOfNotNull(
-    this.getOrNull(i - 1)?.get(j),
-    this.getOrNull(i + 1)?.get(j),
-    this.get(i).getOrNull(j - 1),
-    this.get(i).getOrNull(j + 1),
-)
+fun <T> Matrix<T>.getNeighboring(i: Int, j: Int): List<T> =
+    this.getNeighboring(Pair(i, j))
+
+fun <T> Matrix<T>.getNeighboringPos(p: Pos): List<Pos> =
+    cardinalDirections.map { it + p }.filter { this.containsPos(it) }
+
+fun <T> Matrix<T>.getNeighboringPos(i: Int, j: Int): List<Pos> =
+    this.getNeighboringPos(Pair(i, j))
 
 fun <T> Matrix<T>.transpose(): Matrix<T> {
     // Make sure matrix isn't ragged
