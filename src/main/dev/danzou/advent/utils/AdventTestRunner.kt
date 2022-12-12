@@ -20,13 +20,13 @@ abstract class AdventTestRunner {
     fun testPart1() {
         val part1 = part1()
         println(part1)
-        assertEquals(expected.component1(), part1.toString())
+        assertEquals(expected.getOrNull(0), part1.toString())
     }
 
     @Test
     fun testPart2() {
         val part2 = part2()
         println(part2)
-        assertEquals(expected.component2(), part2.toString())
+        assertEquals(expected.getOrNull(1), part2.toString())
     }
 }
