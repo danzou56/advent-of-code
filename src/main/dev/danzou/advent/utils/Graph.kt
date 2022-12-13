@@ -47,7 +47,7 @@ fun <T> findPaths(init: T, target: T, getNeighbors: NeighborFunction<T>): Set<Li
  * @param getCost
  * @return Shortest path or empty list if no such path exists
  */
-fun <T> doDijkstras(init: T, target: T, getNeighbors: NeighborFunction<T>, getCost: (T, T) -> Int): List<T> {
+fun <T> doDijkstras(init: T, target: (T) -> Boolean, getNeighbors: NeighborFunction<T>, getCost: (T, T) -> Int): List<T> {
     /*
      * Initialize cost map so with init having zero cost and all others having
      * undefined cost
@@ -71,7 +71,7 @@ fun <T> doDijkstras(init: T, target: T, getNeighbors: NeighborFunction<T>, getCo
      * path.
      */
     var cur = init
-    while (cur != target) {
+    while (!target(cur)) {
         for (adjacent in getNeighbors(cur)) {
             /*
              * If a vertex is already in visited, then any subsequent visits
@@ -105,7 +105,7 @@ fun <T> doDijkstras(init: T, target: T, getNeighbors: NeighborFunction<T>, getCo
     }
 
     // Using the predecessor map, backtrack the shortest path
-    var predecessorVertex = target
+    var predecessorVertex = cur
     val res = mutableListOf(predecessorVertex)
     while (predecessors.containsKey(predecessorVertex)) {
         predecessorVertex = predecessors[predecessorVertex]!!

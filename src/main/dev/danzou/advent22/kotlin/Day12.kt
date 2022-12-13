@@ -26,7 +26,7 @@ internal class Day12 : AdventTestRunner() {
 
         val path = doDijkstras(
             start,
-            end,
+            { it == end },
             { cur ->
                 matrix.getNeighboringPos(cur.first, cur.second).filter { next ->
                     matrix[next] <= matrix[cur] + 1
@@ -44,7 +44,7 @@ internal class Day12 : AdventTestRunner() {
         val paths = matrix.indices2D.filter { p -> matrix[p] == 'a' }.map { start ->
             doDijkstras(
                 start,
-                end,
+                { it == end },
                 { cur ->
                     matrix.getNeighboringPos(cur.first, cur.second).filter { next ->
                         matrix[next] <= matrix[cur] + 1
