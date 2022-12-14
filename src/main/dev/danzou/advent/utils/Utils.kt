@@ -11,11 +11,14 @@ private const val FILE_PREFIX = "day"
 
 fun readFileLines(name: String): List<String> {
     return try {
-        Files.readAllLines(Path.of(name))
+        val lines = Files.readAllLines(Path.of(name))
+        if (lines.isEmpty() || lines[0].isEmpty())
+            throw IOException("Empty file!")
+        else lines
     } catch (e: IOException) {
         e.printStackTrace()
         println("occurred while reading $name; returning empty list instead")
-        emptyList<String>()
+        emptyList()
     }
 }
 
