@@ -1,5 +1,7 @@
 package dev.danzou.advent.utils
 
+import java.lang.IndexOutOfBoundsException
+
 operator fun Pair<Int, Int>.plus(other: Pair<Int, Int>): Pair<Int, Int> =
     Pair(this.first + other.first, this.second + other.second)
 
@@ -54,4 +56,10 @@ fun <T> List<T>.toTriple(): Triple<T, T, T> {
         throw IllegalArgumentException("List is not of length 3!")
     }
     return Triple(this[0], this[1], this[2])
+}
+
+operator fun <T> Pair<T, T>.get(i: Int): T = when (i) {
+    0 -> this.first
+    1 -> this.second
+    else -> throw IndexOutOfBoundsException()
 }

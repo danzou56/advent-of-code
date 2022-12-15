@@ -1,10 +1,16 @@
 package dev.danzou.advent.utils
 
+import kotlin.math.absoluteValue
+
 val cardinalDirections = setOf(Pair(1, 0), Pair(-1, 0), Pair(0, 1), Pair(0, -1))
 
 typealias RaggedMatrix<T> = List<List<T>>
 typealias Matrix<T> = List<List<T>>
 typealias Pos = Pair<Int, Int>
+typealias Point = Pair<Int, Int>
+
+fun Pos.manhattanDistanceTo(other: Pos): Int =
+    (this - other).let { (diffX, diffY) -> diffX.absoluteValue + diffY.absoluteValue }
 
 fun <T> Matrix<T>.getNeighboring(p: Pos) =
     this.getNeighboringPos(p).map { this[p] }
