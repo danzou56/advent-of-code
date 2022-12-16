@@ -9,6 +9,12 @@ typealias Matrix<T> = List<List<T>>
 typealias Pos = Pair<Int, Int>
 typealias Point = Pair<Int, Int>
 
+val Pos.x: Int
+    get() = this.first
+
+val Pos.y: Int
+    get() = this.second
+
 fun Pos.manhattanDistanceTo(other: Pos): Int =
     (this - other).let { (diffX, diffY) -> diffX.absoluteValue + diffY.absoluteValue }
 

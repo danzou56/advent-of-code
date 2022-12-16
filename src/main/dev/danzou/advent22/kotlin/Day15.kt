@@ -65,14 +65,23 @@ internal class Day15 : AdventTestRunner() {
 
     fun part2(input: String, boundingBox: Rectangle): Any {
         val readings = input.split("\n").map { Reading.fromLine(it) }
-        val boxes = readings.map { it.boundingBox }
-        val coverings = readings.map { it.coveredCells() }
-        val beacons = readings.map { it.beacon }
-        val xRange = boundingBox.lower(0)..boundingBox.upper(0)
-        val yRange = boundingBox.lower(1)..boundingBox.upper(1)
-        return xRange.firstNotNullOf { x -> yRange.firstOrNull { y ->
-            coverings.all { covering -> !covering.contains(Pos(x, y)) }
-        }?.let { y -> Pair(x.toLong(), y.toLong()) } }.let { (x, y) -> y + (x * 4_000_000L) }
+
+        val reading = readings.firstNotNullOf {
+            (1..it.radius).firstNotNullOfOrNull { i ->
+                listOf(
+                    Pair(it.sensor.x - it.radius + i, it.sensor.y + i + 1),
+                    Pair(it.sensor.x - it.radius + i, it.sensor.y - i - 1),
+                    Pair(it.sensor.x + it.radius - i, it.sensor.y + i + 1),
+                    Pair(it.sensor.x + it.radius - i, it.sensor.y - i - 1),
+                )
+                    .filter { boundingBox.contains(it) }
+                    .firstOrNull {
+                        readings.none { reading -> reading.contains(it) }
+                    }
+            }
+        }
+
+        return reading.y + (reading.x * 4_000_000L)
     }
 
     @Test
