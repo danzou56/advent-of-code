@@ -26,6 +26,9 @@ internal class Day15 : AdventTestRunner() {
             }
         }
 
+        fun contains(p: Pos): Boolean =
+            sensor.manhattanDistanceTo(p) <= radius
+
         fun coveredCells(): Set<Pos> =
             object : Set<Pos> {
                 override val size: Int = radius * (radius + 2) + 1
@@ -41,7 +44,7 @@ internal class Day15 : AdventTestRunner() {
                     elements.all { this.contains(it) }
 
                 override fun contains(element: Pos): Boolean =
-                    sensor.manhattanDistanceTo(element) <= radius
+                    this@Reading.contains(element)
             }
     }
 
