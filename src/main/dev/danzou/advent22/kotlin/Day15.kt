@@ -64,7 +64,15 @@ internal class Day15 : AdventTestRunner() {
         part2(input, Rectangle(Pos(0, 0), Pos(4_000_000, 4_000_000)))
 
     fun part2(input: String, boundingBox: Rectangle): Any {
-        TODO("Not yet implemented")
+        val readings = input.split("\n").map { Reading.fromLine(it) }
+        val boxes = readings.map { it.boundingBox }
+        val coverings = readings.map { it.coveredCells() }
+        val beacons = readings.map { it.beacon }
+        val xRange = boundingBox.lower(0)..boundingBox.upper(0)
+        val yRange = boundingBox.lower(1)..boundingBox.upper(1)
+        return xRange.firstNotNullOf { x -> yRange.firstOrNull { y ->
+            coverings.all { covering -> !covering.contains(Pos(x, y)) }
+        }?.let { y -> Pair(x.toLong(), y.toLong()) } }.let { (x, y) -> y + (x * 4_000_000L) }
     }
 
     @Test
@@ -87,6 +95,6 @@ internal class Day15 : AdventTestRunner() {
         """.trimIndent()
 
         assertEquals(26, part1(input, 10))
-        assertEquals(56000011, part2(input, Rectangle(Pos(0, 0), Pos(20, 20))))
+        assertEquals(56000011L, part2(input, Rectangle(Pos(0, 0), Pos(20, 20))))
     }
 }
