@@ -13,7 +13,7 @@ internal class Day10 : AdventTestRunner() {
                     CpuState(cycle + instruction.cycles, reg + instruction.value)
                 is Instruction.Noop ->
                     CpuState(cycle + instruction.cycles, reg)
-                else -> throw IllegalStateException()
+                else -> throw IllegalArgumentException()
             }
     }
 
@@ -28,7 +28,7 @@ internal class Day10 : AdventTestRunner() {
                 when (it.first()) {
                     "addx" -> Instruction.AddX(it.component2().toInt())
                     "noop" -> Instruction.Noop()
-                    else -> throw IllegalStateException()
+                    else -> throw IllegalArgumentException()
                 }
             }
         }

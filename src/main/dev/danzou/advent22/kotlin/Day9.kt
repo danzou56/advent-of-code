@@ -36,7 +36,7 @@ internal class Day9 : AdventTestRunner() {
                 "L" -> Pair(-1, 0)
                 "U" -> Pair(0, 1)
                 "D" -> Pair(0, -1)
-                else -> throw IllegalStateException()
+                else -> throw IllegalArgumentException()
             },
             amt.toInt()
         ) }

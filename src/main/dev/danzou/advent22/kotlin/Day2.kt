@@ -27,7 +27,7 @@ internal class Day2 : AdventTestRunner() {
                 "X" -> 0 + scores[loser[opponent]!!]!!
                 "Y" -> 3 + scores[opponent]!!
                 "Z" -> 6 + scores[winner[opponent]!!]!!
-                else -> throw IllegalStateException()
+                else -> throw IllegalArgumentException()
             }
         }
 

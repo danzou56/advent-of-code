@@ -46,7 +46,7 @@ internal class Day14 : AdventTestRunner() {
                                 (min(wall.first.x, wall.second.x)..max(wall.first.x, wall.second.x)).map {
                                     Point(it, wall.first.y)
                                 }
-                            else -> throw IllegalStateException()
+                            else -> throw IllegalArgumentException()
                         }.associateWith { true }
                     }
                 }.withDefault(when (part) {
@@ -55,7 +55,7 @@ internal class Day14 : AdventTestRunner() {
                         bounds.last -> true
                         else -> false
                     } }
-                    else -> throw IllegalStateException()
+                    else -> throw IllegalArgumentException()
                 })
                 return Cave(bounds, sand, walls)
             }
