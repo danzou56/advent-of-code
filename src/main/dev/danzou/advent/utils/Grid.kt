@@ -6,8 +6,11 @@ val cardinalDirections = setOf(Pair(1, 0), Pair(-1, 0), Pair(0, 1), Pair(0, -1))
 
 typealias RaggedMatrix<T> = List<List<T>>
 typealias Matrix<T> = List<List<T>>
+typealias MutableMatrix<T> = MutableList<MutableList<T>>
 typealias Pos = Pair<Int, Int>
 typealias Point = Pair<Int, Int>
+typealias SparseMatrix<T> = Map<Pos, T>
+typealias MutableSparseMatrix<T> = MutableMap<Pos, T>
 
 val Pos.x: Int
     get() = this.first
@@ -69,3 +72,4 @@ fun <T> RaggedMatrix<T>.padRowEnds(defaultValue: (Int, Int) -> T): Matrix<T> {
 }
 
 operator fun <T> Matrix<T>.get(p: Pos): T = this[p.first][p.second]
+operator fun <T> MutableMatrix<T>.set(p: Pos, value: T) { this[p.first][p.second] = value }
