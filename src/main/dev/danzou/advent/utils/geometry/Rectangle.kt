@@ -1,30 +1,25 @@
-package dev.danzou.advent.utils
+package dev.danzou.advent.utils.geometry
 
+import dev.danzou.advent.utils.Point
+import dev.danzou.advent.utils.get
+import dev.danzou.advent.utils.toPair
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
-data class Rectangle(val bound1: Point, val bound2: Point) {
+class Rectangle(bound1: Point, bound2: Point): RectangleUnion(Pair(bound1, bound2)) {
     private val dimension = 2
+    private val bound1: Point
+        get() = rectangles.first().first
+    private val bound2 : Point
+        get() = rectangles.first().second
 
-    operator fun contains(q: Point): Boolean {
-        for (i in 0 until dimension) {
-            val coord: Int = q[i]
-            if (coord < lower(i) || coord > upper(i)) return false
-        }
-        return true
+    operator fun contains(other: Rectangle): Boolean {
+        return this.contains(other.bound1) && this.contains(other.bound2)
     }
 
-    operator fun contains(c: Rectangle): Boolean {
-        return this.contains(c.bound1) && this.contains(c.bound2)
-    }
-
-    fun isDisjointFrom(c: Rectangle): Boolean {
-        return !this.contains(c.bound1) && !this.contains(c.bound2)
-    }
-
-    fun intersects(c: Rectangle): Boolean {
-        return !isDisjointFrom(c)
+    fun isDisjointFrom(other: Rectangle): Boolean {
+        return !this.contains(other.bound1) && !this.contains(other.bound2)
     }
 
     fun distanceTo(q: Point): Int {
@@ -70,11 +65,11 @@ data class Rectangle(val bound1: Point, val bound2: Point) {
         return Rectangle(bounds, other)
     }
 
-    fun lowerHalf(cutDim: Int, splitter: Point): Rectangle? {
+    fun lowerHalf(cutDim: Int, splitter: Point): Rectangle {
         return half(cutDim, splitter, true)
     }
 
-    fun upperHalf(cutDim: Int, splitter: Point): Rectangle? {
+    fun upperHalf(cutDim: Int, splitter: Point): Rectangle {
         return half(cutDim, splitter, false)
     }
 
