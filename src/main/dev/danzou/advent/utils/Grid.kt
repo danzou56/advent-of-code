@@ -18,6 +18,9 @@ val Pos.x: Int
 val Pos.y: Int
     get() = this.second
 
+fun List<Int>.toPos(): Pos = this.toPair()
+fun List<Int>.toPoint(): Point = this.toPair()
+
 fun Pos.manhattanDistanceTo(other: Pos): Int =
     (this - other).let { (diffX, diffY) -> diffX.absoluteValue + diffY.absoluteValue }
 

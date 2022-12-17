@@ -12,53 +12,53 @@ typealias Line = Pair<Point, Point>
 
 internal class Day14 : AdventTestRunner() {
 
-    data class Cave(val bounds: Rectangle, val sand: Sand, val wall: Wall) {
+    data class Cave(val bounds: IntRange, val sand: Sand, val wall: Wall) {
 
-        fun withSand(sand: Sand): Cave = Cave(bounds, sand, wall)
+        fun withSand(sand: Sand): Cave = Cave(bounds, sand.withDefault { false }, wall)
 
         tailrec fun addSandAt(p: Point): Cave? {
-            if (!bounds.contains(p)) return null
+            if (sand.getValue(p)) return null
+            if (p.y !in bounds) return null
             val nextMoves = listOf(0, -1, 1).map { p + Pair(it, 1) }
-            val nextMove = nextMoves.firstOrNull { move -> move !in sand && move !in wall }
+            val nextMove = nextMoves.firstOrNull { move -> !sand.getValue(move) && !wall.getValue(move) }
             return if (nextMove == null) this.withSand(sand + mapOf(p to true))
             else addSandAt(nextMove)
         }
 
         companion object {
-            fun parseFrom(input: String): Cave =
-                input.split("\n")
-                    .map { it.split(" -> ").map { it.split(",").map { it.toInt() }.toPair() } }
-                    .map { it.fold(listOf(Line(it.component1(), it.component2()))) { lines, point ->
-                        lines + Line(lines.last().second, point)
-                    } }.let { protoWalls -> Cave(
-                        protoWalls.flatten().let { walls ->
-                            Rectangle(
-                                Point(walls.minOf { min(it.first.x, it.second.x) }, walls.minOf { listOf(0, it.first.y, it.second.y).min() }),
-                                Point(walls.maxOf { max(it.first.x, it.second.x) }, walls.maxOf { max(it.first.y, it.second.y) })
-                            )
-                        },
-                        emptyMap<Pos, Boolean>().withDefault { false },
-                        protoWalls.fold<List<Line>, Map<Pos, Boolean>>(emptyMap()) { map, lines -> map + lines.fold(map) { map, wall ->
-                            map + when {
-                                wall.first.x - wall.second.x == 0 ->
-                                    (min(wall.first.y, wall.second.y)..max(wall.first.y, wall.second.y)).map {
-                                        Point(
-                                            wall.first.x,
-                                            it
-                                        )
-                                    }
+            fun parseFrom(input: String, part: Int = 1): Cave {
+                val wallLines: List<List<Line>> = input.split("\n")
+                    .map { it.split(" -> ", ",").map(String::toInt).chunked(2).map(List<Int>::toPoint) }
+                    .map { it.windowed(2).map(List<Point>::toPair) }
 
-                                wall.first.y - wall.second.y == 0 ->
-                                    (min(wall.first.x, wall.second.x)..max(wall.first.x, wall.second.x)).map {
-                                        Point(
-                                            it,
-                                            wall.first.y
-                                        )
-                                    }
-                                else -> throw IllegalStateException()
-                            }.associateWith { true }
-                        } }.withDefault { false }
-                    ) }
+                val bounds = wallLines.flatten().let { walls -> walls.flatMap { listOf(it.first.y, it.second.y) }.let { yCoords ->
+                    min(0, yCoords.min()).. yCoords.max() + 2 * (part - 1)
+                } }
+                val sand = emptyMap<Pos, Boolean>().withDefault { false }
+                val walls = wallLines.fold<List<Line>, Map<Pos, Boolean>>(emptyMap()) { map, lines ->
+                    map + lines.fold(map) { map, wall ->
+                        map + when {
+                            wall.first.x - wall.second.x == 0 ->
+                                (min(wall.first.y, wall.second.y)..max(wall.first.y, wall.second.y)).map {
+                                    Point(wall.first.x, it)
+                                }
+                            wall.first.y - wall.second.y == 0 ->
+                                (min(wall.first.x, wall.second.x)..max(wall.first.x, wall.second.x)).map {
+                                    Point(it, wall.first.y)
+                                }
+                            else -> throw IllegalStateException()
+                        }.associateWith { true }
+                    }
+                }.withDefault(when (part) {
+                    1 -> { _: Pos -> false }
+                    2 -> { (_, y): Pos -> when (y) {
+                        bounds.last -> true
+                        else -> false
+                    } }
+                    else -> throw IllegalStateException()
+                })
+                return Cave(bounds, sand, walls)
+            }
         }
     }
 
@@ -73,9 +73,8 @@ internal class Day14 : AdventTestRunner() {
     override fun part1(input: String): Any =
         run(Cave.parseFrom(input))
 
-    override fun part2(input: String): Any {
-        TODO("Not yet implemented")
-    }
+    override fun part2(input: String): Any =
+        run(Cave.parseFrom(input, part = 2))
 
     @Test
     fun testExample() {
@@ -85,5 +84,6 @@ internal class Day14 : AdventTestRunner() {
         """.trimIndent()
 
         assertEquals(24, part1(input))
+        assertEquals(93, part2(input))
     }
 }
