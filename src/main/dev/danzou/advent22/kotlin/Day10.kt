@@ -13,11 +13,10 @@ internal class Day10 : AdventTestRunner() {
                     CpuState(cycle + instruction.cycles, reg + instruction.value)
                 is Instruction.Noop ->
                     CpuState(cycle + instruction.cycles, reg)
-                else -> throw IllegalArgumentException()
             }
     }
 
-    abstract class Instruction(val name: String, val cycles: Int) {
+    sealed class Instruction(val name: String, val cycles: Int) {
         class AddX(val value: Int) : Instruction("addx", 2)
         class Noop() : Instruction("noop", 1)
     }
