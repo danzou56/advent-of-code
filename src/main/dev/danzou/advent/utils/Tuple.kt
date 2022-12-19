@@ -6,7 +6,10 @@ operator fun Pair<Int, Int>.plus(other: Pair<Int, Int>): Pair<Int, Int> =
     Pair(this.first + other.first, this.second + other.second)
 
 operator fun Pair<Int, Int>.minus(other: Pair<Int, Int>): Pair<Int, Int> =
-    Pair(this.first - other.first, this.second - other.second)
+    this + other * -1
+
+operator fun Pair<Int, Int>.times(i: Int): Pair<Int, Int> =
+    Pair(this.first * i, this.second * i)
 
 operator fun Pair<Int, Int>.rangeTo(other: Pair<Int, Int>): Iterable<Pair<Int, Int>> {
     val diff = other - this

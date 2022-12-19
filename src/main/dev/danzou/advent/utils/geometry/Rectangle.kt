@@ -4,23 +4,14 @@ import dev.danzou.advent.utils.Point
 import dev.danzou.advent.utils.get
 import dev.danzou.advent.utils.toPair
 import kotlin.math.abs
-import kotlin.math.max
 import kotlin.math.min
 
-class Rectangle(bound1: Point, bound2: Point): RectangleUnion(Pair(bound1, bound2)) {
+open class Rectangle(bound1: Point, bound2: Point): RectangleUnion(Pair(bound1, bound2)) {
     private val dimension = 2
     private val bound1: Point
-        get() = rectangles.first().first
+        get() = _rectangles.first().first
     private val bound2 : Point
-        get() = rectangles.first().second
-
-    operator fun contains(other: Rectangle): Boolean {
-        return this.contains(other.bound1) && this.contains(other.bound2)
-    }
-
-    fun isDisjointFrom(other: Rectangle): Boolean {
-        return !this.contains(other.bound1) && !this.contains(other.bound2)
-    }
+        get() = _rectangles.first().second
 
     fun distanceTo(q: Point): Int {
         if (this.contains(q)) return 0
@@ -35,14 +26,6 @@ class Rectangle(bound1: Point, bound2: Point): RectangleUnion(Pair(bound1, bound
             }
         }
         return dist
-    }
-
-    fun lower(dim: Int): Int {
-        return min(bound1[dim], bound2[dim])
-    }
-
-    fun upper(dim: Int): Int {
-        return max(bound1[dim], bound2[dim])
     }
 
     fun half(cutDim: Int, splitter: Point, side: Boolean): Rectangle {
