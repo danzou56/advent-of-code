@@ -1,9 +1,9 @@
 package dev.danzou.advent22.kotlin
 
 import dev.danzou.advent.utils.AdventTestRunner
-import dev.danzou.advent.utils.minus
-import dev.danzou.advent.utils.plus
-import dev.danzou.advent.utils.toPair
+import dev.danzou.advent.utils.geometry.minus
+import dev.danzou.advent.utils.geometry.plus
+import dev.danzou.advent.utils.geometry.toPair
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import kotlin.math.absoluteValue

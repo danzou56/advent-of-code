@@ -2,7 +2,7 @@ package dev.danzou.advent22.kotlin
 
 import dev.danzou.advent.utils.AdventTestRunner
 import dev.danzou.advent.utils.Node
-import dev.danzou.advent.utils.toPair
+import dev.danzou.advent.utils.geometry.toPair
 import dev.danzou.advent22.kotlin.utils.FileNode
 
 internal class Day7 : AdventTestRunner() {

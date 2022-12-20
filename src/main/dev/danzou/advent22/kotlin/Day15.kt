@@ -2,6 +2,8 @@ package dev.danzou.advent22.kotlin
 
 import dev.danzou.advent.utils.*
 import dev.danzou.advent.utils.geometry.Rectangle
+import dev.danzou.advent.utils.geometry.minus
+import dev.danzou.advent.utils.geometry.plus
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 

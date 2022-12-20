@@ -1,6 +1,7 @@
 package dev.danzou.advent22.kotlin
 
 import dev.danzou.advent.utils.*
+import dev.danzou.advent.utils.geometry.plus
 
 internal class Day8 : AdventTestRunner() {
     fun getMatrix(input: String): Matrix<Int> =

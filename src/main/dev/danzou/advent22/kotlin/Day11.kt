@@ -1,7 +1,7 @@
 package dev.danzou.advent22.kotlin
 
 import dev.danzou.advent.utils.AdventTestRunner
-import dev.danzou.advent.utils.toPair
+import dev.danzou.advent.utils.geometry.toPair
 import dev.danzou.advent.utils.update
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
