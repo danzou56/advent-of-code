@@ -27,6 +27,43 @@ class Day20 : AdventTestRunner() {
             this._next = next
         }
 
+        fun move(amount: Int) = when {
+            amount > 0 -> moveForward(amount)
+            amount < 0 -> moveBackward(amount * -1)
+            else -> Unit
+        }
+
+        private fun moveForward(amount: Int) {
+            var cur = this
+            var count = 0
+            while (count++ < amount)
+                cur = cur.next
+
+            this.prev.next = this.next
+            this.next.prev = this.prev
+
+            this.next = cur.next
+            this.prev = cur
+            cur.next.prev = this
+            cur.next = this
+        }
+
+        private fun moveBackward(amount: Int) {
+            var cur = this
+            var count = 0
+            while (count++ < amount)
+                cur = cur.prev
+
+            this.prev.next = this.next
+            this.next.prev = this.prev
+
+            this.prev = cur.prev
+            this.next = cur
+            cur.prev.next = this
+            cur.prev = this
+
+        }
+
         fun insertAfter(value: T, after: Int = 0): Node<T> {
             var cur = this
             var count = 0
@@ -85,32 +122,36 @@ class Day20 : AdventTestRunner() {
         }
     }
 
+    fun mix(refs: List<Node<Long>>) {
+        val mod = refs.size
+        refs.forEach { it.move((it.data % (mod - 1)).toInt())}
+    }
+
     override fun part1(input: String): Any {
-        val ints = input.split("\n").map { it.toInt() }
-        val refs = ints.drop(1).fold(listOf(
-            Node.createFirst(ints.first())
+        val longs = input.split("\n").map { it.toLong() }
+        val refs = longs.drop(1).fold(listOf(
+            Node.createFirst(longs.first())
         )) { refs, value ->
             refs + refs.last().insertAfter(value)
         }
-        refs.forEach { node ->
-            when {
-                node.data > 0 -> {
-                    node.remove()
-                    node.next.insertAfter(node.data, node.data)
-                }
-                node.data < 0 -> {
-                    node.remove()
-                    node.prev.insertBefore(node.data, -1 * node.data)
-                }
-            }
-        }
+        mix(refs)
 
-        val start = refs.first { it.data == 0 }
-        return Node.findAfter(start, 0, 1000) + Node.findAfter(start, 0, 2000) + Node.findAfter(start, 0, 3000)
+        val start = refs.first { it.data == 0L }
+        return Node.findAfter(start, 0L, 1000) + Node.findAfter(start, 0L, 2000) + Node.findAfter(start, 0L, 3000)
     }
 
     override fun part2(input: String): Any {
-        TODO("Not yet implemented")
+        val longs = input.split("\n").map { it.toInt() * KEY }
+        val refs = longs.drop(1).fold(listOf(
+            Node.createFirst<Long>(longs.first())
+        )) { refs, value ->
+            refs + refs.last().insertAfter(value)
+        }
+
+        (0 until 10).forEach { mix(refs) }
+
+        val start = refs.first { it.data == 0L }
+        return Node.findAfter(start, 0, 1000) + Node.findAfter(start, 0, 2000) + Node.findAfter(start, 0, 3000)
     }
 
     @Test
@@ -125,7 +166,7 @@ class Day20 : AdventTestRunner() {
             4
         """.trimIndent()
 
-        assertEquals(3, part1(input))
+        assertEquals(3L, part1(input))
         assertEquals(1623178306L, part2(input))
     }
 }
