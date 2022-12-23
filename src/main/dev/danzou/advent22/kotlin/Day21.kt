@@ -35,11 +35,11 @@ internal class Day21 : AdventTestRunner() {
     override fun part1(input: String): Any {
         val monkeyMap = getMonkeys(input).associateBy { it.name }
         fun run(cur: Monkey): Long {
-                return when (cur) {
-                    is Monkey.LeafMonkey -> cur.data
-                    is Monkey.InnerMonkey -> cur.op(run(monkeyMap[cur.left]!!), run(monkeyMap[cur.right]!!))
-                }
+            return when (cur) {
+                is Monkey.LeafMonkey -> cur.data
+                is Monkey.InnerMonkey -> cur.op(run(monkeyMap[cur.left]!!), run(monkeyMap[cur.right]!!))
             }
+        }
 
         return run(monkeyMap["root"]!!)
     }
