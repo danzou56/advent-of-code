@@ -7,7 +7,7 @@ import java.lang.IllegalArgumentException
 import java.lang.NumberFormatException
 
 internal class Day21 : AdventTestRunner() {
-
+    val ROOT = "root"
     val HUMN = "humn"
 
     sealed class Monkey(val name: String) {
@@ -58,16 +58,21 @@ internal class Day21 : AdventTestRunner() {
                 }
             }
 
-    override fun part1(input: String): Any {
-        val monkeyMap = getMonkeys(input).associateBy { it.name }
-        fun run(cur: Monkey): Long {
-            return when (cur) {
-                is Monkey.LeafMonkey -> cur.data
-                is Monkey.InnerMonkey -> cur.op.op(run(monkeyMap[cur.left]!!), run(monkeyMap[cur.right]!!))
+    fun calculate(init: String, monkeyMap: Map<String, Monkey>): Long {
+        fun run(cur: String): Long {
+            val monkey = monkeyMap[cur]!!
+            return when (monkey) {
+                is Monkey.LeafMonkey -> monkey.data
+                is Monkey.InnerMonkey -> monkey.op.op(run(monkey.left), run(monkey.right))
             }
         }
 
-        return run(monkeyMap["root"]!!)
+        return run(init)
+    }
+
+    override fun part1(input: String): Any {
+        val monkeyMap = getMonkeys(input).associateBy { it.name }
+        return calculate(ROOT, monkeyMap)
     }
 
     override fun part2(input: String): Any {
