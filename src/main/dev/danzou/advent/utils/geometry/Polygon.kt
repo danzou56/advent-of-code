@@ -11,7 +11,7 @@ interface Polygon {
     val size
         get() = Pair(width, height)
     fun lower(index: Int) = pos[index]
-    fun upper(index: Int) = size[index] + pos[index]
+    fun upper(index: Int) = pos[index] + size[index] - 1
 
     operator fun contains(p: Pos): Boolean
     operator fun contains(other: Polygon): Boolean
