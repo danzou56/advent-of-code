@@ -76,25 +76,6 @@ class Day20 : AdventTestRunner() {
             return next
         }
 
-        fun insertBefore(value: T, before: Int = 0): Node<T> {
-            var cur = this
-            var count = 0
-            while (count++ < before - 1)
-                cur = cur.prev
-
-            val prev = Node(value, cur.prev, cur)
-            prev.next.prev = prev
-            prev.prev.next = prev
-            return prev
-        }
-
-        fun remove(): Node<T> {
-            if (this.next == this.prev) throw IllegalStateException("Removal of this node empties the list!")
-            this.prev.next = this.next
-            this.next.prev = this.prev
-            return this
-        }
-
         override fun toString(): String {
             return "Node(data=$data)"
         }
