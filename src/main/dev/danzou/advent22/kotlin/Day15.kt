@@ -20,7 +20,7 @@ internal class Day15 : AdventTestRunner() {
 
         companion object {
             fun fromLine(line: String): Reading {
-                val (sx, sy, bx, by) = Regex("Sensor at x=(-?\\d+), y=(-?\\d+): closest beacon is at x=(-?\\d+), y=(-?\\d+)\\s*")
+                val (sx, sy, bx, by) = Regex("""Sensor at x=(-?\d+), y=(-?\d+): closest beacon is at x=(-?\d+), y=(-?\d+)\s*""")
                     .matchEntire(line)!!
                     .groupValues
                     .drop(1)
