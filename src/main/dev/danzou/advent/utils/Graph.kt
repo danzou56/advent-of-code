@@ -47,7 +47,7 @@ fun <T> findPaths(init: T, target: T, getNeighbors: NeighborFunction<T>): Set<Li
  * @param getCost
  * @return Shortest path or empty list if no such path exists
  */
-fun <T> doDijkstras(init: T, target: (T) -> Boolean, getNeighbors: NeighborFunction<T>, getCost: (T, T) -> Int): List<T> {
+fun <T> doDijkstras(init: T, target: (T) -> Boolean, getNeighbors: NeighborFunction<T>, getCost: (T, T) -> Int = { _, _ -> 1 }): List<T> {
     /*
      * Initialize cost map so with init having zero cost and all others having
      * undefined cost
