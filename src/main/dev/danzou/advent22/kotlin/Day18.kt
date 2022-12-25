@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 class Day18 : AdventTestRunner() {
-    enum class Direction(val dir: Pos3) {
+    enum class Direction3(val dir: Pos3) {
         UP(Triple(0, 1, 0)),
         DOWN(Triple(0, -1, 0)),
         LEFT(Triple(-1, 0, 0)),
@@ -15,7 +15,7 @@ class Day18 : AdventTestRunner() {
         IN(Triple(0, 0, 1)),
         OUT(Triple(0, 0, -1));
 
-        fun opposite(): Direction = when (this) {
+        fun opposite(): Direction3 = when (this) {
             UP -> DOWN
             DOWN -> UP
             LEFT -> RIGHT
@@ -56,7 +56,7 @@ class Day18 : AdventTestRunner() {
     override fun part1(input: String): Any {
         val cubes = input.split("\n").map { UnitCube.fromString(it) }
         val cubeMap = cubes.map { it.pos to it }.toMap()
-        return cubes.sumOf { cube -> Direction.values().count { dir ->
+        return cubes.sumOf { cube -> Direction3.values().count { dir ->
             !cubeMap.containsKey(cube.pos + dir.dir)
         } }
     }
@@ -66,18 +66,18 @@ class Day18 : AdventTestRunner() {
         val cubeMap = cubes.map { it.pos to it }.toMap()
 
         fun getNeighboringAir(pos: Pos3): Set<Pos3> =
-            Direction.values().map { pos + it.dir }
+            Direction3.values().map { pos + it.dir }
                 .filter { it !in cubeMap }.toSet()
 
         val discovered = dfs(
-            cubes.maxBy { it.pos.y }.pos + Direction.UP.dir
+            cubes.maxBy { it.pos.y }.pos + Direction3.UP.dir
         ) { pos ->
             val directNeighbors = getNeighboringAir(pos)
-            val diagonalNeighbors = Direction.diagonals.map { pos + it }
+            val diagonalNeighbors = Direction3.diagonals.map { pos + it }
                 .filter { it !in cubeMap && directNeighbors.intersect(getNeighboringAir(it)).size == 1 }
             directNeighbors.union(diagonalNeighbors).filter { getNeighboringAir(it).size < 6 }.toSet()
         }
-        return discovered.sumOf { pos -> Direction.values().count { dir ->
+        return discovered.sumOf { pos -> Direction3.values().count { dir ->
             cubeMap.containsKey(pos + dir.dir)
         } }
     }
