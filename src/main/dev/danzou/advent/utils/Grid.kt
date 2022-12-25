@@ -1,11 +1,12 @@
 package dev.danzou.advent.utils
 
+import dev.danzou.advent.utils.geometry.Direction
 import dev.danzou.advent.utils.geometry.minus
 import dev.danzou.advent.utils.geometry.plus
 import dev.danzou.advent.utils.geometry.toPair
 import kotlin.math.absoluteValue
 
-val cardinalDirections = setOf(Pair(1, 0), Pair(-1, 0), Pair(0, 1), Pair(0, -1))
+val cardinalDirections = Direction.values().map { it.dir }.toSet()
 
 typealias RaggedMatrix<T> = List<List<T>>
 typealias Matrix<T> = List<List<T>>
