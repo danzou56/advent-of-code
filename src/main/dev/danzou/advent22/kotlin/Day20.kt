@@ -123,8 +123,14 @@ class Day20 : AdventTestRunner() {
     }
 
     fun mix(refs: List<Node<Long>>) {
-        val mod = refs.size
-        refs.forEach { it.move((it.data % (mod - 1)).toInt())}
+        val mod = refs.size - 1
+        refs.forEach {
+            // correctly choosing the direction to move the node halves
+            // execution time
+            // val distance = (((it.data % mod) + mod + mod / 2) % mod) - mod / 2
+            val distance = it.data % mod
+            it.move(distance.toInt())
+        }
     }
 
     override fun part1(input: String): Any {
@@ -143,7 +149,7 @@ class Day20 : AdventTestRunner() {
     override fun part2(input: String): Any {
         val longs = input.split("\n").map { it.toInt() * KEY }
         val refs = longs.drop(1).fold(listOf(
-            Node.createFirst<Long>(longs.first())
+            Node.createFirst(longs.first())
         )) { refs, value ->
             refs + refs.last().insertAfter(value)
         }
