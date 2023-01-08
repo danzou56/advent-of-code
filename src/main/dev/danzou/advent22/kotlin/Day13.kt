@@ -119,7 +119,7 @@ internal class Day13 : AdventTestRunner() {
                     return "${super.toString()}($first, $rest)"
                 }
 
-                override fun compareTo(other: Packet): Int =
+                override tailrec fun compareTo(other: Packet): Int =
                     when (other) {
                         is Empty -> 1
                         is Value -> this.compareTo(List(other, Empty))
