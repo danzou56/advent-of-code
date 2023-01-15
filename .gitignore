@@ -122,7 +122,5 @@ replay_pid*
 
 # Custom
 
-inputs
-outputs
-*.in
-*.out
+/inputs
+/outputs
