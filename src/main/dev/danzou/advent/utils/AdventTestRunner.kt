@@ -2,31 +2,14 @@ package dev.danzou.advent.utils
 
 import org.junit.jupiter.api.Test
 import java.io.IOException
-import java.lang.Exception
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.test.assertEquals
 
 abstract class AdventTestRunner {
     abstract val year: Int
-    /**
-     * Day number of currently executing class. A pretty big hack.
-     * @throws java.util.NoSuchElementException if no stack trace file name starts with "Day" or
-     * "day"
-     * @return executing day number
-     */
     private val day: Int
-        get() = try {
-            throw Exception()
-        } catch (e: Exception) {
-            e.stackTrace.first {
-                it.fileName?.startsWith("day", ignoreCase = true) ?: throw Exception(
-                    "`StackElement!` had no filename"
-                )
-            }.fileName!!.let {
-                it.substring(3, it.indexOf('.'))
-            }.toInt()
-        }
+        get() = this.javaClass.simpleName.drop(3).toInt()
 
     private val input: String = readFileLines(
         "inputs/day$day.in"
