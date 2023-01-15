@@ -1,7 +1,6 @@
 package dev.danzou.advent.utils
 
 import dev.danzou.advent.utils.geometry.Direction
-import dev.danzou.advent.utils.geometry.minus
 import dev.danzou.advent.utils.geometry.plus
 import dev.danzou.advent.utils.geometry.toPair
 import kotlin.math.absoluteValue
@@ -26,7 +25,7 @@ fun List<Int>.toPos(): Pos = this.toPair()
 fun List<Int>.toPoint(): Point = this.toPair()
 
 fun Pos.manhattanDistanceTo(other: Pos): Int =
-    (this - other).let { (diffX, diffY) -> diffX.absoluteValue + diffY.absoluteValue }
+    (this.first - other.first).absoluteValue + (this.second - other.second).absoluteValue
 
 fun <T> Matrix<T>.getNeighboring(p: Pos) =
     this.getNeighboringPos(p).map { this[p] }
