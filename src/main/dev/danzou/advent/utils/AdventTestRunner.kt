@@ -6,15 +6,20 @@ import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.test.assertEquals
 
-abstract class AdventTestRunner {
-    abstract val year: Int
+abstract class AdventTestRunner(private val year: Int) {
     private val day: Int
         get() = this.javaClass.simpleName.drop(3).toInt()
 
+    private val DATA_ROOT = "src/resources/dev/danzou"
+    private val basePath = "$DATA_ROOT/advent$year"
+
     private val input: String = readFileLines(
-        "inputs/day$day.in"
+        "$basePath/inputs/day$day.in"
     ).joinToString("\n")
-    private val expected: List<String?> = readFileLines("outputs/day$day.out").let { lines ->
+
+    private val expected: List<String?> = readFileLines(
+        "$basePath/outputs/day$day.out"
+    ).let { lines ->
         if (lines.size <= 2) lines
         else listOf(lines.first(), lines.drop(1).joinToString("\n"))
     }
