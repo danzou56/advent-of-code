@@ -27,9 +27,9 @@ open class RectangleUnion(rectangles: List<Rect>) : Polygon {
     }
 
     override fun contains(p: Pos): Boolean =
-        !_rectangles.map { rect -> (0 until DIMENSION).map { dim ->
-            p[dim] < rect.lower(dim) || p[dim] > rect.upper(dim)
-        }.reduce(Boolean::or) }.reduce(Boolean::or)
+        !_rectangles.all { rect -> (0 until DIMENSION).any { dim ->
+            p[dim] !in rect.lower(dim)..rect.upper(dim)
+        } }
 
     override fun contains(other: Polygon): Boolean {
         TODO("Not yet implemented")
@@ -80,9 +80,9 @@ open class RectangleUnion(rectangles: List<Rect>) : Polygon {
 
     @JvmName("containsPoint")
     protected fun Rect.contains(p: Point): Boolean =
-        !(0 until DIMENSION).map { dim ->
+        !(0 until DIMENSION).any { dim ->
             p[dim] < this.lower(dim) || p[dim] > this.upper(dim)
-        }.reduce(Boolean::or)
+        }
 
     @JvmName("containsRect")
     protected fun Rect.contains(other: Rect): Boolean =
