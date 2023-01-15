@@ -34,7 +34,7 @@ internal class Day23 : AdventTestRunner22() {
             override fun next() = cur++
         }
 
-        fun step(elves: Set<Pos>, step: Int, limit: Int): Pair<Set<Pos>, Int> {
+        tailrec fun step(elves: Set<Pos>, step: Int, limit: Int): Pair<Set<Pos>, Int> {
             if (limit != -1 && step >= limit) return Pair(elves, step + 1)
             // if for all elves, each of their surrounding directions contain nothing, we are done
             if (elves.all { k -> Compass.directions().all { k + it.dir !in elves } })
