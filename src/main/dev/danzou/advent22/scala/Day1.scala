@@ -7,8 +7,8 @@ object Day1 extends AdventTestRunner22 {
 
   override def part2(input: String): Number = input
     .split("\n\n")
-    .map({_.split("\n").map({_.toLong})})
-    .map({_.sum})
+    .map(_.split("\n").map(_.toLong))
+    .map(_.sum)
     .sorted
     .takeRight(3)
     .sum
