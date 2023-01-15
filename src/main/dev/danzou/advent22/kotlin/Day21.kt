@@ -1,12 +1,12 @@
 package dev.danzou.advent22.kotlin
 
-import dev.danzou.advent.utils.AdventTestRunner
+import dev.danzou.advent22.AdventTestRunner22
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.lang.IllegalArgumentException
 import java.lang.NumberFormatException
 
-internal class Day21 : AdventTestRunner() {
+internal class Day21 : AdventTestRunner22() {
     val ROOT = "root"
     val HUMN = "humn"
 

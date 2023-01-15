@@ -2,8 +2,9 @@ package dev.danzou.advent22.kotlin
 
 import dev.danzou.advent.utils.*
 import dev.danzou.advent.utils.geometry.plus
+import dev.danzou.advent22.AdventTestRunner22
 
-internal class Day8 : AdventTestRunner() {
+internal class Day8 : AdventTestRunner22() {
     fun getMatrix(input: String): Matrix<Int> =
         input.split("\n").map { it.map { it.toString().toInt() } }
 

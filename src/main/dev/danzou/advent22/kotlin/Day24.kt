@@ -3,12 +3,13 @@ package dev.danzou.advent22.kotlin
 import dev.danzou.advent.utils.*
 import dev.danzou.advent.utils.geometry.Direction
 import dev.danzou.advent.utils.geometry.plus
+import dev.danzou.advent22.AdventTestRunner22
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-internal class Day24 : AdventTestRunner() {
+internal class Day24 : AdventTestRunner22() {
     class BlizzardBasin(private val walls: SparseMatrix<Boolean>, private val blizzards: SparseMatrix<Direction>) {
         val width = walls.maxOf { (k, _) -> k.x } - 1
         val height = walls.maxOf { (k, _) -> k.y } - 1

@@ -3,6 +3,7 @@ package dev.danzou.advent22.kotlin
 import dev.danzou.advent.utils.*
 import dev.danzou.advent.utils.geometry.Direction
 import dev.danzou.advent.utils.geometry.plus
+import dev.danzou.advent22.AdventTestRunner22
 import org.junit.jupiter.api.Test
 import java.lang.IllegalArgumentException
 import kotlin.test.assertEquals
@@ -17,7 +18,7 @@ val Pose.x
 val Pose.y
     get() = this.pos.y
 
-internal class Day22 : AdventTestRunner() {
+internal class Day22 : AdventTestRunner22() {
 
     private val clockwiseTurnFrom = mapOf(
         Direction.LEFT to Direction.UP,

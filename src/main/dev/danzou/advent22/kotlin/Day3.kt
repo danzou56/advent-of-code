@@ -1,8 +1,8 @@
 package dev.danzou.advent22.kotlin
 
-import dev.danzou.advent.utils.AdventTestRunner
+import dev.danzou.advent22.AdventTestRunner22
 
-internal class Day3 : AdventTestRunner() {
+internal class Day3 : AdventTestRunner22() {
     fun priorityOf(char: Char): Int =
         if (char.isUpperCase()) char - 'A' + 27
         else char - 'a' + 1

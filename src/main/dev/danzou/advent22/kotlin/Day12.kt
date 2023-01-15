@@ -1,10 +1,11 @@
 package dev.danzou.advent22.kotlin
 
 import dev.danzou.advent.utils.*
+import dev.danzou.advent22.AdventTestRunner22
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-internal class Day12 : AdventTestRunner() {
+internal class Day12 : AdventTestRunner22() {
 
     fun parse(input: String): Triple<Matrix<Char>, Pos, Pos> =
         input.split("\n").map { it.toList() }.let { matrix ->

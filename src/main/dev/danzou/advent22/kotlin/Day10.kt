@@ -1,11 +1,11 @@
 package dev.danzou.advent22.kotlin
 
-import dev.danzou.advent.utils.AdventTestRunner
+import dev.danzou.advent22.AdventTestRunner22
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import kotlin.math.absoluteValue
 
-internal class Day10 : AdventTestRunner() {
+internal class Day10 : AdventTestRunner22() {
     data class CpuState(val cycle: Int = 0, val reg: Int = 1) {
         fun apply(instruction: Instruction): CpuState =
             when (instruction) {

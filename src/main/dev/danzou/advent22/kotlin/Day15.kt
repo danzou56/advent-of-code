@@ -4,13 +4,14 @@ import dev.danzou.advent.utils.*
 import dev.danzou.advent.utils.geometry.Rectangle
 import dev.danzou.advent.utils.geometry.minus
 import dev.danzou.advent.utils.geometry.plus
+import dev.danzou.advent22.AdventTestRunner22
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 typealias Beacon = Pos
 typealias Sensor = Pos
 
-internal class Day15 : AdventTestRunner() {
+internal class Day15 : AdventTestRunner22() {
     data class Reading(val sensor: Sensor, val beacon: Beacon) {
         val radius = sensor.manhattanDistanceTo(beacon)
         val boundingBox = Rectangle(

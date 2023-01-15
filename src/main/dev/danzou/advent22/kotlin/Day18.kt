@@ -1,12 +1,12 @@
 package dev.danzou.advent22.kotlin
 
-import dev.danzou.advent.utils.AdventTestRunner
 import dev.danzou.advent.utils.dfs
 import dev.danzou.advent.utils.geometry3.*
+import dev.danzou.advent22.AdventTestRunner22
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
-class Day18 : AdventTestRunner() {
+class Day18 : AdventTestRunner22() {
     enum class Direction3(val dir: Pos3) {
         UP(Triple(0, 1, 0)),
         DOWN(Triple(0, -1, 0)),

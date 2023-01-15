@@ -1,10 +1,10 @@
 package dev.danzou.advent22.kotlin
 
-import dev.danzou.advent.utils.AdventTestRunner
+import dev.danzou.advent22.AdventTestRunner22
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-internal class Day25 : AdventTestRunner() {
+internal class Day25 : AdventTestRunner22() {
     
     val snafuDigitMap = mapOf(
         '2' to 2,

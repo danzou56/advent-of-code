@@ -1,12 +1,12 @@
 package dev.danzou.advent22.kotlin
 
-import dev.danzou.advent.utils.AdventTestRunner
 import dev.danzou.advent.utils.geometry.toPair
 import dev.danzou.advent.utils.update
+import dev.danzou.advent22.AdventTestRunner22
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-internal class Day11 : AdventTestRunner() {
+internal class Day11 : AdventTestRunner22() {
 
     data class Monkey(
         val items: List<Item>,

@@ -3,6 +3,7 @@ package dev.danzou.advent22.kotlin
 import dev.danzou.advent.utils.*
 import dev.danzou.advent.utils.geometry.plus
 import dev.danzou.advent.utils.geometry.toPair
+import dev.danzou.advent22.AdventTestRunner22
 import org.junit.jupiter.api.Test
 import kotlin.math.max
 import kotlin.math.min
@@ -12,7 +13,7 @@ typealias Sand = SparseMatrix<Boolean>
 typealias Wall = SparseMatrix<Boolean>
 typealias Line = Pair<Point, Point>
 
-internal class Day14 : AdventTestRunner() {
+internal class Day14 : AdventTestRunner22() {
 
     data class Cave(val bounds: IntRange, val sand: Sand, val wall: Wall) {
 

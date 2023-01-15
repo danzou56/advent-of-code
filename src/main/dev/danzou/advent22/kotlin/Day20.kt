@@ -1,10 +1,10 @@
 package dev.danzou.advent22.kotlin
 
-import dev.danzou.advent.utils.AdventTestRunner
+import dev.danzou.advent22.AdventTestRunner22
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
-class Day20 : AdventTestRunner() {
+class Day20 : AdventTestRunner22() {
 
     val KEY = 811589153L
 

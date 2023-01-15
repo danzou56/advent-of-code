@@ -1,9 +1,10 @@
 package dev.danzou.advent22.kotlin
 
 import dev.danzou.advent.utils.*
+import dev.danzou.advent22.AdventTestRunner22
 
 
-internal class Day5 : AdventTestRunner() {
+internal class Day5 : AdventTestRunner22() {
     data class Instruction(val quantity: Int, val source: Int, val target: Int)
 
     fun String.toInstruction(): Instruction =

@@ -1,8 +1,8 @@
 package dev.danzou.advent22.kotlin
 
-import dev.danzou.advent.utils.AdventTestRunner
+import dev.danzou.advent22.AdventTestRunner22
 
-internal class Day2 : AdventTestRunner() {
+internal class Day2 : AdventTestRunner22() {
     override fun part1(input: String): Number {
         fun getScore(opponent: String, you: String): Int {
             val scores = mapOf("X" to 1, "Y" to 2, "Z" to 3)

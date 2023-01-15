@@ -1,11 +1,11 @@
 package dev.danzou.advent22.kotlin
 
-import dev.danzou.advent.utils.AdventTestRunner
 import dev.danzou.advent.utils.Node
 import dev.danzou.advent.utils.geometry.toPair
+import dev.danzou.advent22.AdventTestRunner22
 import dev.danzou.advent22.kotlin.utils.FileNode
 
-internal class Day7 : AdventTestRunner() {
+internal class Day7 : AdventTestRunner22() {
     fun buildTree(input: String): Node<FileNode> {
         val fileTree: Node<FileNode> = Node(emptySet(), null, FileNode.Dir("/"))
         var cur = fileTree

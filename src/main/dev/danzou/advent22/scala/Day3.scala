@@ -1,8 +1,8 @@
 package dev.danzou.advent22.scala
 
-import dev.danzou.advent.utils.AdventTestRunner
+import dev.danzou.advent22.AdventTestRunner22
 
-class Day3 extends AdventTestRunner {
+class Day3 extends AdventTestRunner22 {
   private def priorityOf(char: Char): Int = {
     if (char.isUpper) char - 'A' + 27
     else char - 'a' + 1

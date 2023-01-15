@@ -1,13 +1,13 @@
 package dev.danzou.advent22.kotlin
 
-import dev.danzou.advent.utils.AdventTestRunner
 import dev.danzou.advent.utils.Pos
 import dev.danzou.advent.utils.geometry.Compass
 import dev.danzou.advent.utils.geometry.plus
+import dev.danzou.advent22.AdventTestRunner22
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-internal class Day23 : AdventTestRunner() {
+internal class Day23 : AdventTestRunner22() {
 
     val ORDER = listOf(
         listOf(Compass.NORTH, Compass.NORTHEAST, Compass.NORTHWEST),

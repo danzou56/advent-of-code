@@ -1,12 +1,12 @@
 package dev.danzou.advent22.kotlin
 
-import dev.danzou.advent.utils.AdventTestRunner
+import dev.danzou.advent22.AdventTestRunner22
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.lang.IllegalArgumentException
 
-internal class Day13 : AdventTestRunner() {
+internal class Day13 : AdventTestRunner22() {
 
     fun parse(input: String): List<Parser.Packet> =
         input.split("\n").filter { it.isNotEmpty() }.map { Parser.parse(Parser.tokenize(it)) }

@@ -1,9 +1,9 @@
 package dev.danzou.advent22.kotlin
 
-import dev.danzou.advent.utils.AdventTestRunner
 import dev.danzou.advent.utils.geometry.minus
 import dev.danzou.advent.utils.geometry.plus
 import dev.danzou.advent.utils.geometry.toPair
+import dev.danzou.advent22.AdventTestRunner22
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import kotlin.math.absoluteValue
@@ -11,7 +11,7 @@ import kotlin.math.absoluteValue
 typealias Knot = Pair<Int, Int>
 typealias Rope = List<Knot>
 
-internal class Day9 : AdventTestRunner() {
+internal class Day9 : AdventTestRunner22() {
 
     /**
      * Returns new tail knot given new head knot
