@@ -10,7 +10,7 @@ abstract class AdventTestRunner(private val year: Int) {
     private val day: Int
         get() = this.javaClass.simpleName.drop(3).toInt()
 
-    private val DATA_ROOT = "src/resources/dev/danzou"
+    private val DATA_ROOT = "src/main/resources/dev/danzou"
     private val basePath = "$DATA_ROOT/advent$year"
 
     private val input: String = readFileLines(
