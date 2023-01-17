@@ -17,14 +17,13 @@ internal class Day14 : AdventTestRunner22() {
 
     data class Cave(val bounds: IntRange, val sand: Sand, val wall: Wall) {
 
-        fun withSand(sand: Sand): Cave = Cave(bounds, sand.withDefault { false }, wall)
-
+        // TODO get rid of immutable map cuz it so slow
         tailrec fun addSandAt(p: Point): Cave? {
             if (sand.getValue(p)) return null
             if (p.y !in bounds) return null
             val nextMoves = listOf(0, -1, 1).map { p + Pair(it, 1) }
             val nextMove = nextMoves.firstOrNull { move -> !sand.getValue(move) && !wall.getValue(move) }
-            return if (nextMove == null) this.withSand(sand + mapOf(p to true))
+            return if (nextMove == null) this.copy(sand = (sand + mapOf(p to true)).withDefault { false })
             else addSandAt(nextMove)
         }
 

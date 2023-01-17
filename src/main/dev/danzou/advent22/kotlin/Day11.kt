@@ -14,9 +14,6 @@ internal class Day11 : AdventTestRunner22() {
         val divisor: Long,
         val test: (Boolean) -> Int,
     ) {
-        fun withItems(items: List<Item>) : Monkey =
-            Monkey(items, operation, divisor, test)
-
         override fun toString(): String {
             return "Monkey(items=$items)"
         }
@@ -68,8 +65,8 @@ internal class Day11 : AdventTestRunner22() {
                     val destI = monkey.test(worry % monkey.divisor == 0L)
                     Pair(
                         monkeys.mapIndexed { curI, monkey -> when (curI) {
-                            destI -> monkey.withItems(monkey.items + Item(worry))
-                            srcI -> monkey.withItems(monkey.items.drop(1))
+                            destI -> monkey.copy(items = monkey.items + Item(worry))
+                            srcI -> monkey.copy(items = monkey.items.drop(1))
                             else -> monkey
                         } },
                         count.update(srcI, count[srcI] + 1)
