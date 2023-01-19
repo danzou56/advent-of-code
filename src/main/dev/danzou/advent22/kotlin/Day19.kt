@@ -52,17 +52,7 @@ internal class Day19 : AdventTestRunner22() {
         val obsidianRobot: Robot.ObsidianRobot,
         val geodeRobot: Robot.GeodeRobot
     ) {
-
-        val combinations: Set<Set<Robot>> = run {
-            fun <T> generateCombinations(elements: Collection<T>, current: Set<T>, num: Int): Set<Set<T>> {
-                require(num <= elements.size)
-                if (elements.isEmpty() || num == 0) return setOf(current)
-                return elements.flatMap { generateCombinations(elements - it, current + it, num - 1) }.toSet()
-            }
-
-            val robots = listOf(oreRobot, clayRobot, obsidianRobot, geodeRobot)
-            (0..1).flatMap { generateCombinations(robots, emptySet(), it) }.toSet()
-        }
+        val robots = setOf(oreRobot, clayRobot, obsidianRobot, geodeRobot)
 
         companion object {
             fun fromString(line: String): Blueprint {
@@ -99,25 +89,27 @@ internal class Day19 : AdventTestRunner22() {
             _geodes = _geodes + geodeRobots
         )
 
-        fun getNextFactories(): Set<Factory> =
-            blueprint.combinations
+        fun getNextFactories(): Set<Factory> {
+            val collected = this.collect()
+            val nextFactories = blueprint.robots
                 .filter { this.canCollect(it) }
                 .map {
-                        this.collect().run { this.copy(
-                            ore = this.ore - it.sumOf { it.ore },
-                            oreRobots = this.oreRobots + it.contains(blueprint.oreRobot).compareTo(false),
-                            clay = this.clay - it.sumOf { it.clay },
-                            clayRobots = this.clayRobots + it.contains(blueprint.clayRobot).compareTo(false),
-                            obsidian = this.obsidian - it.sumOf { it.obsidian },
-                            obsidianRobots = this.obsidianRobots + it.contains(blueprint.obsidianRobot).compareTo(false),
-                            geodeRobots = this.geodeRobots + it.contains(blueprint.geodeRobot).compareTo(false),
-                        ) }
-                    }.toSet()
+                    collected.copy(
+                        ore = collected.ore - it.ore,
+                        oreRobots = collected.oreRobots + (it is Robot.OreRobot).compareTo(false),
+                        clay = collected.clay - it.clay,
+                        clayRobots = collected.clayRobots + (it is Robot.ClayRobot).compareTo(false),
+                        obsidian = collected.obsidian - it.obsidian,
+                        obsidianRobots = collected.obsidianRobots + (it is Robot.ObsidianRobot).compareTo(false),
+                        geodeRobots = collected.geodeRobots + (it is Robot.GeodeRobot).compareTo(false)
+                    )
+                } + collected
 
-        fun canCollect(robots: Set<Robot>): Boolean =
-            robots.fold(Triple(0, 0, 0)) { (ore, clay, obsidian), robot ->
-                Triple(ore + robot.ore, clay + robot.clay, obsidian + robot.obsidian)
-            }.let { (ore, clay, obsidian) -> this.ore >= ore && this.clay >= clay && this.obsidian >= obsidian }
+            return nextFactories.toSet()
+        }
+
+        fun canCollect(robot: Robot): Boolean =
+            this.ore >= robot.ore && this.clay >= robot.clay && this.obsidian >= robot.obsidian
 
         override fun toString(): String =
             "Factory(ore=$ore, clay=$clay, obsidian=$obsidian, geode=$_geodes)"
