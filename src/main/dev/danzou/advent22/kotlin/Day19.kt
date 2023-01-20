@@ -88,7 +88,7 @@ internal class Day19 : AdventTestRunner22() {
             _geodes = _geodes + geodeRobots
         )
 
-        fun getNextFactories(): Set<Factory> {
+        fun getNextFactories(): List<Factory> {
             val collected = this.collect()
             val nextFactories = blueprint.robots
                 .filter { this.canMake(it) }
@@ -104,7 +104,7 @@ internal class Day19 : AdventTestRunner22() {
                     )
                 } + collected
 
-            return nextFactories.toSet()
+            return nextFactories
         }
 
         fun canMake(robot: Robot): Boolean =
