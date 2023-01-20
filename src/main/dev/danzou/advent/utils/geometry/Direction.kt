@@ -7,6 +7,9 @@ enum class Direction(val dir: Pos) {
     RIGHT(Pos(1, 0)),
     DOWN(Pos(0, -1)),
     UP(Pos(0, 1));
+
+    val invDir
+        get() = Pos(dir.first, dir.second * -1)
 }
 
 enum class Compass(val dir: Pos) {
