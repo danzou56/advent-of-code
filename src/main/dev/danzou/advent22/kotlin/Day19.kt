@@ -125,16 +125,12 @@ internal class Day19 : AdventTestRunner22() {
         companion object {
             fun runForMinutes(factory: Factory, time: Int): Set<Factory> =
                 (0 until time).fold(setOf(factory)) { factories, i ->
-//                    print("${i + 1}: ")
-//                    println(factories.size)
                     factories
                         .flatMap { it.getNextFactories() }
                         .let { next ->
                             val max = next.maxOf { it.geodes }
                             next.filter { it.geodes == max }
-                        }.toSet().also {
-//                            println(it)
-                        }
+                        }.toSet()
                 }
         }
     }
