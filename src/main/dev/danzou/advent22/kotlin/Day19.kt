@@ -80,7 +80,6 @@ internal class Day19 : AdventTestRunner22() {
     ) {
         val geodes: Int
             get() = _geodes
-        private val oreThreshold = 8 // double the max,,,
 
         fun collect(): Factory = copy(
             ore = ore + oreRobots,
@@ -92,7 +91,7 @@ internal class Day19 : AdventTestRunner22() {
         fun getNextFactories(): Set<Factory> {
             val collected = this.collect()
             val nextFactories = blueprint.robots
-                .filter { this.canCollect(it) }
+                .filter { this.canMake(it) }
                 .map {
                     collected.copy(
                         ore = collected.ore - it.ore,
@@ -108,7 +107,7 @@ internal class Day19 : AdventTestRunner22() {
             return nextFactories.toSet()
         }
 
-        fun canCollect(robot: Robot): Boolean =
+        fun canMake(robot: Robot): Boolean =
             this.ore >= robot.ore && this.clay >= robot.clay && this.obsidian >= robot.obsidian
 
         override fun toString(): String =
@@ -130,7 +129,6 @@ internal class Day19 : AdventTestRunner22() {
     override fun part1(input: String): Any {
         val factories = input.split("\n").map { Factory(Blueprint.fromString(it)) }
         val qualities = factories.mapIndexed { i, factory ->
-            println(i)
             (i + 1) * Factory.runForMinutes(factory, 24).maxOf { it.geodes }
         }
         return qualities.sum()
@@ -139,7 +137,6 @@ internal class Day19 : AdventTestRunner22() {
     override fun part2(input: String): Any {
         val factories = input.split("\n").take(3).map { Factory(Blueprint.fromString(it)) }
         val qualities = factories.mapIndexed { i, factory ->
-            println(i)
             Factory.runForMinutes(factory, 32).maxOf { it.geodes }
         }
         return qualities.reduce(Int::times)
