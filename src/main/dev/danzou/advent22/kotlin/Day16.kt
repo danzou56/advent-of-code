@@ -43,7 +43,43 @@ internal class Day16 : AdventTestRunner22() {
     }
 
     override fun part1(input: String): Any {
-        TODO("Not yet implemented")
+        val limit = 30
+        val volcano = Volcano.fromString(input)
+        val costCeiling = volcano.valves.map { limit * it.value }.max()
+        val openable = volcano.valves.filter { it.value > 0 }.keys
+
+        val path = doDijkstras(
+            init = Triple(0, Valve("AA"), emptySet<Valve>()),
+            target = { (t, _, opened) -> t >= limit || opened == openable },
+            getNeighbors = { (t, valve, opened) ->
+                when {
+                    valve !in opened && volcano.valves[valve]!! > 0 ->
+                        setOf(Triple(t + 1, valve, opened + valve))
+                    else ->
+                        volcano.tunnels[valve]!!.map { Triple(t + 1, it, opened) }.toSet()
+                }
+            },
+            getCost = { (t, valve0, opened0), (t1, valve1, opened1) ->
+                require(t + 1 == t1)
+                when {
+                    valve0 == valve1 && valve0 !in opened0 && valve1 in opened1 ->
+                        costCeiling - volcano.valves[valve0]!! * (limit - t)
+                    else -> {
+                        require(
+                            valve0 in opened0 && volcano.valves[valve0]!! > 0 ||
+                            valve0 !in opened0 && volcano.valves[valve0]!! == 0
+                        )
+                        costCeiling
+                    }
+                }
+            }
+        )
+
+        val valves = path.map { it.second }
+        assert(valves.isNotEmpty())
+        return volcano.pressureReleasedFrom(
+            (valves + List(limit - valves.size + 1) { valves.last() })
+        )
     }
 
     override fun part2(input: String): Any {
