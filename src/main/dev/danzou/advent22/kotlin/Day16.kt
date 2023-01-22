@@ -26,6 +26,24 @@ internal class Day16 : AdventTestRunner22() {
             }.first.dropLast(1).sum()
         }
 
+        fun pressureReleasedFrom(path: List<Valve>, elephantPath: List<Valve>): Int {
+            return path.zip(elephantPath).windowed(2)
+                .fold(Pair(listOf(0), emptySet<Valve>())) { (pressures, opened), (prev, next) ->
+                    var pressure = pressures.last()
+                    val valvesOpened = mutableSetOf<Valve>()
+                    if (prev.first == next.first && prev.first !in opened) {
+                        pressure += valves[prev.first]!!
+                        valvesOpened += prev.first
+                    }
+                    if (prev.second == next.second && prev.second !in opened) {
+                        pressure += valves[prev.second]!!
+                        valvesOpened += prev.second
+                    }
+
+                    Pair(pressures + pressure, opened + valvesOpened)
+                }.first.dropLast(1).sum()
+        }
+
         companion object {
             fun fromString(input: String): Volcano {
                 val entries = input.split("\n")
@@ -100,6 +118,18 @@ internal class Day16 : AdventTestRunner22() {
         assertEquals(31, expectedPath.size)
         assertEquals(1651, volcano.pressureReleasedFrom(expectedPath))
 
+        val selfPath = """
+            AA,II,JJ,JJ,II,AA,BB,BB,CC,CC
+        """.trimIndent().split(",").map { Valve(it) }
+        val elephantPath = """
+            AA,DD,DD,EE,FF,GG,HH,HH,GG,FF,EE,EE
+        """.trimIndent().split(",").map { Valve(it) }
+        assertEquals(1707, volcano.pressureReleasedFrom(
+            (selfPath + List(26 - selfPath.size + 1) { selfPath.last() }),
+            (elephantPath + List(26 - elephantPath.size + 1) { elephantPath.last() })
+        ))
+
         assertEquals(1651, part1(input))
+        assertEquals(1707, part2(input))
     }
 }
