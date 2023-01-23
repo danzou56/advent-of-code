@@ -92,7 +92,64 @@ internal class Day16 : AdventTestRunner22() {
     }
 
     override fun part2(input: String): Any {
-        TODO("Not yet implemented")
+        val limit = 26
+        val volcano = Volcano.fromString(input)
+        val costCeiling = volcano.valves.map { limit * it.value }.max()
+        val openable = volcano.valves.filter { it.value > 0 }.keys
+
+        data class State(val time: Int, val selfValve: Valve, val elephantValve: Valve, val opened: Set<Valve>) {
+            override fun equals(other: Any?): Boolean =
+                this === other || when (other) {
+                    is State -> (this.selfValve == other.selfValve && this.elephantValve == other.elephantValve || this.selfValve == other.elephantValve && this.elephantValve == other.selfValve) && this.time == other.time && this.opened == other.opened
+                    else -> false
+                }
+
+            override fun hashCode(): Int {
+                var result = time
+                result = 31 * result + selfValve.hashCode() * elephantValve.hashCode()
+                result = 31 * result + opened.hashCode()
+                return result
+            }
+        }
+
+        operator fun <T, U> Collection<T>.times(other: Collection<U>): Set<Pair<T, U>> =
+            this.flatMap { l -> other.map { r -> l to r } }.toSet()
+
+        val path = doDijkstras(
+            init = State(0, Valve("AA"), Valve("AA"), emptySet<Valve>()),
+            target = { (t, _, _, opened) -> t >= limit || opened == openable },
+            getNeighbors = { (t, selfValve, elephantValve, opened) ->
+                val selfStates = if (selfValve !in opened && volcano.valves[selfValve]!! > 0)
+                    setOf(Pair(selfValve, opened + selfValve))
+                else 
+                    volcano.tunnels[selfValve]!!.map { Pair(it, opened) }.toSet()
+                val elephantStates = if (elephantValve !in opened && volcano.valves[elephantValve]!! > 0)
+                    setOf(Pair(elephantValve, opened + elephantValve))
+                else
+                    volcano.tunnels[elephantValve]!!.map { Pair(it, opened) }.toSet()
+                (selfStates * elephantStates)
+                    .map { (self, elephant) -> State(t + 1, self.first, elephant.first, self.second + elephant.second) }
+                    .toSet()
+            },
+            getCost = { prev, next ->
+                require(prev.time + 1 == next.time)
+                val selfCost = if (prev.selfValve == next.selfValve)
+                    costCeiling - volcano.valves[prev.selfValve]!! * (limit - prev.time)
+                else costCeiling
+                val elephantCost = if (prev.elephantValve == next.elephantValve && (prev.elephantValve != prev.selfValve && prev.elephantValve != next.selfValve))
+                    costCeiling - volcano.valves[prev.elephantValve]!! * (limit - prev.time)
+                else costCeiling
+                selfCost + elephantCost
+            }
+        )
+
+        val selfValves = path.map { it.selfValve }
+        val elephantValves = path.map { it.elephantValve }
+        assert(selfValves.isNotEmpty())
+        return volcano.pressureReleasedFrom(
+            (selfValves + List(limit - selfValves.size + 1) { selfValves.last() }),
+            (elephantValves + List(limit - elephantValves.size + 1) { elephantValves.last() })
+        )
     }
 
     @Test
@@ -117,6 +174,7 @@ internal class Day16 : AdventTestRunner22() {
 
         assertEquals(31, expectedPath.size)
         assertEquals(1651, volcano.pressureReleasedFrom(expectedPath))
+        assertEquals(1651, part1(input))
 
         val selfPath = """
             AA,II,JJ,JJ,II,AA,BB,BB,CC,CC
@@ -124,12 +182,11 @@ internal class Day16 : AdventTestRunner22() {
         val elephantPath = """
             AA,DD,DD,EE,FF,GG,HH,HH,GG,FF,EE,EE
         """.trimIndent().split(",").map { Valve(it) }
+
         assertEquals(1707, volcano.pressureReleasedFrom(
             (selfPath + List(26 - selfPath.size + 1) { selfPath.last() }),
             (elephantPath + List(26 - elephantPath.size + 1) { elephantPath.last() })
         ))
-
-        assertEquals(1651, part1(input))
         assertEquals(1707, part2(input))
     }
 }
