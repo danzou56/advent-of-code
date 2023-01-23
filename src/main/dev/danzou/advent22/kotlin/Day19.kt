@@ -29,7 +29,7 @@ internal class Day19 : AdventTestRunner22() {
         class GeodeRobot(ore: Int, obsidian: Int) : Robot(Material.Geode, ore = ore, obsidian = obsidian)
 
         override fun equals(other: Any?): Boolean =
-            when (other) {
+            this === other || when (other) {
                 is Robot -> this.produces == other.produces
                         && this.ore == other.ore
                         && this.clay == other.clay
