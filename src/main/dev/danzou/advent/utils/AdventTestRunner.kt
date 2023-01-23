@@ -8,9 +8,9 @@ import java.nio.file.Path
 import java.time.Duration
 import kotlin.test.assertEquals
 
-abstract class AdventTestRunner(private val year: Int) {
-    private val day: Int
-        get() = this.javaClass.simpleName.drop(3).toInt()
+abstract class AdventTestRunner(protected val year: Int) {
+    protected val day: Int
+        get() = this.javaClass.simpleName.drop(3).takeWhile(Char::isDigit).toInt()
 
     protected val timeout: Duration = Duration.ofSeconds(60)
     private val DATA_ROOT = "src/main/resources/dev/danzou"
