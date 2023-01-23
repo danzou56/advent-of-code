@@ -32,8 +32,7 @@ internal class Day12 : AdventTestRunner22() {
                 matrix.getNeighboringPos(cur.first, cur.second).filter { next ->
                     matrix[next] <= matrix[cur] + 1
                 }.toSet()
-            },
-            { _, _ -> 1 }
+            }
         )
 
         return path.size - 1
@@ -50,8 +49,7 @@ internal class Day12 : AdventTestRunner22() {
                     matrix.getNeighboringPos(cur.first, cur.second).filter { next ->
                         matrix[next] <= matrix[cur] + 1
                     }.toSet()
-                },
-                { _, _ -> 1 }
+                }
             )
         }
 
