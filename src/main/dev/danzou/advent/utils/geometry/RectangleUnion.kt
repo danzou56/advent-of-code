@@ -6,18 +6,26 @@ import kotlin.math.min
 
 internal typealias Rect = Pair<Point, Point>
 
-open class RectangleUnion(rectangles: List<Rect>) : Polygon {
+open class RectangleUnion private constructor(protected val _rectangles: List<Rect>, height: Int, width: Int, pos: Pos) : Polygon(height, width, pos) {
+//open class RectangleUnion(rectangles: List<Rect>) : Polygon {
     // rectangles are sorted by their highest point
     // pieces on top of stack are first
-    protected val _rectangles = rectangles.sortedByDescending { it.upper(1) }
-    override val height = 1 + _rectangles.maxOf { it.upper(1) } - _rectangles.minOf { it.lower(1) }
-    override val width = 1 + _rectangles.maxOf { it.upper(0) } - _rectangles.minOf { it.lower(0) }
-    override val pos = Pos(
-        _rectangles.minOf { it.lower(0) },
-        _rectangles.minOf { it.lower(1) },
-    )
+//    protected val _rectangles = rectangles.sortedByDescending { it.upper(1) }
+//    override val height = 1 + _rectangles.maxOf { it.upper(1) } - _rectangles.minOf { it.lower(1) }
+//    override val width = 1 + _rectangles.maxOf { it.upper(0) } - _rectangles.minOf { it.lower(0) }
+//    override val pos = Pos(
+//        _rectangles.minOf { it.lower(0) },
+//        _rectangles.minOf { it.lower(1) },
+//    )
+    var components = 1
 
     constructor(rectangle: Rect) : this(listOf(rectangle))
+    constructor(rectangles: List<Rect>) : this(
+        rectangles,
+        1 + rectangles.maxOf { max(it.first.y, it.second.y) } - rectangles.minOf { min(it.first.y, it.second.y) },
+        1 + rectangles.maxOf { max(it.first.x, it.second.x) } - rectangles.minOf { min(it.first.x, it.second.x) },
+        Pos(rectangles.minOf { min(it.first.x, it.second.x) }, rectangles.minOf { min(it.first.y, it.second.y) })
+    )
 
     companion object {
         fun fromRectangles(rectangles: List<Rectangle>): RectangleUnion =
@@ -35,13 +43,11 @@ open class RectangleUnion(rectangles: List<Rect>) : Polygon {
         TODO("Not yet implemented")
     }
 
-    override fun isDisjointFrom(other: Polygon): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun isDisjointFrom(other: Polygon): Boolean = !intersects(other)
 
     override fun intersects(other: Polygon): Boolean =
         when (other) {
-            is RectangleUnion -> this._rectangles.asReversed().any { thisRect ->
+            is RectangleUnion -> this._rectangles.any { thisRect ->
                 other._rectangles.any { otherRect ->
                     thisRect.intersects(otherRect)
                 }
@@ -52,7 +58,7 @@ open class RectangleUnion(rectangles: List<Rect>) : Polygon {
 
     override fun union(other: Polygon): Polygon =
         when (other) {
-            is RectangleUnion -> RectangleUnion(_rectangles + other._rectangles)
+            is RectangleUnion -> RectangleUnion(_rectangles + other._rectangles).also { it.components = this.components + 1 }
             is EmptyPolygon -> this
             else -> throw NotImplementedError()
         }
