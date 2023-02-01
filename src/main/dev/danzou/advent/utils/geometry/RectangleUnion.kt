@@ -84,6 +84,13 @@ open class RectangleUnion private constructor(protected val _rectangles: List<Re
             Pair(this.upper(0), this.upper(1)),
         )
 
+    fun points(): Set<Point> =
+        _rectangles.flatMap {
+            (it.lower(0)..it.upper(0)).flatMap { x ->
+                (it.lower(1)..it.upper(1)).map { y -> Point(x, y) }
+            }
+        }.toSet()
+
     @JvmName("containsPoint")
     protected fun Rect.contains(p: Point): Boolean =
         !(0 until DIMENSION).any { dim ->

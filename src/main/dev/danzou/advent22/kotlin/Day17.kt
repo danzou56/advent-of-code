@@ -1,47 +1,81 @@
 package dev.danzou.advent22.kotlin
 
-import dev.danzou.advent.utils.*
+import dev.danzou.advent.utils.Point
+import dev.danzou.advent.utils.Pos
 import dev.danzou.advent.utils.geometry.*
+import dev.danzou.advent.utils.x
+import dev.danzou.advent.utils.y
 import dev.danzou.advent22.AdventTestRunner22
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import kotlin.math.max
-
-typealias Piece = RectangleUnion
 
 class Day17 : AdventTestRunner22() {
 
     enum class Go(val dir: Direction) {
         LEFT(Direction.LEFT), RIGHT(Direction.RIGHT);
+
+        val posDir: Pos
+            get() = this.dir.dir
     }
 
-    enum class BasePiece(val baseShape: RectangleUnion) {
-        Horizontal(Rectangle(Point(0, 0), Point(3, 0))),
-        Vertical(Rectangle(Point(0, 0), Point(0, 3))),
-        Plus(RectangleUnion.fromRectangles(
+    open class Shape(val points: Set<Point>) {
+        constructor(rectangleUnion: RectangleUnion) : this(rectangleUnion.points())
+        constructor() : this(emptySet())
+
+        object Horizontal : Shape(Rectangle(Point(0, 0), Point(3, 0)))
+        object Vertical : Shape(Rectangle(Point(0, 0), Point(0, 3)))
+        object Plus : Shape(
+            RectangleUnion.fromRectangles(
                 Rectangle(Point(0, 1), Point(2, 1)),
                 Rectangle(Point(1, 0), Point(1, 2)),
-        )),
-        RightL(RectangleUnion.fromRectangles(
-            Rectangle(Point(0, 0), Point(2, 0)),
-            Rectangle(Point(2, 0), Point(2, 2)),
-        )),
-//        LeftL(),
-        Square(Rectangle(Point(0, 0), Point(1, 1))),
+            )
+        )
+
+        object RightL : Shape(
+            RectangleUnion.fromRectangles(
+                Rectangle(Point(0, 0), Point(2, 0)),
+                Rectangle(Point(2, 0), Point(2, 2)),
+            )
+        )
+
+        object Square : Shape(Rectangle(Point(0, 0), Point(1, 1)))
+
+        operator fun plus(p: Point): Shape =
+            Shape(this.points.map { it + p }.toSet())
+
+        operator fun plus(s: Shape): Shape =
+            Shape(this.points + s.points)
+
+        operator fun contains(p: Point): Boolean =
+            p in points
+
+        fun move(direction: Direction, considering: Shape): Result<Shape> {
+            val movement = this + direction.dir
+            return if (canMove(direction, considering)) Result.success(movement)
+            else Result.failure(IllegalStateException())
+        }
+
+        fun canMove(direction: Direction, considering: Shape): Boolean =
+            (this + direction.dir).isValid(considering)
+
+        fun isValid(considering: Shape = Shape()): Boolean =
+            this.points.all { p ->
+                p.x in 0..6 && p.y >= 0 && p !in considering
+            }
     }
 
-    class PieceIterator(private val limit: Int) : Iterator<BasePiece> {
+    class PieceIterator(private val limit: Int) : Iterator<Shape> {
          private val pieceSequence = arrayOf(
-            BasePiece.Horizontal,
-            BasePiece.Plus,
-            BasePiece.RightL,
-            BasePiece.Vertical,
-            BasePiece.Square
+            Shape.Horizontal,
+            Shape.Plus,
+            Shape.RightL,
+            Shape.Vertical,
+            Shape.Square
         )
         private var cur = 0
 
         override fun hasNext(): Boolean = cur <= limit
-        override fun next(): BasePiece = pieceSequence[cur++.also { /*println(cur)*/ } % pieceSequence.size]
+        override fun next(): Shape = pieceSequence[cur++.also { /*println(cur)*/ } % pieceSequence.size]
     }
 
     class DirectionIterator(private val directions: List<Go>) : Iterator<Direction> {
@@ -57,20 +91,6 @@ class Day17 : AdventTestRunner22() {
         }
     }
 
-    val cave = object : Rectangle(Pos(0, 0), Pos(6, 6)) {
-        private var _height = 7
-        override val height: Int
-            get() = _height
-
-        override fun contains(p: Pos): Boolean {
-            _height = max(_height, p.y)
-            return p.y >= 0 && p.x in 0 until width
-        }
-
-        override fun contains(other: Polygon): Boolean =
-            this.contains(other.pos) && this.contains(other.pos + other.size - Pos(1, 1))
-    }
-
     fun parseInput(input: String): List<Go> =
         input.map { when(it) {
             '<' -> Go.LEFT
@@ -78,41 +98,33 @@ class Day17 : AdventTestRunner22() {
             else -> throw IllegalArgumentException()
         } }
 
-    fun drop(piece: BasePiece): RectangleUnion = piece.baseShape
-    infix fun RectangleUnion.at(p: Pos): RectangleUnion = this + p
-    infix fun RectangleUnion.onto(stack: Polygon): RectangleUnion {
-        TODO()
-    }
-
     fun run(limit: Int, gos: List<Go>): Int {
         val pieces = PieceIterator(limit)
         val directions = DirectionIterator(gos)
-        tailrec fun step(stack: Polygon, piece: RectangleUnion): Polygon {
-            printStack(stack.union(piece) as RectangleUnion)
-//            if (stack.height == 3068) return stack
-            if (!pieces.hasNext()) return stack
-            val movedHorizontally = (piece + directions.next().dir).let {
-                if (cave.contains(it) && !stack.intersects(it)) it
-                else piece
-            }
-            val verticalMove = movedHorizontally + Direction.DOWN.dir
-            val canMoveDown = cave.contains(verticalMove) && !stack.intersects(verticalMove)
 
-            if (!canMoveDown) {
-                val newStack = stack.union(movedHorizontally)
-//                println("Previous piece dropped at ${movedHorizontally.pos}")
-                val nextPiece = drop(pieces.next().also { /*print(it.name)*/ }) at Pos(2, newStack.height + 3)
-//                println(" dropping at ${nextPiece.pos}")
-                return step(newStack, nextPiece)
+        tailrec fun step(stack: Shape, piece: Shape): Shape {
+//            printStack(stack + piece)
+            if (!pieces.hasNext()) return stack
+
+            val movedLeftRight = piece.move(directions.next(), stack)
+                .getOrDefault(piece)
+            val movedDownResult = movedLeftRight.move(Direction.DOWN, stack)
+            val movedDown = movedDownResult
+                .getOrDefault(movedLeftRight)
+
+            return if (movedDownResult.isFailure) {
+                val newStack = stack + movedDown
+                step(
+                    newStack,
+                    pieces.next() + Pos(2, newStack.points.maxOf { it.y } + 3 + 1)
+                )
             } else {
-                return step(stack, verticalMove)
+                step(stack, movedDown)
             }
         }
 
-        val stack = step(EmptyPolygon(), drop(pieces.next()) at Pos(2, 3))
-        println((stack as RectangleUnion).components)
-        assert((stack as RectangleUnion).components == limit)
-        return stack.height
+        val stack = step(Shape(emptySet()), pieces.next() + Pos(2, 3))
+        return stack.points.maxOf { it.y } + 1
     }
 
     override fun part1(input: String): Any {
@@ -125,6 +137,12 @@ class Day17 : AdventTestRunner22() {
     }
 
     @Test
+    fun testShape() {
+        val horizontal = Shape.Horizontal
+        assertEquals(setOf(Point(0, 0), Point(1, 0), Point(2, 0), Point(3, 0)), horizontal.points)
+    }
+
+    @Test
     fun testExample() {
         val input = """
             >>><<><>><<<>><>>><<<>>><<<><<<>><>><<>>
@@ -134,7 +152,7 @@ class Day17 : AdventTestRunner22() {
         assertEquals(3068, part1(input))
     }
 
-    fun printStack(stack: RectangleUnion) {
+    fun printStack(stack: Shape) {
         return
         var level = 0
         val res = mutableListOf("+-------+")
