@@ -13,14 +13,10 @@ class Day17 : AdventTestRunner22() {
 
     enum class Go(val dir: Direction) {
         LEFT(Direction.LEFT), RIGHT(Direction.RIGHT);
-
-        val posDir: Pos
-            get() = this.dir.dir
     }
 
     open class Shape(val points: Set<Point>) {
         constructor(rectangleUnion: RectangleUnion) : this(rectangleUnion.points())
-        constructor() : this(emptySet())
 
         object Horizontal : Shape(Rectangle(Point(0, 0), Point(3, 0)))
         object Vertical : Shape(Rectangle(Point(0, 0), Point(0, 3)))
@@ -56,12 +52,10 @@ class Day17 : AdventTestRunner22() {
         }
 
         fun canMove(direction: Direction, considering: Shape): Boolean =
-            (this + direction.dir).isValid(considering)
-
-        fun isValid(considering: Shape = Shape()): Boolean =
-            this.points.all { p ->
+            (this + direction.dir).points.all { p ->
                 p.x in 0..6 && p.y >= 0 && p !in considering
             }
+
     }
 
     class PieceIterator(private val limit: Int) : Iterator<Shape> {
@@ -75,7 +69,7 @@ class Day17 : AdventTestRunner22() {
         private var cur = 0
 
         override fun hasNext(): Boolean = cur <= limit
-        override fun next(): Shape = pieceSequence[cur++.also { /*println(cur)*/ } % pieceSequence.size]
+        override fun next(): Shape = pieceSequence[cur++ % pieceSequence.size]
     }
 
     class DirectionIterator(private val directions: List<Go>) : Iterator<Direction> {
@@ -86,7 +80,6 @@ class Day17 : AdventTestRunner22() {
 
         override fun hasNext(): Boolean = true
         override fun next(): Direction {
-//            if (cur == 0) println("hit end")
             return directions[cur++].dir
         }
     }
@@ -103,7 +96,6 @@ class Day17 : AdventTestRunner22() {
         val directions = DirectionIterator(gos)
 
         tailrec fun step(stack: Shape, piece: Shape): Shape {
-//            printStack(stack + piece)
             if (!pieces.hasNext()) return stack
 
             val movedLeftRight = piece.move(directions.next(), stack)
@@ -137,12 +129,6 @@ class Day17 : AdventTestRunner22() {
     }
 
     @Test
-    fun testShape() {
-        val horizontal = Shape.Horizontal
-        assertEquals(setOf(Point(0, 0), Point(1, 0), Point(2, 0), Point(3, 0)), horizontal.points)
-    }
-
-    @Test
     fun testExample() {
         val input = """
             >>><<><>><<<>><>>><<<>>><<<><<<>><>><<>>
@@ -152,17 +138,4 @@ class Day17 : AdventTestRunner22() {
         assertEquals(3068, part1(input))
     }
 
-    fun printStack(stack: Shape) {
-        return
-        var level = 0
-        val res = mutableListOf("+-------+")
-        while (res.size < 5 || !res.take(4).all { it == "|.......|" }) {
-            res.add(0, "|" + (0..6).map {
-                if (stack.contains(Pos(it, level))) '#'
-                else '.'
-            }.joinToString("") + "|")
-            level++
-        }
-        println(res.joinToString("\n"))
-    }
 }
