@@ -29,7 +29,7 @@ internal class Day12 : AdventTestRunner22() {
             start,
             { it == end },
             { cur ->
-                matrix.getNeighboringPos(cur.first, cur.second).filter { next ->
+                matrix.neighboringPos(cur).filter { next ->
                     matrix[next] <= matrix[cur] + 1
                 }.toSet()
             }
@@ -46,7 +46,7 @@ internal class Day12 : AdventTestRunner22() {
                 start,
                 { it == end },
                 { cur ->
-                    matrix.getNeighboringPos(cur.first, cur.second).filter { next ->
+                    matrix.neighboringPos(cur).filter { next ->
                         matrix[next] <= matrix[cur] + 1
                     }.toSet()
                 }

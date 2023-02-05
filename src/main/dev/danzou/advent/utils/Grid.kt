@@ -27,17 +27,17 @@ fun List<Int>.toPoint(): Point = this.toPair()
 fun Pos.manhattanDistanceTo(other: Pos): Int =
     (this.first - other.first).absoluteValue + (this.second - other.second).absoluteValue
 
-fun <T> Matrix<T>.getNeighboring(p: Pos) =
-    this.getNeighboringPos(p).map { this[p] }
+fun <T> Matrix<T>.neighboring(p: Pos): List<T> =
+    this.neighboringPos(p).map { this[p] }
 
-fun <T> Matrix<T>.getNeighboring(i: Int, j: Int): List<T> =
-    this.getNeighboring(Pair(i, j))
+fun <T> Matrix<T>.neighboring(i: Int, j: Int): List<T> =
+    this.neighboring(Pair(i, j))
 
-fun <T> Matrix<T>.getNeighboringPos(p: Pos): List<Pos> =
+fun <T> Matrix<T>.neighboringPos(p: Pos): List<Pos> =
     cardinalDirections.map { it + p }.filter { this.containsPos(it) }
 
-fun <T> Matrix<T>.getNeighboringPos(i: Int, j: Int): List<Pos> =
-    this.getNeighboringPos(Pair(i, j))
+fun <T> Matrix<T>.neighboringPos(i: Int, j: Int): List<Pos> =
+    this.neighboringPos(Pair(i, j))
 
 fun <T> Matrix<T>.transpose(): Matrix<T> {
     // Make sure matrix isn't ragged
