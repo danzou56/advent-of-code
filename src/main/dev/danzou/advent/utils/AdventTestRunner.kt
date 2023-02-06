@@ -13,15 +13,17 @@ abstract class AdventTestRunner(protected val year: Int) {
         get() = this.javaClass.simpleName.drop(3).takeWhile(Char::isDigit).toInt()
 
     protected val timeout: Duration = Duration.ofSeconds(60)
-    private val DATA_ROOT = "src/main/resources/dev/danzou"
-    private val basePath = "$DATA_ROOT/advent$year"
+    private val dataRoot = "src/main/resources/dev/danzou"
+    private val basePath = "$dataRoot/advent$year"
+    protected val baseInputPath = "$basePath/inputs"
+    protected val baseOutputPath = "$basePath/outputs"
 
-    private val input: String = readFileLines(
-        "$basePath/inputs/day$day.in"
-    ).joinToString("\n")
+    private val input: String = readFileString(
+        "$baseInputPath/day$day.in"
+    )
 
     private val expected: List<String?> = readFileLines(
-        "$basePath/outputs/day$day.out"
+        "$baseOutputPath/day$day.out"
     ).let { lines ->
         if (lines.size <= 2) lines
         else listOf(lines.first(), lines.drop(1).joinToString("\n"))
@@ -62,5 +64,7 @@ abstract class AdventTestRunner(protected val year: Int) {
                 emptyList()
             }
         }
+
+        fun readFileString(name: String): String = readFileLines(name).joinToString("\n")
     }
 }
