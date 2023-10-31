@@ -54,7 +54,12 @@ abstract class AdventTestRunner(protected val year: Int) {
     companion object {
         fun readFileLines(name: String): List<String> {
             return try {
-                val lines = Files.readAllLines(Path.of(name))
+                val path = Path.of(name)
+                if (path.notExists()) {
+                    println("No such file $name; creating empty file")
+                    path.createFile()
+                }
+                val lines = Files.readAllLines(path)
                 if (lines.isEmpty() || lines[0].isEmpty())
                     throw IOException("Empty file!")
                 else lines
