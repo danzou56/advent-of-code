@@ -6,7 +6,7 @@ import dev.danzou.advent22.AdventTestRunner22
 
 internal class Day8 : AdventTestRunner22() {
     fun getMatrix(input: String): Matrix<Int> =
-        input.split("\n").map { it.map { it.toString().toInt() } }
+        input.split("\n").map { it.map { it.digitToInt() } }
 
     fun isVisibleInDir(matrix: Matrix<Int>, pos: Pair<Int, Int>, dir: Pair<Int, Int>): Boolean {
         val height = matrix[pos]
