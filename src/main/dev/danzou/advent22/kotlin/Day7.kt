@@ -38,7 +38,6 @@ internal class Day7 : AdventTestRunner22() {
         when (this.data) {
             is FileNode.Dir -> this.children.sumOf { it.getSize() }
             is FileNode.File -> this.data.size
-            else -> throw NotImplementedError()
         }
 
     override fun part1(input: String): Any {

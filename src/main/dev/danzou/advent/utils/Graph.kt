@@ -35,6 +35,19 @@ fun <T> findPaths(init: T, target: T, getNeighbors: NeighborFunction<T>): Set<Li
     return findPaths(init, emptyList())
 }
 
+fun <T> findPaths(init: T, target: T, getNeighbors: (T, List<T>) -> Set<T>): Set<List<T>> {
+    fun findPaths(cur: T, path: List<T>): Set<List<T>> {
+        if (cur == target) return setOf(path + cur)
+        return getNeighbors(cur, path)
+//            .filter { v -> v !in path }
+            .map { v -> findPaths(v, path + cur) }
+            .flatten()
+            .toSet()
+    }
+
+    return findPaths(init, emptyList())
+}
+
 /**
  * Computes the shortest path and shortest path cost using Dijkstras's
  * algorithm, returning that path, or an empty list or no such path exists
@@ -45,7 +58,12 @@ fun <T> findPaths(init: T, target: T, getNeighbors: NeighborFunction<T>): Set<Li
  * @param getCost
  * @return Shortest path or empty list if no such path exists
  */
-fun <T> doDijkstras(init: T, target: (T) -> Boolean, getNeighbors: NeighborFunction<T>, getCost: (T, T) -> Int = { _, _ -> 1 }): List<T> {
+fun <T> doDijkstras(
+    init: T,
+    target: (T) -> Boolean,
+    getNeighbors: NeighborFunction<T>,
+    getCost: (T, T) -> Int = { _, _ -> 1 }
+): List<T> {
     val costs = mutableMapOf(init to 0)
     // vertex is always in cost map so dereference is safe
     val queue = PriorityQueue(Comparator.comparingInt<T> { costs[it]!! })

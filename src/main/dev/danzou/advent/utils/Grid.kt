@@ -28,7 +28,7 @@ fun Pos.manhattanDistanceTo(other: Pos): Int =
     (this.first - other.first).absoluteValue + (this.second - other.second).absoluteValue
 
 fun <T> Matrix<T>.neighboring(p: Pos): List<T> =
-    this.neighboringPos(p).map { this[p] }
+    this.neighboringPos(p).map { this[it] }
 
 fun <T> Matrix<T>.neighboring(i: Int, j: Int): List<T> =
     this.neighboring(Pair(i, j))
