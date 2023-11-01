@@ -1,5 +1,7 @@
 package dev.danzou.advent22.kotlin
 
+import dev.danzou.advent.utils.AsciiArt
+import dev.danzou.advent.utils.AsciiArtFormat
 import dev.danzou.advent22.AdventTestRunner22
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -11,6 +13,7 @@ internal class Day10 : AdventTestRunner22() {
             when (instruction) {
                 is Instruction.AddX ->
                     CpuState(cycle + instruction.cycles, reg + instruction.value)
+
                 is Instruction.Noop ->
                     CpuState(cycle + instruction.cycles, reg)
             }
@@ -41,14 +44,19 @@ internal class Day10 : AdventTestRunner22() {
             }
         }.second
 
-    override fun part2(input: String): Any =
+    override fun part2(input: String): AsciiArt =
         parse(input).fold(Pair(CpuState(), "")) { (cpuState, crt), instruction ->
             cpuState.apply(instruction).let { newState ->
                 Pair(newState, (cpuState.cycle until newState.cycle).fold(crt) { crt, cycle ->
-                    crt + if (((cpuState.reg % 40) - (cycle % 40)).absoluteValue <= 1) "#" else "."
+                    crt.plus(
+                        if (((cpuState.reg % 40) - (cycle % 40)).absoluteValue <= 1) AsciiArtFormat.DEFAULT_OCCUPIED
+                        else AsciiArtFormat.DEFAULT_EMPTY
+                    )
                 })
             }
-        }.second.chunked(40).joinToString("\n")
+        }.second.chunked(40).joinToString("\n").let { art ->
+            AsciiArt(art)
+        }
 
 
     @Test
@@ -67,6 +75,6 @@ internal class Day10 : AdventTestRunner22() {
         """.trimIndent()
 
         assertEquals(13140, part1(input))
-        assertEquals(expectedCrt, part2(input))
+        assertEquals(expectedCrt, part2(input).art)
     }
 }

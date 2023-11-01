@@ -6,6 +6,8 @@ import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Duration
+import kotlin.io.path.createFile
+import kotlin.io.path.notExists
 import kotlin.test.assertEquals
 
 abstract class AdventTestRunner(protected val year: Int) {
@@ -41,14 +43,14 @@ abstract class AdventTestRunner(protected val year: Int) {
     fun testPart1() {
         val part1 = assertTimeoutPreemptively(timeout, ::part1)
         println(part1)
-        assertEquals(expected.getOrNull(0), part1.toString())
+        assertEqualAnswer(expected.getOrNull(0), part1)
     }
 
     @Test
     fun testPart2() {
         val part2 = assertTimeoutPreemptively(timeout, ::part2)
         println(part2)
-        assertEquals(expected.getOrNull(1), part2.toString())
+        assertEqualAnswer(expected.getOrNull(1), part2)
     }
 
     companion object {
@@ -71,5 +73,13 @@ abstract class AdventTestRunner(protected val year: Int) {
         }
 
         fun readFileString(name: String): String = readFileLines(name).joinToString("\n")
+
+        fun assertEqualAnswer(expected: String?, actual: Any?) {
+            when (actual) {
+                is AsciiArt -> if (actual.isText) assertEquals(expected, actual.text)
+                    else assertEquals(expected, actual.art)
+                else -> assertEquals(expected, actual.toString())
+            }
+        }
     }
 }
