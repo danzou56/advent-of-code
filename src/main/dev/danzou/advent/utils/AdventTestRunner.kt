@@ -10,7 +10,7 @@ import kotlin.io.path.createFile
 import kotlin.io.path.notExists
 import kotlin.test.assertEquals
 
-abstract class AdventTestRunner(protected val year: Int) {
+abstract class AdventTestRunner(protected val year: Int, protected val name: String? = null) {
     protected val day: Int
         get() = this.javaClass.simpleName.drop(3).takeWhile(Char::isDigit).toInt()
 
