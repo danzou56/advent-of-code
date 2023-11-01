@@ -11,6 +11,7 @@ class Graph<T>(val verticies: Set<Vertex<T>>, val edges: Map<Vertex<T>, VertexSe
 data class Vertex<T>(val name: T)
 typealias VertexSet<T> = Set<Vertex<T>>
 typealias NeighborFunction<T> = (T) -> Set<T>
+typealias CostFunction<T> = (T, T) -> Int
 
 fun <T> dfs(init: T, getNeighbors: NeighborFunction<T>): Set<T> {
     fun dfs(cur: T, discovered: Set<T>): Set<T> {
