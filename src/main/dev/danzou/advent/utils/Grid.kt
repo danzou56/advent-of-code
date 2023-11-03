@@ -1,5 +1,6 @@
 package dev.danzou.advent.utils
 
+import dev.danzou.advent.utils.geometry.Compass
 import dev.danzou.advent.utils.geometry.Direction
 import dev.danzou.advent.utils.geometry.plus
 import dev.danzou.advent.utils.geometry.toPair
@@ -33,8 +34,8 @@ fun <T> Matrix<T>.neighboring(p: Pos): List<T> =
 fun <T> Matrix<T>.neighboring(i: Int, j: Int): List<T> =
     this.neighboring(Pair(i, j))
 
-fun <T> Matrix<T>.neighboringPos(p: Pos): List<Pos> =
-    cardinalDirections.map { it + p }.filter { this.containsPos(it) }
+fun <T> Matrix<T>.neighboringPos(p: Pos, dirs: Collection<Pos> = Compass.CARDINAL_DIRECTIONS): List<Pos> =
+    dirs.map { it + p }.filter { this.containsPos(it) }
 
 fun <T> Matrix<T>.neighboringPos(i: Int, j: Int): List<Pos> =
     this.neighboringPos(Pair(i, j))
