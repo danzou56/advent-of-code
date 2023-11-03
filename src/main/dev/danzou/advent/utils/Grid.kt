@@ -54,10 +54,10 @@ fun <T, R> Matrix<T>.map2D(transform: (T) -> R): Matrix<R> =
     this.map { it.map { transform(it) } }
 
 fun <T, R> Matrix<T>.mapIndexed2D(transform: (Pos, T) -> R): Matrix<R> =
-    this.mapIndexed { i, it -> it.mapIndexed { j, it -> transform(Pair(i, j), it) } }
+    this.mapIndexed { j, it -> it.mapIndexed { i, it -> transform(Pair(i, j), it) } }
 
 fun <T, R> Matrix<T>.mapIndexed2D(transform: (Int, Int, T) -> R): Matrix<R> =
-    this.mapIndexed { i, it -> it.mapIndexed { j, it -> transform(i, j, it) } }
+    this.mapIndexed { j, it -> it.mapIndexed { i, it -> transform(i, j, it) } }
 
 fun <T> Matrix<T>.slice(indices: Iterable<Pos>): List<T> =
     indices.map { this[it] }
