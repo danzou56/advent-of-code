@@ -11,3 +11,6 @@ fun String.md5(): String = BigInteger(1, MessageDigest.getInstance("MD5").digest
 fun <T> List<T>.update(index: Int, item: T): List<T> = toMutableList().apply { this[index] = item }
 
 fun <T> Int.times(initial: T, operation: (T) -> T): T = (0 until this).fold(initial) { acc, _ -> operation(acc) }
+
+fun Int.gaussianSum() =
+    this * (this + 1) / 2
