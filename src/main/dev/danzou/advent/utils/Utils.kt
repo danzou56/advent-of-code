@@ -12,5 +12,8 @@ fun <T> List<T>.update(index: Int, item: T): List<T> = toMutableList().apply { t
 
 fun <T> Int.times(initial: T, operation: (T) -> T): T = (0 until this).fold(initial) { acc, _ -> operation(acc) }
 
+fun Int.pow(i: Int): Int =
+    i.times(1) { it * this }
+
 fun Int.gaussianSum() =
     this * (this + 1) / 2
