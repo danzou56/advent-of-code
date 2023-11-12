@@ -29,43 +29,50 @@ class Day24 : AdventTestRunner21() {
         val cache = mutableMapOf<Pair<Int, AluState>, Optional<List<Int>>>()
         val lines = input.split("\n")
 
-        fun genMonadNumber(index: Int, aluState: AluState, depth: Int = 0): Optional<List<Int>> {
-            if (index >= lines.size) {
-                return if (aluState.store['z']!! == 0L) Optional.of(emptyList())
-                else Optional.empty()
-            }
-            val rest = index + 1
+        /*tailrec*/ fun consumeInstrs(index: Int, aluState: AluState): Pair<Int, AluState> {
+            if (index >= lines.size) return Pair(index, aluState)
             val (instr, target, operand) = (lines[index] + " ").split(" ")
 
-            val nextAlu = aluState.advance(when (instr) {
-                "add" -> Long::plus
-                "mul" -> Long::times
-                "div" -> Long::div
-                "mod" -> { l1: Long, l2: Long -> l1.mod(l2) }
-                "eql" -> { l1: Long, l2: Long -> if (l1 == l2) 1L else 0L }
-                else -> {
-                    require(instr == "inp")
-                    return (9 downTo 1).firstNotNullOfOrNull {
-                        if (depth < 3) println("trying $it at depth $depth")
-                        if (depth < 2) cache.clear()
-                        val nextAlu = aluState.advance(
-                            { _, l2 -> l2 },
-                            target,
-                            it.toString()
-                        )
-                        val tail = cache.getOrPut(Pair(rest, nextAlu)) {
-                            genMonadNumber(rest, nextAlu, depth + 1)
-                        }
-                        if (tail.isPresent()) listOf(it) + tail.get()
-                        else null
-                    }.let { when (it) {
-                        null -> Optional.empty()
-                        else -> Optional.of(it)
-                    } }
-                }
-            }, target, operand)
+            return consumeInstrs(
+                index + 1,
+                aluState.advance(when (instr) {
+                    "add" -> Long::plus
+                    "mul" -> Long::times
+                    "div" -> Long::div
+                    "mod" -> { l1: Long, l2: Long -> l1.mod(l2) }
+                    "eql" -> { l1: Long, l2: Long -> if (l1 == l2) 1L else 0L }
+                    else -> return Pair(index, aluState)
+                }, target, operand)
+            )
+        }
 
-            return genMonadNumber(rest, nextAlu, depth)
+        fun genMonadNumber(index: Int, aluState: AluState, depth: Int = 0): Optional<List<Int>> {
+            val (curIndex, curAlu) = consumeInstrs(index, aluState)
+            if (curIndex >= lines.size) {
+                return if (curAlu.store['z']!! == 0L) Optional.of(emptyList())
+                else Optional.empty()
+            }
+            val rest = curIndex + 1
+            val (instr, target, operand) = (lines[curIndex] + " ").split(" ")
+
+            require(instr == "inp")
+            return (9 downTo 1).firstNotNullOfOrNull {
+                if (depth < 3) println("trying $it at depth $depth")
+                if (depth < 2) cache.clear()
+                val nextAlu = curAlu.advance(
+                    { _, l2 -> l2 },
+                    target,
+                    it.toString()
+                )
+                val tail = cache.getOrPut(Pair(rest, nextAlu)) {
+                    genMonadNumber(rest, nextAlu, depth + 1)
+                }
+                if (tail.isPresent) listOf(it) + tail.get()
+                else null
+            }.let { when (it) {
+                null -> Optional.empty()
+                else -> Optional.of(it)
+            } }
         }
 
         return genMonadNumber(
