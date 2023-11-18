@@ -25,11 +25,12 @@ class Day24 : AdventTestRunner21() {
             
     }
 
-    override fun part1(input: String): Any {
+    fun generateMonadNumber(input: String, digitSequence: Sequence<Int>): Long {
+        val range = digitSequence.toList()
         val cache = mutableMapOf<Pair<Int, AluState>, Optional<List<Int>>>()
         val lines = input.split("\n")
 
-        fun genMonadNumber(index: Int, aluState: AluState, depth: Int = 0): Optional<List<Int>> {
+        fun gen(index: Int, aluState: AluState, depth: Int = 0): Optional<List<Int>> {
             if (index >= lines.size) {
                 return if (aluState.store['z']!! == 0L) Optional.of(emptyList())
                 else Optional.empty()
@@ -45,7 +46,7 @@ class Day24 : AdventTestRunner21() {
                 "eql" -> { l1: Long, l2: Long -> if (l1 == l2) 1L else 0L }
                 else -> {
                     require(instr == "inp")
-                    return (9 downTo 1).firstNotNullOfOrNull {
+                    return range.firstNotNullOfOrNull {
                         if (depth < 3) println("trying $it at depth $depth")
                         if (depth < 2) cache.clear()
                         val nextAlu = aluState.advance(
@@ -54,9 +55,9 @@ class Day24 : AdventTestRunner21() {
                             it.toString()
                         )
                         val tail = cache.getOrPut(Pair(rest, nextAlu)) {
-                            genMonadNumber(rest, nextAlu, depth + 1)
+                            gen(rest, nextAlu, depth + 1)
                         }
-                        if (tail.isPresent()) listOf(it) + tail.get()
+                        if (tail.isPresent) listOf(it) + tail.get()
                         else null
                     }.let { when (it) {
                         null -> Optional.empty()
@@ -65,17 +66,20 @@ class Day24 : AdventTestRunner21() {
                 }
             }, target, operand)
 
-            return genMonadNumber(rest, nextAlu, depth)
+            return gen(rest, nextAlu, depth)
         }
-
-        return genMonadNumber(
-            0,
-            AluState()
+        return gen(
+                0,
+        AluState()
         ).get().joinToString("").toLong()
     }
 
+    override fun part1(input: String): Any {
+        return generateMonadNumber(input, (9 downTo 1).asSequence())
+    }
+
     override fun part2(input: String): Any {
-        TODO("Not yet implemented")
+        return generateMonadNumber(input, (1..9).asSequence())
     }
 
     @Test
