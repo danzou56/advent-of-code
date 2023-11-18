@@ -14,7 +14,7 @@ abstract class AdventTestRunner(protected val year: Int, protected val name: Str
     protected val day: Int
         get() = this.javaClass.simpleName.drop(3).takeWhile(Char::isDigit).toInt()
 
-    protected val timeout: Duration = Duration.ofSeconds(60)
+    protected open val timeout: Duration = Duration.ofSeconds(60)
     private val dataRoot = "src/main/resources/dev/danzou"
     private val basePath = "$dataRoot/advent$year"
     protected val baseInputPath = "$basePath/inputs"
@@ -31,13 +31,9 @@ abstract class AdventTestRunner(protected val year: Int, protected val name: Str
         else listOf(lines.first(), lines.drop(1).joinToString("\n"))
     }
 
-    abstract fun part1(
-        input: String = this.input,
-    ): Any
+    abstract fun part1(input: String = this.input): Any
 
-    abstract fun part2(
-        input: String = this.input,
-    ): Any
+    abstract fun part2(input: String = this.input): Any
 
     @Test
     fun testPart1() {

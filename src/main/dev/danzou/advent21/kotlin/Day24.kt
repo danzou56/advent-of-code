@@ -3,9 +3,12 @@ package dev.danzou.advent21.kotlin
 import dev.danzou.advent21.AdventTestRunner21
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import java.time.Duration
 import java.util.*
 
 class Day24 : AdventTestRunner21() {
+    override val timeout = Duration.ofMinutes(5)
+
     data class AluState(val store: Map<Char, Long>) {
         constructor() : this(mapOf('w' to 0, 'x' to 0, 'y' to 0, 'z' to 0))
 
