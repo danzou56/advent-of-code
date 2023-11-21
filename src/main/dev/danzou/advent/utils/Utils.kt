@@ -17,3 +17,27 @@ fun Int.pow(i: Int): Int =
 
 fun Int.gaussianSum() =
     this * (this + 1) / 2
+
+fun IntRange.intersects(that: IntRange): Boolean =
+    this.first >= that.first || this.last <= that.last
+
+fun IntRange.isDisjoint(that: IntRange): Boolean =
+    this.first > that.last || this.last < that.first
+
+fun IntRange.isDisjointOrBorders(that: IntRange): Boolean =
+    this.first >= that.last || this.last <= that.first
+
+operator fun IntRange.contains(that: IntRange): Boolean =
+    that.first in this && that.last in this
+
+fun <T> permutationsOf(sets: List<Set<T>>): Set<List<T>> {
+    val res = mutableSetOf<List<T>>()
+    fun generate(cur: List<T>): Any {
+        val depth = cur.size
+        if (depth == sets.size) return res.add(cur)
+        return sets[depth].forEach { generate(cur + it) }
+    }
+    generate(emptyList())
+
+    return res
+}
