@@ -11,36 +11,9 @@ import kotlin.math.min
 internal class Day22 : AdventTestRunner21("Reactor Reboot") {
     enum class State { ON, OFF }
     data class Cuboid(val x: IntRange, val y: IntRange, val z: IntRange) {
+        private val ranges = listOf(x, y, z)
+
         constructor(ranges: List<IntRange>) : this(ranges.component1(), ranges.component2(), ranges.component3())
-
-        val ranges = listOf(x, y, z)
-
-        operator fun plus(that: Cuboid): Set<Cuboid> {
-            if (this.isDisjointOrBorders(that)) return setOf(this, that)
-            if (this in that) return setOf(that)
-            if (that in this) return setOf(this)
-            val core = this.intersect(that)
-            return cuboidDirs.mapNotNull subCubes@{ offset ->
-                (0..<3).map { index ->
-                    when (offset[index]) {
-                        -1 -> (min(this.ranges[index].first, that.ranges[index].first)..core.ranges[index].first).let {
-                            if (it.first == it.last) return@subCubes null
-                            else it
-                        }
-
-                        0 -> core.ranges[index]
-                        1 -> (core.ranges[index].last..max(this.ranges[index].last, that.ranges[index].last)).let {
-                            if (it.first == it.last) return@subCubes null
-                            else it
-                        }
-
-                        else -> throw IllegalStateException()
-                    }
-                }.let(::Cuboid)
-                    .takeIf { this.contains(it) || that.contains(it) }
-                    ?.takeUnless { core.contains(it) }
-            }.toSet() + core
-        }
 
         operator fun minus(that: Cuboid): Set<Cuboid> {
             if (this.isDisjoint(that)) return setOf(this)
@@ -90,10 +63,6 @@ internal class Day22 : AdventTestRunner21("Reactor Reboot") {
         }
     }
 
-    class Steps(cuboids: Set<Cuboid> = emptySet()) {
-        val cuboids = cuboids.filter(Cuboid::isNotEmpty)
-    }
-
     override fun part1(input: String): Long {
         // part1 only considers cubes within "initialization region" which for
         // the part 1 example and test input is the first twenty lines
@@ -124,23 +93,6 @@ internal class Day22 : AdventTestRunner21("Reactor Reboot") {
             }
             .map(Cuboid::size)
             .sum()
-    }
-
-    @Test
-    fun testCuboidPlus() {
-        run {
-            val cub1 = Cuboid(1..3, 1..3, 1..3)
-            val cub2 = Cuboid(2..4, 2..4, 2..4)
-            val merged = cub1.plus(cub2)
-            assertEquals(15, merged.size)
-        }
-
-        run {
-            val cub1 = Cuboid(1..3, 1..3, 1..3)
-            val cub2 = Cuboid(2..4, 1..3, 1..3)
-            val merged = cub1.plus(cub2)
-            assertEquals(3, merged.size)
-        }
     }
 
     @Test
