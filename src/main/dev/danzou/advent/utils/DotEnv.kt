@@ -5,7 +5,7 @@ import kotlin.io.path.notExists
 import kotlin.io.path.readText
 
 object DotEnv {
-    val backing: Map<String, String> = run {
+    private val backing: Map<String, String> = run {
         val path = Path.of(".env")
         if (path.notExists()) return@run emptyMap()
         val text = path.readText()
