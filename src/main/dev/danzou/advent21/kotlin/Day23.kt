@@ -23,9 +23,7 @@ internal class Day23 : AdventTestRunner21("Amphipod") {
                 nexts.isNotEmpty()
             }.flatMap { (pos, nexts) ->
                 val removed = occupied - pos
-                nexts.filter { (next, cost) ->
-                    cost > 0
-                }.map { (next, cost) ->
+                nexts.map { (next, cost) ->
                     Pair(
                         Burrow(removed + (next to occupied[pos]!!)),
                         cost
@@ -37,8 +35,11 @@ internal class Day23 : AdventTestRunner21("Amphipod") {
             require(pos in occupied)
             val amphipod = occupied[pos]!!
             // not allowed to move if already in the right room
-            if (pos in rooms[amphipod]!! && pos.y == 3) return emptySet()
-            if (pos in rooms[amphipod]!! && occupied[pos + Pos(0, 1)] == amphipod) return emptySet()
+            if (pos in rooms[amphipod]!! &&
+                (pos.y == height || (pos.y..height).all { y ->
+                    occupied[Pos(pos.x, y)] == amphipod
+                })
+            ) return emptySet()
             return bfs(pos) { cur ->
                 CARDINAL_DIRECTIONS.map { cur + it }
                     .filter { it in BURROW }
@@ -53,7 +54,7 @@ internal class Day23 : AdventTestRunner21("Amphipod") {
                     // only entering correct room is allowed
                     in rooms[amphipod]!! -> when {
                         // enter the bottom cell
-                        target.y == 3 -> true
+                        target.y == height -> true
                         // next cell down must be filled by the correct amphipod
                         occupied[target + Pos(0, 1)] == amphipod -> true
                         else -> false
@@ -70,27 +71,16 @@ internal class Day23 : AdventTestRunner21("Amphipod") {
             val width = 11
             val height = 3
             val rooms = mapOf(
-                Amphipod.Amber to setOf(Pair(3, 2), Pair(3, 3)),
-                Amphipod.Bronze to setOf(Pair(5, 2), Pair(5, 3)),
-                Amphipod.Copper to setOf(Pair(7, 2), Pair(7, 3)),
-                Amphipod.Desert to setOf(Pair(9, 2), Pair(9, 3))
+                Amphipod.Amber to (2..height).map { y -> Pair(3, y) }.toSet(),
+                Amphipod.Bronze to (2..height).map { y -> Pair(5, y) }.toSet(),
+                Amphipod.Copper to (2..height).map { y -> Pair(7, y) }.toSet(),
+                Amphipod.Desert to (2..height).map { y -> Pair(9, y) }.toSet()
             )
 
-            val ROOMS = (3..9 step 2).map { Pos(it, 2) }.toSet() +
-                    (3..9 step 2).map { Pos(it, 3) }.toSet()
+            val ROOMS = (2..height).flatMap { y -> (3..9 step 2).map { Pos(it, y) } }.toSet()
             val ROOM_ENTRANCES = (3..9 step 2).map { Pos(it, 1) }.toSet()
             val HALLWAY = (1..width).map { Pos(it, 1) }.toSet()
             val BURROW = ROOMS + HALLWAY
-
-            fun isInCorrectRoom(amphipod: Amphipod, pos: Pos): Boolean {
-                require(pos in ROOMS)
-                return pos.x == when (amphipod) {
-                    Amphipod.Amber -> 3
-                    Amphipod.Bronze -> 5
-                    Amphipod.Copper -> 7
-                    Amphipod.Desert -> 9
-                }
-            }
 
             fun fromString(input: String): Burrow =
                 input.split("\n").mapIndexedNotNull { y, l ->
