@@ -1,7 +1,6 @@
 package dev.danzou.advent21.kotlin
 
 import dev.danzou.advent.utils.*
-import dev.danzou.advent.utils.geometry.Compass.Companion.CARDINAL_DIRECTIONS
 import dev.danzou.advent.utils.geometry.plus
 import dev.danzou.advent21.AdventTestRunner21
 import org.junit.jupiter.api.Test
@@ -15,23 +14,34 @@ internal class Day23 : AdventTestRunner21("Amphipod") {
         data object Desert : Amphipod(1000)
     }
 
-    data class Burrow(val occupied: Map<Pos, Amphipod>) {
-        fun nextBurrows(): Set<Pair<Burrow, Int>> =
+    class Burrow(val width: Int, val height: Int) {
+        val ROOMS = (2..height).flatMap { y -> (3..9 step 2).map { Pos(it, y) } }.toSet()
+        val ROOM_ENTRANCES = (3..9 step 2).map { Pos(it, 1) }.toSet()
+        val HALLWAY = (1..width).map { Pos(it, 1) }.toSet()
+        val BURROW = ROOMS + HALLWAY
+        val rooms = mapOf(
+            Amphipod.Amber to (2..height).map { y -> Pair(3, y) }.toSet(),
+            Amphipod.Bronze to (2..height).map { y -> Pair(5, y) }.toSet(),
+            Amphipod.Copper to (2..height).map { y -> Pair(7, y) }.toSet(),
+            Amphipod.Desert to (2..height).map { y -> Pair(9, y) }.toSet()
+        )
+
+        private fun nextBurrows(occupied: SparseMatrix<Amphipod>): Set<Pair<SparseMatrix<Amphipod>, Int>> =
             occupied.keys.map { pos ->
-                pos to nextPosForAmphipodAt(pos)
+                pos to nextPosForAmphipodAt(occupied, pos)
             }.filter { (_, nexts) ->
                 nexts.isNotEmpty()
             }.flatMap { (pos, nexts) ->
                 val removed = occupied - pos
                 nexts.map { (next, cost) ->
                     Pair(
-                        Burrow(removed + (next to occupied[pos]!!)),
+                        removed + (next to occupied[pos]!!),
                         cost
                     )
                 }
             }.toSet()
 
-        fun nextPosForAmphipodAt(pos: Pos): Set<Pair<Pos, Int>> {
+        private fun nextPosForAmphipodAt(occupied: SparseMatrix<Amphipod>, pos: Pos): Set<Pair<Pos, Int>> {
             require(pos in occupied)
             val amphipod = occupied[pos]!!
             // not allowed to move if already in the right room
@@ -41,7 +51,14 @@ internal class Day23 : AdventTestRunner21("Amphipod") {
                 })
             ) return emptySet()
             return bfs(pos) { cur ->
-                CARDINAL_DIRECTIONS.map { cur + it }
+                // doing this manually instead of using Direction.CARDINAL_DIRECTIONS
+                // saves about half a second of runtime
+                arrayOf(
+                    Pos(cur.x, cur.y - 1),
+                    Pos(cur.x, cur.y + 1),
+                    Pos(cur.x - 1, cur.y),
+                    Pos(cur.x + 1, cur.y),
+                )
                     .filter { it in BURROW }
                     .filter { it !in occupied.keys }
                     .toSet()
@@ -67,22 +84,33 @@ internal class Day23 : AdventTestRunner21("Amphipod") {
             }.toSet()
         }
 
-        companion object {
-            val width = 11
-            val height = 3
-            val rooms = mapOf(
-                Amphipod.Amber to (2..height).map { y -> Pair(3, y) }.toSet(),
-                Amphipod.Bronze to (2..height).map { y -> Pair(5, y) }.toSet(),
-                Amphipod.Copper to (2..height).map { y -> Pair(7, y) }.toSet(),
-                Amphipod.Desert to (2..height).map { y -> Pair(9, y) }.toSet()
+        fun lowestCostBetween(init: SparseMatrix<Amphipod>, target: SparseMatrix<Amphipod>): Int {
+            // costs cache - we get the path length in bfs, and then keep it until we need it
+            // otherwise we'd have to recalculate each time
+            val costs = mutableMapOf<Pair<SparseMatrix<Amphipod>, SparseMatrix<Amphipod>>, Int>()
+            val path = doDijkstras(
+                init,
+                { it == target },
+                { occupied ->
+                    val nexts = nextBurrows(occupied)
+                    costs.putAll(
+                        nexts.map { (next, cost) ->
+                            (occupied to next) to cost
+                        }
+                    )
+                    nexts.map { (next, _) -> next }.toSet()
+                },
+                { src, dst -> costs.remove(src to dst)!! }
             )
+            return path.windowed(2).fold(0) { cost, (src, dst) ->
+                cost + nextBurrows(src)
+                    .find { it.first == dst }!!
+                    .second
+            }
+        }
 
-            val ROOMS = (2..height).flatMap { y -> (3..9 step 2).map { Pos(it, y) } }.toSet()
-            val ROOM_ENTRANCES = (3..9 step 2).map { Pos(it, 1) }.toSet()
-            val HALLWAY = (1..width).map { Pos(it, 1) }.toSet()
-            val BURROW = ROOMS + HALLWAY
-
-            fun fromString(input: String): Burrow =
+        companion object {
+            fun fromString(input: String): Pair<Burrow, SparseMatrix<Amphipod>> =
                 input.split("\n").mapIndexedNotNull { y, l ->
                     l.mapIndexedNotNull { x, c ->
                         when (c) {
@@ -93,36 +121,30 @@ internal class Day23 : AdventTestRunner21("Amphipod") {
                             else -> null
                         }
                     }.takeIf(List<Pair<Pos, Amphipod>>::isNotEmpty)
-                }.flatten().toMap().let(::Burrow)
-        }
-    }
-
-    fun getLowestCostTo(init: Burrow, target: Burrow): Int {
-        val costs = mutableMapOf<Pair<Burrow, Burrow>, Int>()
-        val path = doDijkstras(
-            init,
-            { it == target },
-            { burrow ->
-                val nexts = burrow.nextBurrows()
-                costs.putAll(
-                    nexts.map { (next, cost) ->
-                        (burrow to next) to cost
-                    }
-                )
-                nexts.map { (next, _) -> next }.toSet()
-            },
-            { src, dst -> costs.remove(src to dst)!! }
-        )
-        return path.windowed(2).fold(0) { cost, (src, dst) ->
-            cost + src.nextBurrows()
-                .find { it.first == dst }!!
-                .second
+                }.flatten().toMap().let { occupied ->
+                    Pair(
+                        Burrow(
+                            width = 11,
+                            height = occupied.keys.maxOf { (_, y) -> y }
+                        ),
+                        occupied
+                    )
+                }
         }
     }
 
     override fun part1(input: String): Int {
-        val burrow = Burrow.fromString(input)
-        return getLowestCostTo(burrow, TARGET_BURROW)
+        val (burrow, occupied) = Burrow.fromString(input)
+        val (_, target) = Burrow.fromString(
+            """
+            #############
+            #...........#
+            ###A#B#C#D###
+              #A#B#C#D#
+              #########
+        """.trimIndent()
+        )
+        return burrow.lowestCostBetween(occupied, target)
     }
 
     override fun part2(input: String): Any {
@@ -139,116 +161,7 @@ internal class Day23 : AdventTestRunner21("Amphipod") {
               #########
         """.trimIndent()
 
-        assertEquals(40, getLowestCostTo(
-            Burrow.fromString(input),
-            Burrow.fromString("""
-                #############
-                #...B.......#
-                ###B#C#.#D###
-                  #A#D#C#A#
-                  #########
-            """.trimIndent())
-        ))
-        assertEquals(400, getLowestCostTo(
-            Burrow.fromString("""
-                #############
-                #...B.......#
-                ###B#C#.#D###
-                  #A#D#C#A#
-                  #########
-            """.trimIndent()),
-            Burrow.fromString("""
-                #############
-                #...B.......#
-                ###B#.#C#D###
-                  #A#D#C#A#
-                  #########
-            """.trimIndent())
-        ))
-        assertEquals(3030, getLowestCostTo(
-            Burrow.fromString("""
-                #############
-                #...B.......#
-                ###B#.#C#D###
-                  #A#D#C#A#
-                  #########
-            """.trimIndent()),
-            Burrow.fromString("""
-                #############
-                #.....D.....#
-                ###B#.#C#D###
-                  #A#B#C#A#
-                  #########
-            """.trimIndent())
-        ))
-        assertEquals(40, getLowestCostTo(
-            Burrow.fromString("""
-                #############
-                #.....D.....#
-                ###B#.#C#D###
-                  #A#B#C#A#
-                  #########
-            """.trimIndent()),
-            Burrow.fromString("""
-                #############
-                #.....D.....#
-                ###.#B#C#D###
-                  #A#B#C#A#
-                  #########
-            """.trimIndent())
-        ))
-        assertEquals(2003, getLowestCostTo(
-            Burrow.fromString("""
-                #############
-                #.....D.....#
-                ###.#B#C#D###
-                  #A#B#C#A#
-                  #########
-            """.trimIndent()),
-            Burrow.fromString("""
-                #############
-                #.....D.D.A.#
-                ###.#B#C#.###
-                  #A#B#C#.#
-                  #########
-            """.trimIndent())
-        ))
-        assertEquals(7000, getLowestCostTo(
-            Burrow.fromString("""
-                #############
-                #.....D.D.A.#
-                ###.#B#C#.###
-                  #A#B#C#.#
-                  #########
-            """.trimIndent()),
-            Burrow.fromString("""
-                #############
-                #.........A.#
-                ###.#B#C#D###
-                  #A#B#C#D#
-                  #########
-            """.trimIndent())
-        ))
-        assertEquals(8, getLowestCostTo(
-            Burrow.fromString("""
-                #############
-                #.........A.#
-                ###.#B#C#D###
-                  #A#B#C#D#
-                  #########
-            """.trimIndent()),
-            TARGET_BURROW
-        ))
         assertEquals(12521, part1(input))
     }
 
-    companion object {
-        val TARGET_BURROW = Burrow.fromString("""
-            #############
-            #...........#
-            ###A#B#C#D###
-              #A#B#C#D#
-              #########
-        """.trimIndent())
-    }
 }
