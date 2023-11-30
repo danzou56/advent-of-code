@@ -23,6 +23,22 @@ fun <T> dfs(init: T, getNeighbors: NeighborFunction<T>): Set<T> {
     return dfs(init, emptySet())
 }
 
+fun <T> bfs(init: T, getNeighbors: NeighborFunction<T>): Set<List<T>> {
+    val queue: Queue<T> = LinkedList()
+    val discovered = mutableMapOf(init to listOf(init))
+    queue.add(init)
+    while (queue.isNotEmpty()) {
+        val cur = queue.poll()!!
+        for (adjacent in getNeighbors(cur)) {
+            if (adjacent !in discovered) {
+                discovered[adjacent] = discovered[cur]!! + adjacent
+                queue.add(adjacent)
+            }
+        }
+    }
+    return discovered.values.toSet()
+}
+
 fun <T> findPaths(init: T, target: T, getNeighbors: NeighborFunction<T>): Set<List<T>> {
     fun findPaths(cur: T, path: List<T>): Set<List<T>> {
         if (cur == target) return setOf(path + cur)
