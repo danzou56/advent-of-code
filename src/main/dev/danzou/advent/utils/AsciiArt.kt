@@ -1,6 +1,5 @@
 package dev.danzou.advent.utils
 
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
@@ -190,6 +189,5 @@ class TestAsciiArtFormat {
         )
 
         assertEquals("E", art.text)
-//        assertTrue(art == "E")
     }
 }
