@@ -83,7 +83,6 @@ fun <T> doDijkstras(
                 if (cost < (costs[adjacent] ?: Int.MAX_VALUE)) {
                     costs[adjacent] = cost
                     predecessors[adjacent] = cur
-                    queue.remove(adjacent)
                     queue.add(adjacent)
                 }
             }
