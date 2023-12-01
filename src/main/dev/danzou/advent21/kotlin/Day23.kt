@@ -4,9 +4,12 @@ import dev.danzou.advent.utils.*
 import dev.danzou.advent.utils.geometry.plus
 import dev.danzou.advent21.AdventTestRunner21
 import org.junit.jupiter.api.Test
+import java.time.Duration
 import kotlin.test.assertEquals
 
 internal class Day23 : AdventTestRunner21("Amphipod") {
+    override val timeout = Duration.ofSeconds(90)
+
     sealed class Amphipod(val cost: Int) {
         data object Amber : Amphipod(1)
         data object Bronze : Amphipod(10)
@@ -148,7 +151,27 @@ internal class Day23 : AdventTestRunner21("Amphipod") {
     }
 
     override fun part2(input: String): Any {
-        TODO("Not yet implemented")
+        val supplementalInput = """
+            |  #D#C#B#A#
+            |  #D#B#A#C#
+        """.trimMargin(marginPrefix="|")
+        val (burrow, occupied) = Burrow.fromString(
+            input.split("\n").let {
+                it.take(3) + supplementalInput.split("\n") + it.drop(3)
+            }.joinToString("\n")
+        )
+        val (_, target) = Burrow.fromString(
+            """
+                #############
+                #...........#
+                ###A#B#C#D###
+                  #A#B#C#D#
+                  #A#B#C#D#
+                  #A#B#C#D#
+                  #########
+            """.trimIndent()
+        )
+        return burrow.lowestCostBetween(occupied, target)
     }
 
     @Test
