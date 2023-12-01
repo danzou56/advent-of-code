@@ -15,4 +15,5 @@ object DotEnv {
     }
 
     operator fun get(key: String): String? = backing[key] ?: System.getenv(key)
+    fun getValue(key: String): String = backing.getValue(key)
 }

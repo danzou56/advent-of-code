@@ -58,6 +58,8 @@ abstract class AdventTestRunner(protected val year: Int, protected val name: Str
     companion object {
         const val AOC_TOKEN_KEY = "AOC_TOKEN"
         const val AOC_BASE_URL = "https://adventofcode.com"
+        const val AOC_GIT_URL_KEY = "AOC_GIT_URL"
+        const val CONTACT_EMAIL_KEY = "CONTACT_EMAIL"
 
         fun readFileLines(name: String, fallbackUrl: String? = null): List<String> {
             return try {
@@ -74,6 +76,10 @@ abstract class AdventTestRunner(protected val year: Int, protected val name: Str
                     val httpRequest = HttpRequest.newBuilder()
                         .uri(URI(fallbackUrl))
                         .headers("Cookie", "session=$token")
+                        .headers(
+                            "User-Agent",
+                            "${DotEnv.getValue(AOC_GIT_URL_KEY)} by ${DotEnv.getValue(CONTACT_EMAIL_KEY)}"
+                        )
                         .GET()
                         .build()
                     val client = HttpClient.newHttpClient()
@@ -98,7 +104,8 @@ abstract class AdventTestRunner(protected val year: Int, protected val name: Str
         fun assertEqualAnswer(expected: String?, actual: Any?) {
             when (actual) {
                 is AsciiArt -> if (actual.isText) assertEquals(expected, actual.text)
-                    else assertEquals(expected, actual.art)
+                else assertEquals(expected, actual.art)
+
                 else -> assertEquals(expected, actual.toString())
             }
         }
