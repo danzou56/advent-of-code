@@ -4,11 +4,12 @@ import dev.danzou.advent23.AdventTestRunner23
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-internal class Day1 : AdventTestRunner23() {
+internal class Day1 : AdventTestRunner23("Trebuchet?!") {
     override fun part1(input: String): Any = input.split("\n")
         .sumOf { "${it.find(Char::isDigit)}${it.findLast(Char::isDigit)}".toInt() }
 
     override fun part2(input: String): Any {
+        // there's spaces here cuz i literally directly copy pasted it from aoc
         val nums = """
             one, two, three, four, five, six, seven, eight, nine
         """.trimIndent()
