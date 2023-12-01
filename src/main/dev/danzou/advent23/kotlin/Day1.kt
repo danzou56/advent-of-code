@@ -20,10 +20,10 @@ internal class Day1 : AdventTestRunner23("Trebuchet?!") {
         return input.split("\n")
             .sumOf { line ->
                 val first = line.indexOfAny(nums.keys).let { index ->
-                    nums.keys.first { line.drop(index).startsWith(it) }
+                    nums.keys.single { line.drop(index).startsWith(it) }
                 }.let { nums[it]!! }
                 val last = line.lastIndexOfAny(nums.keys).let { index ->
-                    nums.keys.first { line.drop(index).startsWith(it) }
+                    nums.keys.single { line.drop(index).startsWith(it) }
                 }.let { nums[it]!! }
                 "$first$last".toInt()
             }
