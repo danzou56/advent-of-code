@@ -30,8 +30,8 @@ internal class Day2 : AdventTestRunner23("Cube Conundrum") {
             Cube.Blue to 14
         )
         return getGames(input)
-            .filter { (_, maps: List<Map<Cube, Int>>) ->
-                maps.all { map -> maxCubes.all { (color, max) -> (map[color] ?: 0) <= max } }
+            .filter { (_, rolls: List<Map<Cube, Int>>) ->
+                rolls.all { roll -> maxCubes.all { (color, max) -> (roll[color] ?: 0) <= max } }
             }.keys.sum()
     }
 
