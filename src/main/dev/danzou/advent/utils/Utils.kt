@@ -1,7 +1,11 @@
 package dev.danzou.advent.utils
 
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Test
 import java.math.BigInteger
 import java.security.MessageDigest
+import kotlin.reflect.KProperty1
+import kotlin.reflect.full.memberProperties
 
 /**
  * Converts string to md5 hash.
@@ -40,4 +44,35 @@ fun <T> permutationsOf(sets: List<Set<T>>): Set<List<T>> {
     generate(emptyList())
 
     return res
+}
+
+/**
+ * Super jank class that emulates the functionality of the Kotlin data keyword. Generates a basic
+ * toString, equals, and hashCode that should be "good enough". Not advisable for performance
+ * critical applications due to the generous use of reflection.
+ */
+abstract class Data {
+    override fun toString(): String {
+        val className = this::class.simpleName
+        val fields = (this::class.memberProperties as Collection<KProperty1<Any, *>>)
+            .map { property -> "${property.name}=${property.get(this)}" }
+            .joinToString(",")
+        return "$className(${fields})"
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        return (this::class.memberProperties as Collection<KProperty1<Any, *>>)
+            .all { property ->
+                property.get(this) == property.get(other)
+            }
+    }
+
+    override fun hashCode(): Int =
+        (this::class.memberProperties as Collection<KProperty1<Any, *>>)
+            .fold(0) { hash, property ->
+                31 * hash + property.get(this).hashCode()
+            }
 }
