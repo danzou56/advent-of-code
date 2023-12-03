@@ -43,9 +43,9 @@ fun <T> Matrix<T>.neighboringPos(i: Int, j: Int): List<Pos> =
 fun <T> Matrix<T>.transpose(): Matrix<T> {
     // Make sure matrix isn't ragged
     assert(this.map { it.size }.toSet().size == 1)
-    return this[0].indices.map { j ->
-        this.indices.map { i ->
-            this[i][j]
+    return this[0].indices.map { i ->
+        this.indices.map { j ->
+            this[j][i]
         }
     }
 }
@@ -67,9 +67,9 @@ fun <T> Matrix<T>.row(i: Int): List<T> = this[i]
 fun <T> Matrix<T>.col(j: Int): List<T> = this.map { it[j] }
 
 val <T> Matrix<T>.indices2D: List<Pos>
-    get() = this.mapIndexed { i, it -> it.indices.map { j -> Pair(i, j) } }.flatten()
+    get() = this.mapIndexed { j, it -> it.indices.map { i -> Pair(i, j) } }.flatten()
 
-fun <T> Matrix<T>.containsPos(p: Pos) = p.first in this.indices && p.second in this[p.first].indices
+fun <T> Matrix<T>.containsPos(p: Pos) = p.second in this.indices && p.first in this[p.second].indices
 
 fun <T> RaggedMatrix<T>.padRowEnds(defaultValue: (Int, Int) -> T): Matrix<T> {
     val maxRowLen = this.maxOf { it.size }
@@ -78,5 +78,5 @@ fun <T> RaggedMatrix<T>.padRowEnds(defaultValue: (Int, Int) -> T): Matrix<T> {
     }
 }
 
-operator fun <T> Matrix<T>.get(p: Pos): T = this[p.first][p.second]
-operator fun <T> MutableMatrix<T>.set(p: Pos, value: T) { this[p.first][p.second] = value }
+operator fun <T> Matrix<T>.get(p: Pos): T = this[p.second][p.first]
+operator fun <T> MutableMatrix<T>.set(p: Pos, value: T) { this[p.second][p.first] = value }
