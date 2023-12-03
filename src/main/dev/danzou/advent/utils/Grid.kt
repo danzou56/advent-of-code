@@ -6,7 +6,7 @@ import dev.danzou.advent.utils.geometry.plus
 import dev.danzou.advent.utils.geometry.toPair
 import kotlin.math.absoluteValue
 
-val cardinalDirections = Direction.values().map { it.dir }.toSet()
+val cardinalDirections = Direction.entries.map { it.dir }.toSet()
 
 typealias RaggedMatrix<T> = List<List<T>>
 typealias Matrix<T> = List<List<T>>
