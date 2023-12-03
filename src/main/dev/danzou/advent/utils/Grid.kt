@@ -79,4 +79,5 @@ fun <T> RaggedMatrix<T>.padRowEnds(defaultValue: (Int, Int) -> T): Matrix<T> {
 }
 
 operator fun <T> Matrix<T>.get(p: Pos): T = this[p.second][p.first]
+fun <T> Matrix<T>.getOrNull(p: Pos): T? = this.getOrNull(p.second)?.getOrNull(p.first)
 operator fun <T> MutableMatrix<T>.set(p: Pos, value: T) { this[p.second][p.first] = value }
