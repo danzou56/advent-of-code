@@ -39,13 +39,10 @@ internal class Day3 : AdventTestRunner23() {
     }
 
     override fun part2(input: String): Int {
-        val gearMatches = input.split("\n")
-            .mapIndexed { y, line ->
-                Regex("\\*")
-                    .findAll(line)
-                    .map { match -> y to match }
-                    .toList()
-            }.flatten()
+        val gearMatchesWithIndex = input.split("\n")
+            .map { line -> Regex("\\*").findAll(line).toList() }
+            .mapIndexed { y, matches -> matches.map { it to y } }
+            .flatten()
         val partMatchesByRow = getPartMatchesByRow(input)
         val offsetGroups = (-1..1).map { y -> y to (-1..1) }
         // Given a list of gear match results (and their row index),
@@ -53,7 +50,7 @@ internal class Day3 : AdventTestRunner23() {
         // 2. Keep only those that are also in an adjacent column
         // 3. Keep only match results when there are at least two of them
         // 4. Sum together the gear ratios
-        return gearMatches.mapNotNull { (y, gearMatch) ->
+        return gearMatchesWithIndex.mapNotNull { (gearMatch, y) ->
             offsetGroups.flatMap { (yOffset, xOffsets) ->
                 partMatchesByRow[y + yOffset]?.filter { partMatch ->
                     xOffsets.any { xOffset ->
