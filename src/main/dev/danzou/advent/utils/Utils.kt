@@ -38,6 +38,25 @@ fun <T> permutationsOf(sets: List<Set<T>>): Set<List<T>> {
     return res
 }
 
+infix fun <T> Set<T>.choose(k: Int): Set<Set<T>> {
+    require(k <= this.size)
+    require(k >= 0)
+
+    fun generate(remaining: Set<T>, current: Set<T>, k: Int): Set<Set<T>> {
+        require(remaining.isNotEmpty())
+        if (k == 0) return setOf(current)
+        return remaining.flatMap {
+            generate(
+                remaining - it,
+                current + it,
+                k - 1
+            )
+        }.toSet()
+    }
+
+    return generate(this, emptySet(), k)
+}
+
 /**
  * Super jank class that emulates the functionality of the Kotlin data keyword. Generates a basic
  * toString, equals, and hashCode that should be "good enough". Not advisable for performance
