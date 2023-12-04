@@ -6,46 +6,38 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 internal class Day4 : AdventTestRunner23() {
-    override fun part1(input: String): Int {
-        return input.split("\n")
-            .map { it.split("|") }
-            .map { (winners, hand) ->
-                val trueWinners = Regex("\\d+").findAll(winners)
-                    .drop(1)
-                    .map { it.value.toInt() }
-                val hand = Regex("\\d+").findAll(hand)
-                    .map { it.value.toInt() }
-                val num = hand.count { it in trueWinners }
-                if (num >= 1) 2.pow(num - 1)
-                else 0
+    data class Game(val id: Int, val winners: Set<Int>, val hand: Set<Int>)
+    private fun getGames(input: String): List<Game> =
+        input.split("\n")
+            .map { it.split("|", ":") }
+            .map { it.map { Regex("\\d+").findAll(it) } }
+            .map { (id, winners, hand) ->
+                Game(
+                    id.single().value.toInt(),
+                    winners.map { it.value.toInt() }.toSet(),
+                    hand.map { it.value.toInt() }.toSet()
+                )
             }
-            .sum()
-    }
+
+    override fun part1(input: String): Int =
+        getGames(input).sumOf { (_, winners, hand) ->
+            val overlap = hand.intersect(winners).count()
+            if (overlap >= 1) 2.pow(overlap - 1)
+            else 0
+        }
 
     override fun part2(input: String): Long {
-        val i =  input.split("\n")
-            .map { it.split("|") }
-            .map { (winners, hand) ->
-                val (id, trueWinners) = Regex("\\d+").findAll(winners)
-                    .toList()
-                    .let { results ->
-                        Pair(results.first().value.toInt(), results.drop(1)
-                            .map { it.value.toInt() })
-                    }
-                val hand = Regex("\\d+").findAll(hand)
-                    .map { it.value.toInt() }
-                val num = hand.count { it in trueWinners }
-                Pair(id, num)
-            }
-        val cards: Map<Int, Long> = i.foldIndexed(
-            i.associate { it.first to 1L }
-        ) { i, cardMap, (curId, copiesWon) ->
-            cardMap + ((curId + 1)..(curId + copiesWon)).map { nextId ->
-                nextId to (cardMap.getOrDefault(nextId, 1) + cardMap.getOrDefault(curId, 1))
+        val games = getGames(input)
+        val cards: Map<Int, Long> = games.fold(
+            games.associate { it.id to 1L }
+        ) { cards, (id, winners, hand) ->
+            cards + (id + 1..id + hand.intersect(winners).size).map { next ->
+                // Problem states "Cards will never make you copy a card past the end of the table"
+                // Not-null op is always safe
+                next to cards[next]!! + cards[id]!!
             }
         }
         return cards.values.sum()
-
     }
 
     @Test
