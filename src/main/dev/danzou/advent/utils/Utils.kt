@@ -1,7 +1,5 @@
 package dev.danzou.advent.utils
 
-import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.Test
 import java.math.BigInteger
 import java.security.MessageDigest
 import kotlin.reflect.KProperty1
@@ -15,12 +13,6 @@ fun String.md5(): String = BigInteger(1, MessageDigest.getInstance("MD5").digest
 fun <T> List<T>.update(index: Int, item: T): List<T> = toMutableList().apply { this[index] = item }
 
 fun <T> Int.times(initial: T, operation: (T) -> T): T = (0 until this).fold(initial) { acc, _ -> operation(acc) }
-
-fun Int.pow(i: Int): Int =
-    i.times(1) { it * this }
-
-fun Int.gaussianSum() =
-    this * (this + 1) / 2
 
 fun IntRange.intersects(that: IntRange): Boolean =
     this.first >= that.first || this.last <= that.last
