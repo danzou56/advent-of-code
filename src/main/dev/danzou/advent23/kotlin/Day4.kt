@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 internal class Day4 : AdventTestRunner23() {
-    override fun part1(input: String): Any {
+    override fun part1(input: String): Int {
         return input.split("\n")
             .map { it.split("|") }
             .map { (winners, hand) ->
