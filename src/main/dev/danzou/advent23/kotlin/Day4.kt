@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 internal class Day4 : AdventTestRunner23() {
+    // There's not actually a need to store winners and hand - both parts only
+    // need to know the size of their intersection
     data class Game(val id: Int, val winners: Set<Int>, val hand: Set<Int>)
     private fun getGames(input: String): List<Game> =
         input.split("\n")
@@ -21,7 +23,7 @@ internal class Day4 : AdventTestRunner23() {
 
     override fun part1(input: String): Int =
         getGames(input).sumOf { (_, winners, hand) ->
-            val overlap = hand.intersect(winners).count()
+            val overlap = hand.intersect(winners).size
             if (overlap >= 1) 2.pow(overlap - 1)
             else 0
         }
