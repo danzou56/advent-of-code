@@ -2,6 +2,8 @@ package dev.danzou.advent.utils
 
 import java.math.BigInteger
 import java.security.MessageDigest
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.memberProperties
 
@@ -16,8 +18,17 @@ fun <T> List<T>.update(index: Int, item: T): List<T> = toMutableList().apply { t
 
 fun <T> Int.times(initial: T, operation: (T) -> T): T = (0 until this).fold(initial) { acc, _ -> operation(acc) }
 
+fun IntRange.intersect(that: IntRange): IntRange =
+    max(this.first, that.first)..min(this.last, that.last)
+
 fun IntRange.intersects(that: IntRange): Boolean =
-    this.first >= that.first || this.last <= that.last
+    !this.intersect(that).isEmpty()
+
+fun LongRange.intersect(that: LongRange): LongRange =
+    max(this.first, that.first)..min(this.last, that.last)
+
+fun LongRange.intersects(that: LongRange): Boolean =
+    !this.intersect(that).isEmpty()
 
 fun IntRange.isDisjoint(that: IntRange): Boolean =
     this.first > that.last || this.last < that.first
@@ -57,6 +68,12 @@ infix fun <T> Set<T>.choose(k: Int): Set<Set<T>> {
     }
 
     return generate(this, emptySet(), k)
+}
+
+infix fun <T> List<T>.choose(k: Int): Set<List<T>> {
+    return (this.indices.toSet() choose k).map { indices ->
+        this.slice(indices)
+    }.toSet()
 }
 
 /**
