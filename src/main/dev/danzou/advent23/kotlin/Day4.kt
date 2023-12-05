@@ -5,7 +5,7 @@ import dev.danzou.advent23.AdventTestRunner23
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-internal class Day4 : AdventTestRunner23() {
+internal class Day4 : AdventTestRunner23("Scratchcards") {
     // There's not actually a need to store winners and hand - both parts only
     // need to know the size of their intersection
     data class Game(val id: Int, val winners: Set<Int>, val hand: Set<Int>)
