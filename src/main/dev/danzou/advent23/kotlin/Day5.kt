@@ -56,8 +56,8 @@ internal class Day5 : AdventTestRunner23("If You Give A Seed A Fertilizer") {
             almanacMaps.fold(
                 Pair(ranges, emptyList<LongRange>())
             ) { (unaccepted, accepted), (source, offset) ->
-                // This could be done with a map, but it means we build a list of pairs of lists of
-                // ranges which ends up being cumbersome to flatten out into a pair of lists.
+                // This could be done with a .map, but it means we build a list of pairs of lists
+                // of ranges which ends up being cumbersome to flatten out into a pair of lists.
                 // Instead, just fold and manually build up the pair of list of ranges
                 unaccepted.fold(Pair(emptyList(), accepted)) { (rejects, accepts), range ->
                     val intersection = range.intersect(source)
