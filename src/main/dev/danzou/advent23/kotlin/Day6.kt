@@ -14,10 +14,7 @@ internal class Day6 : AdventTestRunner23() {
         val solutions = quadSolve(-1.0, time.toDouble(), -distance.toDouble())
         require(solutions.size == 2)
 
-        val max = solutions.max()
-        val min = solutions.min()
-        return 1 + (if (f(ceil(max)) > distance) ceil(max) else floor(max)).toLong() -
-                (if (f(floor(min)) > distance) floor(min) else ceil(min)).toLong()
+        return (1 + floor(solutions.max()) - ceil(solutions.min())).toLong()
     }
 
     override fun part1(input: String): Long {
