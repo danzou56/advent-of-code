@@ -8,12 +8,10 @@ import kotlin.math.floor
 internal class Day6 : AdventTestRunner23() {
     // completely overbuilt for the problem because we can actually just brute force try all values
     fun waysToWin(time: Long, distance: Long): Long {
-        fun f(t: Double): Double = t * (time - t)
         // d := distance, t := button time, T := race duration
         // solve quadratic t * (T - t) > d for unknown t
         val solutions = quadSolve(-1.0, time.toDouble(), -distance.toDouble())
         require(solutions.size == 2)
-
         return (1 + floor(solutions.max()) - ceil(solutions.min())).toLong()
     }
 
