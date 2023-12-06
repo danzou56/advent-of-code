@@ -1,5 +1,7 @@
 package dev.danzou.advent.utils
 
+import kotlin.math.sqrt
+
 
 fun Int.pow(i: Int): Int =
     generateSequence { this }.take(i).reduceOrNull(Int::times) ?: 1
@@ -12,6 +14,16 @@ fun Int.gaussianSum(): Int =
 
 fun Long.gaussianSum(): Long =
     this * (this + 1) / 2
+
+val E = 1e-10
+fun quadSolve(a: Double, b: Double, c: Double): List<Double> {
+    val discriminant = b * b - 4 * a * c
+    return when {
+        discriminant < -E -> emptyList()
+        discriminant in -E..E -> listOf(-b / (2 * a))
+        else -> listOf(-b + sqrt(discriminant), -b - sqrt(discriminant)).map { it / (2 * a) }
+    }
+}
 
 fun Int.factorial(knowing: Int = 0, hasFactorial: Int = 1): Int {
     require(this >= knowing)
