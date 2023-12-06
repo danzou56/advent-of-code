@@ -3,73 +3,81 @@ package dev.danzou.advent23.kotlin
 import dev.danzou.advent23.AdventTestRunner23
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import java.time.Duration
-import kotlin.math.max
-import kotlin.math.min
-
-val numRegex = Regex("\\d+")
+import dev.danzou.advent.utils.intersect
 
 internal class Day5 : AdventTestRunner23("If You Give A Seed A Fertilizer") {
-    override val timeout: Duration = Duration.ofMinutes(10)
+    data class AlmanacMap(val source: LongRange, val offset: Long)
+    data class Almanac(val maps: List<AlmanacMap>)
+
+    fun getAlmanacs(input: String): List<Almanac> =
+        input.split("\n\n").drop(1).map { block ->
+            block.split("\n").drop(1)
+                .map { line -> line.split(" ").map { it.toLong() } }
+                .map { (destination, source, length) ->
+                    AlmanacMap(source..<source + length, destination - source)
+                }
+        }.map { Almanac(it) }
 
     override fun part1(input: String): Long {
-        val blocks = input.split("\n\n")
-        val seeds = numRegex.findAll(blocks[0]).map { it.value.toLong() }
-        val maps = blocks.drop(1).map { block ->
-            block.split("\n").drop(1) // drop the title
-                .map { numRegex.findAll(it).map { it.value.toLong() }.toList() }
-                .map { (dstRangeStart, srcRangeStart, len) ->
-                    Pair(srcRangeStart..srcRangeStart + len, dstRangeStart..dstRangeStart + len)
-                }
+        val seeds = input.takeWhile { it != '\n' }
+            .split(" ")
+            .drop(1)
+            .map { it.toLong() }
+        val almanacs = getAlmanacs(input)
 
-        }
-        return seeds.map { seed ->
-            maps.fold(seed) { num, map ->
-                val (srcRange, dstRange) = map.firstOrNull { (srcRange, dstRange) -> num in srcRange } ?: Pair(
-                    null,
-                    null
-                )
-                if (srcRange == null) num
-                else dstRange!!.first + (num - srcRange.first)
+        val locations = almanacs.fold(seeds) { seeds, (almanacMaps) ->
+            seeds.map { seed ->
+                seed + (almanacMaps.firstOrNull { (source, _) -> seed in source }?.offset ?: 0)
             }
+        }
 
-        }.toList().min()
+        return locations.min()
     }
 
     override fun part2(input: String): Long {
-        val blocks = input.split("\n\n")
-        val seedRanges = numRegex.findAll(blocks[0]).map { it.value.toLong() }.toList()
+        val seedRanges = input.takeWhile { it != '\n' }
+            .split(" ")
+            .drop(1)
+            .map { it.toLong() }
             .windowed(2, step = 2)
-            .map { (rangeStart, len) -> rangeStart..<rangeStart + len }
-        val maps: List<List<Pair<LongRange, LongRange>>> = blocks.drop(1).map { block ->
-            block.split("\n").drop(1) // drop the title
-                .map { numRegex.findAll(it).map { it.value.toLong() }.toList() }
-                .map { (dstRangeStart, srcRangeStart, len) ->
-                    Pair(srcRangeStart..<srcRangeStart + len, dstRangeStart..<dstRangeStart + len)
-                }
-        }
+            .map { (start, len) -> start..<start + len }
+        val almanacs = getAlmanacs(input)
 
-        return maps.fold(seedRanges) { ranges, srcDstMaps ->
-            srcDstMaps.fold<Pair<LongRange, LongRange>, Pair<List<LongRange>, List<LongRange>>>(
-                Pair(ranges, emptyList())
-            ) { (unacceptedRanges, acceptedRanges), (srcRange, dstRange) ->
-                val ranges: List<Pair<List<LongRange>, List<LongRange>>> = unacceptedRanges.map { range ->
-                    val intersection = max(range.first, srcRange.first)..min(range.last, srcRange.last)
-                    if (intersection.isEmpty()) Pair(listOf(range), emptyList())
-                    else Pair(
-                        listOfNotNull(
-                            (range.first..<intersection.first).takeUnless(LongRange::isEmpty),
-                            (intersection.last + 1..range.last).takeUnless(LongRange::isEmpty)
-                        ), listOf(
-                            dstRange.first + (intersection.first - srcRange.first)..dstRange.first + (intersection.first - srcRange.first) + (intersection.last - intersection.first)
+        val locationRanges = almanacs.fold(seedRanges) { ranges, (almanacMaps) ->
+            // For every almanac mapping for a given almanac,
+            // * If source and range intersect
+            //   * map the intersection to the destination, but
+            //   * retain the difference
+            // * Otherwise, retain the entire range
+            // That is, don't try to check the intersection multiple times against ranges that have
+            // already been mapped into the destination context. At the end, combine the unaccepted
+            // and the accepted ranges to account for the transparent mapping into the destination
+            // context when no source ranges are matched.
+            almanacMaps.fold(
+                Pair(ranges, emptyList<LongRange>())
+            ) { (unaccepted, accepted), (source, offset) ->
+                // This could be done with a map, but it means we build a list of pairs of lists of
+                // ranges which ends up being cumbersome to flatten out into a pair of lists.
+                // Instead, just fold and manually build up the pair of list of ranges
+                unaccepted.fold(Pair(emptyList(), accepted)) { (rejects, accepts), range ->
+                    val intersection = range.intersect(source)
+                    val (newRejects, newAccepts) =
+                        if (intersection.isEmpty()) Pair(listOf(range), emptyList())
+                        else Pair(
+                            listOf(
+                                range.first..<intersection.first,
+                                intersection.last + 1..range.last
+                            ).filter { !it.isEmpty() },
+                            listOf(intersection.first + offset..intersection.last + offset)
                         )
-                    )
+                    Pair(newRejects + rejects, newAccepts + accepts)
                 }
-                Pair(ranges.flatMap { it.first }, acceptedRanges + ranges.flatMap { it.second })
             }.let { (unacceptedRanges, acceptedRanges) ->
                 acceptedRanges + unacceptedRanges
             }
-        }.minOf { it.first }
+        }
+
+        return locationRanges.minOf { it.first }
     }
 
     @Test
