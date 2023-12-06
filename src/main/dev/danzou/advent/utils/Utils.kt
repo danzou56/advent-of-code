@@ -2,8 +2,6 @@ package dev.danzou.advent.utils
 
 import java.math.BigInteger
 import java.security.MessageDigest
-import kotlin.math.max
-import kotlin.math.min
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.memberProperties
 
@@ -17,27 +15,6 @@ fun <R, T> Pair<R, T>.reversed(): Pair<T, R> = Pair(this.second, this.first)
 fun <T> List<T>.update(index: Int, item: T): List<T> = toMutableList().apply { this[index] = item }
 
 fun <T> Int.times(initial: T, operation: (T) -> T): T = (0 until this).fold(initial) { acc, _ -> operation(acc) }
-
-fun IntRange.intersect(that: IntRange): IntRange =
-    max(this.first, that.first)..min(this.last, that.last)
-
-fun IntRange.intersects(that: IntRange): Boolean =
-    !this.intersect(that).isEmpty()
-
-fun LongRange.intersect(that: LongRange): LongRange =
-    max(this.first, that.first)..min(this.last, that.last)
-
-fun LongRange.intersects(that: LongRange): Boolean =
-    !this.intersect(that).isEmpty()
-
-fun IntRange.isDisjoint(that: IntRange): Boolean =
-    this.first > that.last || this.last < that.first
-
-fun IntRange.isDisjointOrBorders(that: IntRange): Boolean =
-    this.first >= that.last || this.last <= that.first
-
-operator fun IntRange.contains(that: IntRange): Boolean =
-    that.first in this && that.last in this
 
 fun <T> permutationsOf(sets: List<Set<T>>): Set<List<T>> {
     val res = mutableSetOf<List<T>>()

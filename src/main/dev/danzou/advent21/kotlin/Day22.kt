@@ -36,9 +36,9 @@ internal class Day22 : AdventTestRunner21("Reactor Reboot") {
 
         fun intersect(that: Cuboid): Cuboid =
             Cuboid(
-                max(this.x.first, that.x.first)..min(this.x.last, that.x.last),
-                max(this.y.first, that.y.first)..min(this.y.last, that.y.last),
-                max(this.z.first, that.z.first)..min(this.z.last, that.z.last)
+                this.x intersect that.x,
+                this.y intersect that.y,
+                this.z intersect that.z
             )
 
         fun intersects(that: Cuboid): Boolean =
