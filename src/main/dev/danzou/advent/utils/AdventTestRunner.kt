@@ -10,16 +10,21 @@ import java.net.http.HttpResponse
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Duration
+import java.time.LocalDate
+import java.time.Month
 import kotlin.io.path.createFile
 import kotlin.io.path.notExists
 import kotlin.io.path.writeText
 import kotlin.test.assertEquals
 
 abstract class AdventTestRunner(protected val year: Int, protected val name: String? = null) {
-    protected val day: Int
-        get() = this.javaClass.simpleName.drop(3).takeWhile(Char::isDigit).toInt()
+    protected val day = this.javaClass.simpleName.drop(3).takeWhile(Char::isDigit).toInt()
 
-    protected open val timeout: Duration = Duration.ofSeconds(60)
+    protected val today = LocalDate.now().let { today ->
+        today.year % 100 == year && today.month == Month.DECEMBER && today.dayOfMonth == day
+    }
+    protected open val timeout = Duration.ofSeconds(if (today) 600 else 15)
+
     private val dataRoot = "data/advent"
     private val basePath = "$dataRoot/advent$year"
     protected val baseInputPath = "$basePath/inputs"
