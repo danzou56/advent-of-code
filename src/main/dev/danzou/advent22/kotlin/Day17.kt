@@ -58,18 +58,19 @@ class Day17 : AdventTestRunner22() {
 
     }
 
-    class PieceIterator(private val limit: Int) : Iterator<Shape> {
-         private val pieceSequence = arrayOf(
+    class PieceIterator(private val limit: Long) : Iterator<Shape> {
+        private val pieceSequence = arrayOf(
             Shape.Horizontal,
             Shape.Plus,
             Shape.RightL,
             Shape.Vertical,
             Shape.Square
         )
-        private var cur = 0
+        private var cur = 0L
 
         override fun hasNext(): Boolean = cur <= limit
-        override fun next(): Shape = pieceSequence[cur++ % pieceSequence.size]
+        override fun next(): Shape = pieceSequence[(cur++ % pieceSequence.size).toInt()]
+            .also { if (cur % 10_000 == 0L) println(cur) }
     }
 
     class DirectionIterator(private val directions: List<Go>) : Iterator<Direction> {
@@ -85,13 +86,15 @@ class Day17 : AdventTestRunner22() {
     }
 
     fun parseInput(input: String): List<Go> =
-        input.map { when(it) {
-            '<' -> Go.LEFT
-            '>' -> Go.RIGHT
-            else -> throw IllegalArgumentException()
-        } }
+        input.map {
+            when (it) {
+                '<' -> Go.LEFT
+                '>' -> Go.RIGHT
+                else -> throw IllegalArgumentException()
+            }
+        }
 
-    fun run(limit: Int, gos: List<Go>): Int {
+    fun run(limit: Long, gos: List<Go>): Int {
         val pieces = PieceIterator(limit)
         val directions = DirectionIterator(gos)
 
@@ -106,9 +109,33 @@ class Day17 : AdventTestRunner22() {
 
             return if (movedDownResult.isFailure) {
                 val newStack = stack + movedDown
+
+                val targetYs = movedDown.points.map { it.y }.toSet()
+                val cullable = newStack.points.filter { it.y in targetYs }
+                    .groupBy { it.y }
+                    .any { (y, ps) ->
+                        ps.map { it.x }.size == 7
+                    }
+//                if (newStack.points.groupBy { it.y }.filter { it.value.size == 7 }.isNotEmpty()) {
+//                    println("cull?")
+//                }
+
+                val filter: (Pos) -> Boolean =
+                    when (cullable) {
+                        true -> run lambda@{
+//                            println("cullable")
+                            val minY = movedDown.points.minOf { it.y }
+                            return@lambda { it: Pos -> it.y > minY - 1 }
+                        }
+                        false -> { _: Pos -> true }
+                    }
+                val culledStack = Shape(newStack.points.filter(filter).toSet())
+                if(culledStack.points.maxOfOrNull { it.y } != newStack.points.maxOfOrNull { it.y })
+                    println("uhoh")
+
                 step(
-                    newStack,
-                    pieces.next() + Pos(2, newStack.points.maxOf { it.y } + 3 + 1)
+                    culledStack,
+                    pieces.next() + Pos(2, culledStack.points.maxOf { it.y } + 3 + 1)
                 )
             } else {
                 step(stack, movedDown)
@@ -125,7 +152,8 @@ class Day17 : AdventTestRunner22() {
     }
 
     override fun part2(input: String): Any {
-        TODO("Not yet implemented")
+        val gos = parseInput(input)
+        return run(1000000000000L, gos)
     }
 
     @Test
