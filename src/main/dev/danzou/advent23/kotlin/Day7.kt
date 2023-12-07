@@ -4,7 +4,7 @@ import dev.danzou.advent23.AdventTestRunner23
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-internal class Day7 : AdventTestRunner23() {
+internal class Day7 : AdventTestRunner23("Camel Cards") {
     // We want what is essentially a modified lexicographic order. Since this is already achieved
     // when comparing Strings, remap the string to make the standard lexicographic comparison can
     // be applied. That is, the hand 9TJQKA becomes hijkl which can be sorted as normal.
