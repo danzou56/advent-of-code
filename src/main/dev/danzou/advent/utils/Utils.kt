@@ -16,6 +16,9 @@ fun <T> List<T>.update(index: Int, item: T): List<T> = toMutableList().apply { t
 
 fun <T> Int.times(initial: T, operation: (T) -> T): T = (0 until this).fold(initial) { acc, _ -> operation(acc) }
 
+fun <T> Iterable<T>.frequencyMap(): Map<T, Int> =
+    this.groupingBy { it }.eachCount()
+
 fun <T> permutationsOf(sets: List<Set<T>>): Set<List<T>> {
     val res = mutableSetOf<List<T>>()
     fun generate(cur: List<T>): Any {
