@@ -22,6 +22,17 @@ val Pos.x: Int
 val Pos.y: Int
     get() = this.second
 
+inline fun <reified T> String.asMatrix(): Matrix<T> {
+    return when (T::class) {
+        Int::class -> this.asMatrix(Char::digitToInt)
+        Char::class -> this.asMatrix { it }
+        else -> throw IllegalArgumentException("Class ${T::class.simpleName} not supported for asMatrix conversion without transformer")
+    } as Matrix<T>
+}
+
+fun <T> String.asMatrix(transformer: (Char) -> T): Matrix<T> =
+    this.split("\n").map { it.map(transformer) }
+
 fun List<Int>.toPos(): Pos = this.toPair()
 fun List<Int>.toPoint(): Point = this.toPair()
 
