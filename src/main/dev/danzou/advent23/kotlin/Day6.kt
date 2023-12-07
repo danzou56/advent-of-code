@@ -5,7 +5,7 @@ import dev.danzou.advent23.AdventTestRunner23
 import kotlin.math.ceil
 import kotlin.math.floor
 
-internal class Day6 : AdventTestRunner23() {
+internal class Day6 : AdventTestRunner23("Wait For It") {
     // completely overbuilt for the problem because we can actually just brute force try all values
     fun waysToWin(time: Long, distance: Long): Long {
         // d := distance, t := button time, T := race duration
