@@ -36,8 +36,8 @@ infix fun <T> Set<T>.choose(k: Int): Set<Set<T>> {
     require(k >= 0)
 
     fun generate(remaining: Set<T>, current: Set<T>, k: Int): Set<Set<T>> {
-        require(remaining.isNotEmpty())
         if (k == 0) return setOf(current)
+        require(remaining.isNotEmpty())
         return remaining.flatMap {
             generate(
                 remaining - it,
