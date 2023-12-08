@@ -2,6 +2,36 @@ package dev.danzou.advent.utils
 
 import kotlin.math.sqrt
 
+fun gcd(i1: Int, i2: Int): Int {
+    var gcd = 1
+
+    var i = 1
+    while (i <= i1 && i <= i2) {
+        // Checks if i is factor of both integers
+        if (i1 % i == 0 && i2 % i == 0)
+            gcd = i
+        ++i
+    }
+
+    return gcd
+}
+
+fun gcd(l1: Long, l2: Long): Long {
+    var gcd = 1L
+    var i = 1L
+    while (i <= l1 && i <= l2) {
+        // Checks if i is factor of both integers
+        if (l1 % i == 0L && l2 % i == 0L)
+            gcd = i
+        ++i
+    }
+
+    return gcd
+}
+
+fun lcm(i1: Int, i2: Int): Int = i1 * i2 / gcd(i1, i2)
+
+fun lcm(l1: Long, l2: Long): Long = l1 * l2 / gcd(l1, l2)
 
 fun Int.pow(i: Int): Int =
     generateSequence { this }.take(i).reduceOrNull(Int::times) ?: 1

@@ -1,25 +1,11 @@
 package dev.danzou.advent23.kotlin
 
+import dev.danzou.advent.utils.lcm
 import dev.danzou.advent23.AdventTestRunner23
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 internal class Day8 : AdventTestRunner23() {
-
-    // Shamelessly stolen from the internet
-    fun lcm(n1: Long, n2: Long): Long {
-        var gcd = 1L
-
-        var i = 1L
-        while (i <= n1 && i <= n2) {
-            // Checks if i is factor of both integers
-            if (n1 % i == 0L && n2 % i == 0L)
-                gcd = i
-            ++i
-        }
-
-        return n1 * n2 / gcd
-    }
 
     fun getNetwork(input: String): Map<String, List<String>> =
         input.split("\n").drop(2)
