@@ -4,14 +4,14 @@ import dev.danzou.advent.utils.*
 import dev.danzou.advent.utils.geometry3.Pos3
 import dev.danzou.advent.utils.geometry3.squaredDistanceTo
 import dev.danzou.advent21.AdventTestRunner21
-import org.apache.commons.math3.linear.CholeskyDecomposition
-import org.apache.commons.math3.linear.EigenDecomposition
+import org.apache.commons.math3.linear.DefaultRealMatrixPreservingVisitor
 import org.apache.commons.math3.linear.LUDecomposition
 import org.apache.commons.math3.linear.MatrixUtils
 import org.apache.commons.math3.linear.QRDecomposition
 import org.apache.commons.math3.linear.RealMatrix
-import org.apache.commons.math3.linear.SingularValueDecomposition
+import org.apache.commons.math3.linear.RealMatrixChangingVisitor
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Assertions.assertEquals
 import kotlin.math.abs
 import kotlin.math.round
 
@@ -53,58 +53,84 @@ internal class Day19 : AdventTestRunner21("Beacon Scanner") {
     fun resolveTransformation(
         distances: Map<Scanner, Map<Beacon, Map<Beacon, Int>>>,
         differences: Map<Scanner, Map<Int, BeaconEdge>>,
-        scanner0: Scanner,
-        scanner1: Scanner
+        imageScanner: Scanner,
+        preImageScanner: Scanner
     ): RealMatrix {
-        val overlappingDists: Set<Int> = differences[scanner0]!!.keys.intersect(differences[scanner1]!!.keys)
+        val overlappingDists: Set<Int> = differences[imageScanner]!!.keys.intersect(differences[preImageScanner]!!.keys)
         val pairings = resolveBeaconPairings(
-            distances[scanner0]!!
+            distances[imageScanner]!!
                 .mapValues { (_, map) -> map.filter { (_, dist) -> dist in overlappingDists } }
                 .filter { (_, map) -> map.isNotEmpty() },
-            distances[scanner1]!!
+            distances[preImageScanner]!!
                 .mapValues { (_, map) -> map.filter { (_, dist) -> dist in overlappingDists } }
                 .filter { (_, map) -> map.isNotEmpty() }
         )
-        // scanner 0
+        // image
         val b_cols = pairings
             .map { it.beacon1.pos }
-            .map { (x, y, z) -> doubleArrayOf(x.toDouble(), y.toDouble(), z.toDouble()) }
+            .map { (x, y, z) ->
+                doubleArrayOf(
+                    x.toDouble(),
+                    y.toDouble(),
+                    z.toDouble(),
+                    1.0
+                )
+            } // 1.0 not needed but helps
             .toTypedArray()
         val B = MatrixUtils.createRealMatrix(b_cols)
-        // scanner 1
+        assert(B.columnDimension == 4)
+        assert(B.rowDimension >= 12)
+        // pre-image
         val x_cols = pairings
             .map { it.beacon2.pos }
             .map { (x, y, z) -> doubleArrayOf(x.toDouble(), y.toDouble(), z.toDouble(), 1.0) }
             .toTypedArray()
         val X = MatrixUtils.createRealMatrix(x_cols)
-        val A = QRDecomposition(X).solver.solve(B).transpose()
+        assert(X.columnDimension == 4)
+        assert(X.rowDimension >= 12)
+        val A = QRDecomposition(X).solver.solve(B)
+        assert(A.rowDimension == 4)
+        assert(A.columnDimension == 4)
         require(A.data.all { it.all { d -> abs(round(d) - d) < E } })
+//        require(A.getRow(3).zip(doubleArrayOf(0.0, 0.0, 0.0, 1.0)).all { (actual, expected) -> actual - expected in -E..E })
         val roundedA = MatrixUtils.createRealMatrix(A.data.map { it.map(::round).toDoubleArray() }.toTypedArray())
         require(LUDecomposition(roundedA.getSubMatrix(0, 2, 0, 2)).determinant in 1 - E..1 + E)
+
+        assert(
+            b_cols.zip(x_cols).all { (b, x) ->
+                val b_vec = MatrixUtils.createRealMatrix(arrayOf(b))
+                val x_vec = MatrixUtils.createRealMatrix(arrayOf(x))
+                assert(b_vec.columnDimension == 4)
+                assert(x_vec.columnDimension == 4)
+                //roundedA.multiply(x_vec.transpose()).transpose()
+                // x_vec is rowdim 1
+                val actual_b_vec = roundedA.preMultiply(x_vec)
+                actual_b_vec.subtract(b_vec).data.all { it.all { it in -E..E } }
+            }
+        )
         return roundedA
     }
 
     fun resolveBeaconPairings(
-        distances0: Map<Beacon, Map<Beacon, Int>>,
-        distances1: Map<Beacon, Map<Beacon, Int>>,
+        imageDistances: Map<Beacon, Map<Beacon, Int>>,
+        preImageDistances: Map<Beacon, Map<Beacon, Int>>,
     ): List<BeaconEdge> {
-        val initBeacon0 = distances0.keys.first()
-        val initBeacon1 = distances1.entries.single { (_, map) ->
-//            println(distances0[initBeacon0]!!.values.toSet().intersect(map.values.toSet()))
-            distances0[initBeacon0]!!.values.toSet() == map.values.toSet()
+        val initBeacon = imageDistances.keys.first()
+        val initBeaconInPreImage = preImageDistances.entries.single { (_, map) ->
+            imageDistances[initBeacon]!!.values.toSet() == map.values.toSet()
         }.key
         val initPairing = listOf(
             BeaconEdge(
-                initBeacon0,
-                initBeacon1
+                initBeacon,
+                initBeaconInPreImage
             )
         )
-        return (initPairing + distances0[initBeacon0]!!.map { (otherBeacon0, targetDist) ->
+        return (initPairing + imageDistances[initBeacon]!!.map { (beacon, distance) ->
             BeaconEdge(
-                otherBeacon0,
-                distances1[initBeacon1]!!
+                beacon,
+                preImageDistances[initBeaconInPreImage]!!
                     .entries
-                    .single { (_, dist) -> dist == targetDist }
+                    .single { it.value == distance }
                     .key
             )
         }).also { assert(it.size in 12..17) }
@@ -166,7 +192,7 @@ internal class Day19 : AdventTestRunner21("Beacon Scanner") {
                 .mapValues { (_, pairs) -> pairs.map(Pair<Scanner, Scanner>::second).toSet() }
 
         val predecessors = mutableMapOf(
-            Scanner(0) to (Scanner(0) to MatrixUtils.createRealMatrix(3, 4).apply {
+            0 to (0 to MatrixUtils.createRealMatrix(3, 4).apply {
                 setSubMatrix(
                     MatrixUtils.createRealIdentityMatrix(3).data, 0, 0
                 )
@@ -175,28 +201,34 @@ internal class Day19 : AdventTestRunner21("Beacon Scanner") {
         bfs(Scanner(0)) { s ->
             val scanners = overlappingScanners.getValue(s)
             scanners.forEach { d ->
-                predecessors.computeIfAbsent(d) { d ->
-                    s to resolveTransformation(distances, differences, s, d)
+                predecessors.computeIfAbsent(d.id) { _ ->
+                    s.id to resolveTransformation(distances, differences, s, d)
                 }
             }
             scanners
         }
 
-        beaconsByScanners.values.flatten()
+        val beacons = beaconsByScanners.values.flatten()
             .map { (pos, scanner) ->
                 var context = scanner.id
-                var beacon = MatrixUtils.createRealVector(
-                    (pos.toList().map { it.toDouble() } + 1.0).toDoubleArray()
+//                var beacon = pos.toList().map { it.toDouble() }.toDoubleArray()
+                var beacon = MatrixUtils.createRealMatrix(
+                    arrayOf((pos.toList().map { it.toDouble() } + 1.0).toDoubleArray())
                 )
+                assert(beacon.rowDimension == 1)
+                assert(beacon.columnDimension == 4)
                 while (context != 0) {
-                    context = 0
-//                    beacon = predecessors[context]!!.second.multipl
+                    beacon = predecessors[context]!!.second.preMultiply(
+                        beacon
+                    )
+                    context = predecessors[context]!!.first
+                    assert(beacon.rowDimension == 1)
+                    assert(beacon.columnDimension == 4)
                 }
+                beacon.data[0].map(::round).map(Double::toInt).toList()
             }
-//        fun resolveBeaconsToScanner0(resolved: Set<Beacon>): Set<Beacon> {
-//
-//        }
-        TODO("Not yet implemented")
+
+        return beacons.toSet().size
     }
 
     override fun part2(input: String): Any {
@@ -344,6 +376,6 @@ internal class Day19 : AdventTestRunner21("Beacon Scanner") {
             30,-46,-14
         """.trimIndent()
 
-        part1(input)
+        assertEquals(79, part1(input))
     }
 }
