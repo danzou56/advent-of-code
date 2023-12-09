@@ -2,7 +2,9 @@ package dev.danzou.advent21.kotlin
 
 import dev.danzou.advent.utils.*
 import dev.danzou.advent.utils.geometry3.Pos3
+import dev.danzou.advent.utils.geometry3.manhattanDistanceTo
 import dev.danzou.advent.utils.geometry3.squaredDistanceTo
+import dev.danzou.advent.utils.geometry3.toTriple
 import dev.danzou.advent21.AdventTestRunner21
 import org.apache.commons.math3.linear.DefaultRealMatrixPreservingVisitor
 import org.apache.commons.math3.linear.LUDecomposition
@@ -191,12 +193,8 @@ internal class Day19 : AdventTestRunner21("Beacon Scanner") {
                 .groupBy { it.first }
                 .mapValues { (_, pairs) -> pairs.map(Pair<Scanner, Scanner>::second).toSet() }
 
-        val predecessors = mutableMapOf(
-            0 to (0 to MatrixUtils.createRealMatrix(3, 4).apply {
-                setSubMatrix(
-                    MatrixUtils.createRealIdentityMatrix(3).data, 0, 0
-                )
-            })
+        val predecessors = mutableMapOf<Int, Pair<Int, RealMatrix?>>(
+            0 to (0 to null)
         )
         bfs(Scanner(0)) { s ->
             val scanners = overlappingScanners.getValue(s)
@@ -217,8 +215,8 @@ internal class Day19 : AdventTestRunner21("Beacon Scanner") {
                 )
                 assert(beacon.rowDimension == 1)
                 assert(beacon.columnDimension == 4)
-                while (context != 0) {
-                    beacon = predecessors[context]!!.second.preMultiply(
+                while (predecessors[context]!!.second != null) {
+                    beacon = predecessors[context]!!.second!!.preMultiply(
                         beacon
                     )
                     context = predecessors[context]!!.first
@@ -232,7 +230,94 @@ internal class Day19 : AdventTestRunner21("Beacon Scanner") {
     }
 
     override fun part2(input: String): Any {
-        TODO("Not yet implemented")
+        val beaconsByScanners: Map<Scanner, List<Beacon>> =
+            input.split("\n\n").associate {
+                val lines = it.split("\n")
+                val scanner = Regex("\\d+")
+                    .find(lines.first())!!
+                    .value
+                    .toInt()
+                    .let(::Scanner)
+                val beacons = lines
+                    .drop(1)
+                    .map { line ->
+                        line.split(",")
+                            .map(String::toInt)
+                            .let { (x, y, z) -> Pos3(x, y, z) }
+                    }.map { p3 -> Beacon(p3, scanner) }
+                scanner to beacons
+            }
+
+        // essentially undirected edge map
+        val distances: Map<Scanner, Map<Beacon, Map<Beacon, Int>>> =
+            beaconsByScanners.mapValues { (_, beacons) ->
+                (beacons.toSet() choose 2)
+                    .map { it.toList() }
+                    .map { (b1, b2) -> Pair(b1, b2) to b1.pos.squaredDistanceTo(b2.pos) }
+                    .flatMap { (pair, dist) ->
+                        listOf(
+                            pair to dist, pair.reversed() to dist
+                        )
+                    }
+                    .groupBy { (pair, _) -> pair.first }
+                    .mapValues { (_, v) -> v.associate { (pair, dist) -> pair.second to dist } }
+            }
+        val differences: Map<Scanner, Map<Int, BeaconEdge>> =
+            beaconsByScanners.mapValues { (_, beacons) ->
+                (beacons.toSet() choose 2)
+                    .map { it.toList() }
+                    .associate { (b1, b2) -> b1.pos.squaredDistanceTo(b2.pos) to BeaconEdge(b1, b2) }
+            }
+
+        val minOverlap = MIN_OVERLAP choose 2
+        require(minOverlap == 66)
+        val overlappingScanners: Map<Scanner, Set<Scanner>> =
+            (beaconsByScanners.keys choose 2)
+                .map { it.toList() }
+                .filter { scanners ->
+                    scanners.map(differences::getValue)
+                        .map { it.keys }
+                        .reduce(Set<Int>::intersect)
+                        .size >= minOverlap
+                }
+                .flatMap { (f, s) -> listOf(f to s, s to f) }
+                .groupBy { it.first }
+                .mapValues { (_, pairs) -> pairs.map(Pair<Scanner, Scanner>::second).toSet() }
+
+        val predecessors = mutableMapOf<Int, Pair<Int, RealMatrix?>>(
+            0 to (0 to null)
+        )
+        bfs(Scanner(0)) { s ->
+            val scanners = overlappingScanners.getValue(s)
+            scanners.forEach { d ->
+                predecessors.computeIfAbsent(d.id) { _ ->
+                    s.id to resolveTransformation(distances, differences, s, d)
+                }
+            }
+            scanners
+        }
+
+        val beacons = beaconsByScanners.keys
+            .map { (id) ->
+                var context = id
+//                var beacon = pos.toList().map { it.toDouble() }.toDoubleArray()
+                var beacon = MatrixUtils.createRealMatrix(
+                    arrayOf(doubleArrayOf(0.0, 0.0, 0.0, 1.0))
+                )
+                assert(beacon.rowDimension == 1)
+                assert(beacon.columnDimension == 4)
+                while (predecessors[context]!!.second != null) {
+                    beacon = predecessors[context]!!.second!!.preMultiply(
+                        beacon
+                    )
+                    context = predecessors[context]!!.first
+                    assert(beacon.rowDimension == 1)
+                    assert(beacon.columnDimension == 4)
+                }
+                beacon.data[0].map(::round).map(Double::toInt).toList()
+            }
+
+        return (beacons.toSet() choose 2).map { it.toList().map { it.take(3) } }.maxOf { (b1, b2) -> b1.toTriple().manhattanDistanceTo(b2.toTriple()) }
     }
 
     @Test
