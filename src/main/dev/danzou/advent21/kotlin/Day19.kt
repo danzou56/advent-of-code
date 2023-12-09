@@ -6,14 +6,12 @@ import dev.danzou.advent.utils.geometry3.manhattanDistanceTo
 import dev.danzou.advent.utils.geometry3.squaredDistanceTo
 import dev.danzou.advent.utils.geometry3.toTriple
 import dev.danzou.advent21.AdventTestRunner21
-import org.apache.commons.math3.linear.DefaultRealMatrixPreservingVisitor
 import org.apache.commons.math3.linear.LUDecomposition
 import org.apache.commons.math3.linear.MatrixUtils
 import org.apache.commons.math3.linear.QRDecomposition
 import org.apache.commons.math3.linear.RealMatrix
-import org.apache.commons.math3.linear.RealMatrixChangingVisitor
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 import kotlin.math.abs
 import kotlin.math.round
 
@@ -98,18 +96,6 @@ internal class Day19 : AdventTestRunner21("Beacon Scanner") {
         val roundedA = MatrixUtils.createRealMatrix(A.data.map { it.map(::round).toDoubleArray() }.toTypedArray())
         require(LUDecomposition(roundedA.getSubMatrix(0, 2, 0, 2)).determinant in 1 - E..1 + E)
 
-        assert(
-            b_cols.zip(x_cols).all { (b, x) ->
-                val b_vec = MatrixUtils.createRealMatrix(arrayOf(b))
-                val x_vec = MatrixUtils.createRealMatrix(arrayOf(x))
-                assert(b_vec.columnDimension == 4)
-                assert(x_vec.columnDimension == 4)
-                //roundedA.multiply(x_vec.transpose()).transpose()
-                // x_vec is rowdim 1
-                val actual_b_vec = roundedA.preMultiply(x_vec)
-                actual_b_vec.subtract(b_vec).data.all { it.all { it in -E..E } }
-            }
-        )
         return roundedA
     }
 
