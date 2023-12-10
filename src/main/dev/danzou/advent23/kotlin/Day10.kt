@@ -40,29 +40,35 @@ internal class Day10 : AdventTestRunner23("Pipe Maze") {
                 }
             } + mapOf(middlePos to this.char)
 
-            return (0..<3).map { y ->
-                (0..<3).map { x ->
-                    occupied[x to y] ?: '.'
-                }.joinToString("")
-            }.joinToString("\n")
+            return (0..<EXPLOSION_FACTOR).joinToString("\n") { y ->
+                (0..<EXPLOSION_FACTOR).joinToString("") { x ->
+                    occupied[x to y]?.toString() ?: "."
+                }
+            }
         }
-
 
         companion object {
+            val EXPLOSION_FACTOR = 3
+
             private val map = entries.associateBy(Maze::char)
             fun fromChar(char: Char): Maze = map.getValue(char)
+
+            fun fromString(input: String): Matrix<Maze> = input.asMatrix(Maze::fromChar)
         }
     }
-
-    fun getMaze(input: String): Matrix<Maze> = input.asMatrix(Maze::fromChar)
 
     fun getLoop(maze: Matrix<Maze>): Set<Pos> {
         val indices = maze.indices2D
         val start = indices.single { maze[it] == Maze.START }
 
         val paths = bfs(start) { cur ->
-            maze[cur].dirs.map { cur + it.dir }.filter { it in indices }
-                .filter { next -> maze[next].dirs.any { (next + it.dir) == cur } }
+            maze[cur].dirs
+                .map { cur + it.dir }
+                .filter { next ->
+                    maze.getOrElse(next) { _ -> Maze.GROUND }
+                        .dirs
+                        .any { (next + it.dir) == cur }
+                }
                 .toSet()
         }
         // Because of the exact geometry of the problem, the number of accessible cells is
@@ -70,29 +76,29 @@ internal class Day10 : AdventTestRunner23("Pipe Maze") {
         return paths.also { assert(it.size % 2 == 0) }
     }
 
-    override fun part1(input: String): Any {
-        val maze = getMaze(input)
+    override fun part1(input: String): Int {
+        val maze = Maze.fromString(input)
         val loopPos = getLoop(maze)
         // Given the even-sized loop, the furthest we can get away is half of the number of
         // accessible cells
         return loopPos.size / 2
     }
 
-    override fun part2(input: String): Any {
-        val maze = getMaze(input)
+    override fun part2(input: String): Int {
+        val maze = Maze.fromString(input)
         val loop = getLoop(maze)
 
         val cleanedMaze = maze.mapIndexed2D { pos, cell -> if (pos in loop) cell else Maze.GROUND }
         // To allow us to go between pipes, explode all of the cells into a 3x3 - now each pipe is
         // guaranteed to be at least one empty cell away from any other given pipe
-        val explodedMaze = getMaze(
-            cleanedMaze.flatMap { row ->
-                row.map { cell ->
-                    cell.embiggened().split("\n")
-                }.fold(List(3) { "" }) { accs, curs ->
-                    accs.zip(curs).map { (acc, cur) -> acc + cur }
-                }
-            }.joinToString("\n")
+        val explodedMaze = Maze.fromString(
+            cleanedMaze.joinToString("\n") { row ->
+                row.map(Maze::embiggened)
+                    .fold(List(Maze.EXPLOSION_FACTOR) { "" }) { accs, curs ->
+                        accs.zip(curs.split("\n")).map { (acc, cur) -> acc + cur }
+                    }
+                    .joinToString("\n")
+            }
         )
 
         // Find those cells accessible from the border
@@ -101,8 +107,8 @@ internal class Day10 : AdventTestRunner23("Pipe Maze") {
                 .filter { explodedMaze[it] == Maze.GROUND }
                 .toSet()
         }
-        // Map all of them back into the context of the un-exploded maze
-            .map { it.x / 3 to it.y / 3 }
+            // Map all of them back into the context of the un-exploded maze
+            .map { it.x / Maze.EXPLOSION_FACTOR to it.y / Maze.EXPLOSION_FACTOR }
             .filter { cleanedMaze[it] == Maze.GROUND }
             .toSet()
 
