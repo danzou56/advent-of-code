@@ -19,6 +19,18 @@ fun <T> Int.times(initial: T, operation: (T) -> T): T = (0 until this).fold(init
 fun <T> Iterable<T>.frequencyMap(): Map<T, Int> =
     this.groupingBy { it }.eachCount()
 
+inline fun <reified T> String.getValue(): T =
+    this.getValues<T>().single()
+
+inline fun <reified T> String.getValues(): List<T> =
+    when (T::class) {
+        Int::class -> Regex("-?\\d+").findAll(this).map { it.value.toInt() }.toList()
+        UInt::class -> Regex("\\d+").findAll(this).map { it.value.toUInt() }.toList()
+        Long::class -> Regex("-?\\d+").findAll(this).map { it.value.toLong() }.toList()
+        ULong::class -> Regex("\\d+").findAll(this).map { it.value.toULong() }.toList()
+        else -> throw UnsupportedOperationException("Type ${T::class.simpleName} not supported for getValues")
+    } as List<T>
+
 fun <T> permutationsOf(sets: List<Set<T>>): Set<List<T>> {
     val res = mutableSetOf<List<T>>()
     fun generate(cur: List<T>): Any {
@@ -50,11 +62,15 @@ infix fun <T> Set<T>.choose(k: Int): Set<Set<T>> {
     return generate(this, emptySet(), k)
 }
 
+// TODO suspicious return type - should be Set<Set<T>>? why does this exist?
 infix fun <T> List<T>.choose(k: Int): Set<List<T>> {
     return (this.indices.toSet() choose k).map { indices ->
         this.slice(indices)
     }.toSet()
 }
+
+fun <T> List<T>.pairs(): Set<List<T>> = this choose 2
+fun <T> Set<T>.pairs(): Set<Set<T>> = this choose 2
 
 /**
  * Super jank class that emulates the functionality of the Kotlin data keyword. Generates a basic
