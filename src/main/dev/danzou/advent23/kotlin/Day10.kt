@@ -5,11 +5,9 @@ import dev.danzou.advent.utils.geometry.Compass
 import dev.danzou.advent.utils.geometry.plus
 import dev.danzou.advent23.AdventTestRunner23
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Test
-import java.util.*
 
-internal class Day10 : AdventTestRunner23() {
+internal class Day10 : AdventTestRunner23("Pipe Maze") {
     /**
      * | is a vertical pipe connecting north and south.
      * - is a horizontal pipe connecting east and west.
@@ -20,172 +18,96 @@ internal class Day10 : AdventTestRunner23() {
      * . is ground; there is no pipe in this tile.
      * S is the starting position of the animal; there is a pipe on this tile, but your sketch doesn't show what shape the pipe has.
      */
+    enum class Maze(val char: Char, vararg val dirs: Compass) {
+        // @formatter:off
+        GROUND    ('.'),
+        START     ('S', Compass.NORTH, Compass.SOUTH, Compass.EAST, Compass.WEST),
+        VERTICAL  ('|', Compass.NORTH, Compass.SOUTH),
+        HORIZONTAL('-', Compass.EAST,  Compass.WEST),
+        EL        ('L', Compass.NORTH, Compass.EAST),
+        JAY       ('J', Compass.NORTH, Compass.WEST),
+        SEVEN     ('7', Compass.SOUTH, Compass.WEST),
+        EFF       ('F', Compass.SOUTH, Compass.EAST);
+        // @formatter:on
 
-    // @formatter:off
-    enum class Maze(vararg val dirs: Compass) {
-        VERTICAL(Compass.NORTH, Compass.SOUTH),
-        HORIZONTAL(Compass.EAST, Compass.WEST),
-        EL(Compass.NORTH, Compass.EAST),
-        JAY(Compass.NORTH, Compass.WEST),
-        SEVEN(Compass.SOUTH, Compass.WEST),
-        EFF(Compass.SOUTH, Compass.EAST),
-        GROUND(),
-        START(Compass.NORTH, Compass.SOUTH, Compass.EAST, Compass.WEST);
-    }
-    // @formatter:on
+        fun embiggened(): String {
+            val middlePos = (1 to 1)
+            val occupied = this.dirs.associate {
+                (middlePos + it.dir) to when (it) {
+                    Compass.NORTH, Compass.SOUTH -> '|'
+                    Compass.EAST, Compass.WEST -> '-'
+                    else -> throw IllegalArgumentException("Invalid direction")
+                }
+            } + mapOf(middlePos to this.char)
 
-    fun getEmbiggened(mazePiece: Maze): String = when (mazePiece) {
-        Maze.VERTICAL -> """
-                .|.
-                .|.
-                .|.
-            """.trimIndent()
-
-        Maze.HORIZONTAL -> """
-                ...
-                ---
-                ...
-            """.trimIndent()
-
-        Maze.EL -> """
-                .|.
-                .L-
-                ...
-            """.trimIndent()
-
-        Maze.JAY -> """
-                .|.
-                -J.
-                ...
-            """.trimIndent()
-
-        Maze.SEVEN -> """
-                ...
-                -7.
-                .|.
-            """.trimIndent()
-
-        Maze.EFF -> """
-                ...
-                .F-
-                .|.
-            """.trimIndent()
-
-        Maze.GROUND -> """
-                ...
-                ...
-                ...
-            """.trimIndent()
-
-        Maze.START -> """
-                .|.
-                -S-
-                .|.
-            """.trimIndent()
-    }
-
-    fun getMaze(input: String): Matrix<Maze> = input.asMatrix {
-        when (it) {
-            '|' -> Maze.VERTICAL
-            '-' -> Maze.HORIZONTAL
-            'L' -> Maze.EL
-            'J' -> Maze.JAY
-            '7' -> Maze.SEVEN
-            'F' -> Maze.EFF
-            '.' -> Maze.GROUND
-            'S' -> Maze.START
-            else -> throw IllegalArgumentException(it.toString())
+            return (0..<3).map { y ->
+                (0..<3).map { x ->
+                    occupied[x to y] ?: '.'
+                }.joinToString("")
+            }.joinToString("\n")
         }
+
+
+        companion object {
+            private val map = entries.associateBy(Maze::char)
+            fun fromChar(char: Char): Maze = map.getValue(char)
+        }
+    }
+
+    fun getMaze(input: String): Matrix<Maze> = input.asMatrix(Maze::fromChar)
+
+    fun getLoop(maze: Matrix<Maze>): Set<Pos> {
+        val indices = maze.indices2D
+        val start = indices.single { maze[it] == Maze.START }
+
+        val paths = bfs(start) { cur ->
+            maze[cur].dirs.map { cur + it.dir }.filter { it in indices }
+                .filter { next -> maze[next].dirs.any { (next + it.dir) == cur } }
+                .toSet()
+        }
+        // Because of the exact geometry of the problem, the number of accessible cells is
+        // necessarily even
+        return paths.also { assert(it.size % 2 == 0) }
     }
 
     override fun part1(input: String): Any {
         val maze = getMaze(input)
-        val startPosY = maze.indexOfFirst { row -> row.indexOf(Maze.START) >= 0 }
-        val startPosX = maze[startPosY].indexOf(Maze.START)
-
-        val indices = maze.indices2D
-        val paths = bfs(startPosX to startPosY) { cur ->
-            maze.get(cur).dirs.map { cur + it.dir }.filter { it in indices }
-                .filter { next -> maze.get(next).dirs.any { (next + it.dir) == cur } }.toSet()
-        }
-        return paths.maxOf { it.size } - 1
+        val loopPos = getLoop(maze)
+        // Given the even-sized loop, the furthest we can get away is half of the number of
+        // accessible cells
+        return loopPos.size / 2
     }
 
     override fun part2(input: String): Any {
         val maze = getMaze(input)
-        val startPosY = maze.indexOfFirst { row -> row.indexOf(Maze.START) >= 0 }
-        val startPosX = maze[startPosY].indexOf(Maze.START)
+        val loop = getLoop(maze)
 
-        val indices = maze.indices2D
-
-        val paths = bfs(startPosX to startPosY) { cur ->
-            maze.get(cur).dirs.map { cur + it.dir }.filter { it in indices }
-                .filter { next -> maze.get(next).dirs.any { (next + it.dir) == cur } }.toSet().also {
-                    it
+        val cleanedMaze = maze.mapIndexed2D { pos, cell -> if (pos in loop) cell else Maze.GROUND }
+        // To allow us to go between pipes, explode all of the cells into a 3x3 - now each pipe is
+        // guaranteed to be at least one empty cell away from any other given pipe
+        val explodedMaze = getMaze(
+            cleanedMaze.flatMap { row ->
+                row.map { cell ->
+                    cell.embiggened().split("\n")
+                }.fold(List(3) { "" }) { accs, curs ->
+                    accs.zip(curs).map { (acc, cur) -> acc + cur }
                 }
+            }.joinToString("\n")
+        )
+
+        // Find those cells accessible from the border
+        val outside = bfs(0 to 0) {
+            explodedMaze.neighboringPos(it)
+                .filter { explodedMaze[it] == Maze.GROUND }
+                .toSet()
         }
-        val loop = paths.flatMap { it }.toSet()
+        // Map all of them back into the context of the un-exploded maze
+            .map { it.x / 3 to it.y / 3 }
+            .filter { cleanedMaze[it] == Maze.GROUND }
+            .toSet()
 
-        val newMaze = maze.mapIndexed { y, row ->
-            row.mapIndexed { x, cell -> if ((x to y) in loop) cell else Maze.GROUND }
-        }
-        val embiggenedMaze = getMaze(newMaze.mapIndexed { y, row ->
-            row.mapIndexed { x, cell ->
-                getEmbiggened(cell).split("\n")
-            }.fold(listOf("", "", "")) { (top, middle, bottom), (curTop, curMiddle, curBottom) ->
-                listOf(top + curTop, middle + curMiddle, bottom + curBottom)
-            }
-        }.flatten().joinToString("\n"))
-
-
-        val bigStartPosY = embiggenedMaze.indexOfFirst { row -> row.indexOf(Maze.START) >= 0 }
-        val bigStartPosX = embiggenedMaze[bigStartPosY].indexOf(Maze.START)
-        val bigIndices = embiggenedMaze.indices2D
-//        val bigLoop = em
-//        val bigLoop = bfs(bigStartPosX to bigStartPosY) { cur ->
-//            embiggenedMaze.get(cur).dirs
-//                .map { cur + it.dir }
-//                .filter { it in bigIndices }
-//                .filter { next -> embiggenedMaze.get(next).dirs.any { (next + it.dir) == cur } }.toSet()
-//        }.flatMap { it }.toSet()
-
-        val border = bigIndices.filter {
-            it.x == 0 || it.x == embiggenedMaze[0].size - 1 || it.y == 0 || it.y == embiggenedMaze.size - 1
-        }.filter {
-            embiggenedMaze[it] == Maze.GROUND
-        }
-
-        val outsideBigCoords = customBfs(border.toSet()) {
-            embiggenedMaze.neighboringPos(it).filter { embiggenedMaze[it] == Maze.GROUND }.toSet()
-        }.toSet()
-        val outside = outsideBigCoords.map { it.x / 3 to it.y / 3 }.filter {
-            newMaze[it] == Maze.GROUND
-        }.toSet()
-
-        return outside.let { outside ->
-            indices.size - loop.size - outside.size
-        }.also {
-            assertNotEquals(713, it)
-            //5945
-        }
-
-    }
-
-    fun <T> customBfs(initSet: Set<T>, getNeighbors: NeighborFunction<T>): Set<T> {
-        val queue: Queue<T> = LinkedList()
-        val discovered = initSet.toMutableSet()
-        queue.addAll(initSet)
-        while (queue.isNotEmpty()) {
-            val cur = queue.poll()!!
-//            discovered.add(cur)
-            for (adjacent in getNeighbors(cur)) {
-                if (adjacent !in discovered) {
-                    discovered.add(adjacent)
-                    queue.add(adjacent)
-                }
-            }
-        }
-        return discovered
+        // Number of cells inside is the total size of the maze, minus the loop & outside
+        return maze.indices2D.size - loop.size - outside.size
     }
 
     @Test
