@@ -1,6 +1,6 @@
 package dev.danzou.advent22.kotlin
 
-import dev.danzou.advent.utils.dfs
+import dev.danzou.advent.utils.bfs
 import dev.danzou.advent.utils.geometry3.*
 import dev.danzou.advent22.AdventTestRunner22
 import org.junit.jupiter.api.Test
@@ -69,7 +69,7 @@ class Day18 : AdventTestRunner22() {
             Direction3.values().map { pos + it.dir }
                 .filter { it !in cubeMap }.toSet()
 
-        val discovered = dfs(
+        val discovered = bfs(
             cubes.maxBy { it.pos.y }.pos + Direction3.UP.dir
         ) { pos ->
             val directNeighbors = getNeighboringAir(pos)
