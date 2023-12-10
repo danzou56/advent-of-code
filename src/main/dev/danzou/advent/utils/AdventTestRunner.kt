@@ -23,7 +23,7 @@ abstract class AdventTestRunner(protected val year: Int, protected val name: Str
     protected val today = LocalDate.now().let { today ->
         today.year % 100 == year && today.month == Month.DECEMBER && today.dayOfMonth == day
     }
-    protected open val timeout = Duration.ofSeconds(if (today) 600 else 15)
+    protected open val timeout: Duration = Duration.ofSeconds(if (today) 600 else 15)
 
     private val dataRoot = "data/advent"
     private val basePath = "$dataRoot/advent$year"
