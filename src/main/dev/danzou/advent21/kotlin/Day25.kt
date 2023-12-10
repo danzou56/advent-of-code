@@ -22,35 +22,33 @@ internal class Day25 : AdventTestRunner21("Sea Cucumber") {
                 'v' -> Seafloor.SOUTH
                 else -> Seafloor.EMPTY
             }
-        }
+        }.map { it.toMutableList() }.toMutableList()
 
-        fun step(seafloor: Matrix<Seafloor>, target: Seafloor, dir: Compass): Matrix<Seafloor> {
-            val moveable = seafloor.indices2D
+        fun step(seafloor: MutableMatrix<Seafloor>, target: Seafloor, dir: Compass): Boolean =
+            seafloor.indices2D
                 .filter { seafloor[it] == target }
-                .filter {
-                    seafloor[(it + dir.dir).let { (x, y) ->
+                .map {
+                    it to (it + dir.dir).let { (x, y) ->
                         x % seafloor[0].size to y % seafloor.size
-                    }] == Seafloor.EMPTY
+                    }
                 }
-            val targets = moveable.map { it + dir.dir }.map { (x, y) ->
-                x % seafloor[0].size to y % seafloor.size
-            }
-            return seafloor.mapIndexed2D { pos, cur ->
-                when (pos) {
-                    in moveable -> Seafloor.EMPTY
-                    in targets -> target
-                    else -> cur
+                .filter { (_, next) -> seafloor[next] == Seafloor.EMPTY }
+                .onEach { (it, next) ->
+                    seafloor[it] = Seafloor.EMPTY
+                    seafloor[next] = target
                 }
-            }
+                .isNotEmpty()
+
+        fun step(seafloor: MutableMatrix<Seafloor>): Boolean {
+            // no short-circuiting allowed
+            val move1 = step(seafloor, Seafloor.EAST, Compass.EAST)
+            val move2 = step(seafloor, Seafloor.SOUTH, Compass.SOUTH)
+            return move1 || move2
         }
 
-        fun step(seafloor: Matrix<Seafloor>): Matrix<Seafloor> =
-            step(step(seafloor, Seafloor.EAST, Compass.EAST), Seafloor.SOUTH, Compass.SOUTH)
-
-        tailrec fun simulate(seafloor: Matrix<Seafloor>, steps: Int = 0): Int {
-            val res = step(seafloor)
-            return if (seafloor == res) steps
-            else simulate(res, steps + 1)
+        tailrec fun simulate(seafloor: MutableMatrix<Seafloor>, steps: Int = 0): Int {
+            return if (!step(seafloor)) steps
+            else simulate(seafloor, steps + 1)
         }
 
         return simulate(seafloor) + 1
