@@ -18,13 +18,20 @@ typealias CostFunction<T> = (T, T) -> Int
  * graphs; if this is undesirable, use bfs
  */
 fun <T> dfs(init: T, getNeighbors: NeighborFunction<T>): Set<T> {
-    fun dfs(cur: T, discovered: Set<T>): Set<T> {
-        return getNeighbors(cur)
-            .filter { v -> v !in discovered }
-            .fold(discovered + cur) { acc, v -> acc + dfs(v, acc) }
+    val stack = Stack<T>()
+    val discovered = mutableSetOf<T>()
+    stack.push(init)
+    while (stack.isNotEmpty()) {
+        val vertex = stack.pop()
+        if (vertex !in discovered) {
+            discovered.add(vertex)
+            for (adjacent in getNeighbors(vertex)) {
+                stack.push(adjacent)
+            }
+        }
     }
 
-    return dfs(init, emptySet())
+    return discovered
 }
 
 /**

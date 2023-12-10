@@ -6,6 +6,7 @@ import dev.danzou.advent.utils.geometry.plus
 import dev.danzou.advent23.AdventTestRunner23
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import kotlin.math.abs
 
 internal class Day10 : AdventTestRunner23("Pipe Maze") {
     /**
@@ -61,7 +62,7 @@ internal class Day10 : AdventTestRunner23("Pipe Maze") {
         val indices = maze.indices2D
         val start = indices.single { maze[it] == Maze.START }
 
-        val paths = bfs(start) { cur ->
+        val paths = dfs(start) { cur ->
             maze[cur].dirs
                 .map { cur + it.dir }
                 .filter { next ->
@@ -114,6 +115,32 @@ internal class Day10 : AdventTestRunner23("Pipe Maze") {
 
         // Number of cells inside is the total size of the maze, minus the loop & outside
         return maze.indices2D.size - loop.size - outside.size
+    }
+
+    /**
+     * An alternative implementation for part 2 using Pick's theorem and the shoelace formula
+     * (after I read about them on reddit 🙂)
+     */
+    fun part2Alt(input: String): Int {
+        val maze = Maze.fromString(input)
+        val loop = getLoop(maze)
+
+        fun det2(mat: Matrix<Int>): Int {
+            require(mat.size == 2)
+            require(mat.all { it.size == 2})
+            return mat[0][0] * mat[1][1] - mat[0][1] * mat[1][0]
+        }
+
+        // Use the shoelace formula to calculate the interior area of polygon defined by
+        // coordinates
+        val area = abs((loop.toList() + loop.first())
+            .windowed(2)
+            .map { it.map { it.toList() } }
+            .map { det2(it) }
+            .sum() / 2)
+        // Use Pick's theorem to find the number of interior points
+        val inside = area + 1 - loop.size / 2
+        return inside
     }
 
     @Test
