@@ -2,6 +2,12 @@
 
 My own solutions for Advent of Code, primarily written in Kotlin.
 
+| Year | Incomplete             | Slow |
+|------|------------------------|------|
+| 2021 | None  🎉               | 24   |
+| 2022 | 16/2, 17/2, 22/2, 25/2 | 19   |
+| 2023 | Ongoing                |      |
+
 ## Automation Information
 
 This repository contains code that automatically requests a user's input data if
