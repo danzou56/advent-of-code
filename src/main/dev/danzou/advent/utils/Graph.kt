@@ -13,6 +13,10 @@ typealias VertexSet<T> = Set<Vertex<T>>
 typealias NeighborFunction<T> = (T) -> Set<T>
 typealias CostFunction<T> = (T, T) -> Int
 
+/**
+ * Perform depth first search, returning all discovered nodes. May stack overflow for very large
+ * graphs; if this is undesirable, use bfs
+ */
 fun <T> dfs(init: T, getNeighbors: NeighborFunction<T>): Set<T> {
     fun dfs(cur: T, discovered: Set<T>): Set<T> {
         return getNeighbors(cur)
@@ -23,7 +27,29 @@ fun <T> dfs(init: T, getNeighbors: NeighborFunction<T>): Set<T> {
     return dfs(init, emptySet())
 }
 
-fun <T> bfs(init: T, getNeighbors: NeighborFunction<T>): Set<List<T>> {
+/**
+ * Perform breadth first search, returning all discovered nodes
+ */
+fun <T> bfs(init: T, getNeighbors: NeighborFunction<T>): Set<T> {
+    val queue: Queue<T> = LinkedList()
+    val discovered = mutableSetOf(init)
+    queue.add(init)
+    while (queue.isNotEmpty()) {
+        val cur = queue.poll()!!
+        for (adjacent in getNeighbors(cur)) {
+            if (adjacent !in discovered) {
+                discovered.add(adjacent)
+                queue.add(adjacent)
+            }
+        }
+    }
+    return discovered
+}
+
+/**
+ * Perform breadth first search, returning all discovered nodes and their shortest path
+ */
+fun <T> findAllPaths(init: T, getNeighbors: NeighborFunction<T>): Set<List<T>> {
     val queue: Queue<T> = LinkedList()
     val discovered = mutableMapOf(init to listOf(init))
     queue.add(init)
