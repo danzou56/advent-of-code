@@ -6,11 +6,8 @@ import dev.danzou.advent.utils.geometry.plus
 import dev.danzou.advent21.AdventTestRunner21
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import java.time.Duration
 
 internal class Day25 : AdventTestRunner21("Sea Cucumber") {
-    override val timeout = Duration.ofMinutes(10)
-
     enum class Seafloor(val repr: Char) {
         EMPTY('.'), EAST('>'), SOUTH('v')
     }
