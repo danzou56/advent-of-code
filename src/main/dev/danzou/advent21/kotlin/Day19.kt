@@ -46,8 +46,7 @@ internal class Day19 : AdventTestRunner21("Beacon Scanner") {
 
         private val distances: Map<Scanner, Map<Beacon, Map<Beacon, Int>>> =
             beacons.mapValues { (_, beacons) ->
-                (beacons.toSet() choose 2)
-                    .map { it.toList() }
+                beacons.pairs()
                     .map { (b1, b2) -> Pair(b1, b2) to b1.pos.squaredDistanceTo(b2.pos) }
                     .flatMap { (pair, dist) ->
                         listOf(
@@ -62,15 +61,14 @@ internal class Day19 : AdventTestRunner21("Beacon Scanner") {
 
         private val differences: Map<Scanner, Map<Int, BeaconEdge>> =
             beacons.mapValues { (_, beacons) ->
-                (beacons.toSet() choose 2)
-                    .map { it.toList() }
+                beacons.pairs()
                     .associate { (b1, b2) -> b1.pos.squaredDistanceTo(b2.pos) to BeaconEdge(b1, b2) }
             }
 
         val transforms: Map<Int, Pair<Int, RealMatrix>> =
             mutableMapOf<Int, Pair<Int, RealMatrix>>().apply {
                 val minOverlappingSetSize = MIN_OVERLAP choose 2
-                val overlappingScanners: Map<Scanner, Set<Scanner>> = (beacons.keys choose 2)
+                val overlappingScanners: Map<Scanner, Set<Scanner>> = beacons.keys.pairs()
                     .filter { scanners ->
                         scanners.map(differences::getValue)
                             .map { it.keys }

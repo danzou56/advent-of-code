@@ -69,8 +69,16 @@ infix fun <T> List<T>.choose(k: Int): Set<List<T>> {
     }.toSet()
 }
 
-fun <T> List<T>.pairs(): Set<List<T>> = this choose 2
-fun <T> Set<T>.pairs(): Set<Set<T>> = this choose 2
+// TODO suspicious return type - should be Set<Set<T>>? why does this exist?
+fun <T> List<T>.pairs(): Set<List<T>> = this.flatMap { first ->
+    this.mapNotNull { second -> listOf(first, second).takeIf { first != second } }
+}.toSet()
+
+fun <T> Set<T>.pairs(): Set<Set<T>> = this.flatMap { first ->
+    this.mapNotNull { second ->
+        setOf(first, second).takeIf { it.size > 1 }
+    }
+}.toSet()
 
 /**
  * Super jank class that emulates the functionality of the Kotlin data keyword. Generates a basic
