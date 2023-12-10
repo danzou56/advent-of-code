@@ -26,8 +26,9 @@ internal class Day9 : AdventTestRunner23() {
 
         return input.split("\n")
             .map { it.split(" ").map { it.toLong() } }
-            .map { buildDifferenceTriangle(listOf(it)) }
-            .map { extrapolateHistory(it) }
+            .map(::listOf)
+            .map(::buildDifferenceTriangle)
+            .map(::extrapolateHistory)
             .map { it.first()}
     }
 
