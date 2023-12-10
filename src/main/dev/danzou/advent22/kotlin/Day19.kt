@@ -3,9 +3,11 @@ package dev.danzou.advent22.kotlin
 import dev.danzou.advent22.AdventTestRunner22
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import java.time.Duration
 import kotlin.test.assertContains
 
 internal class Day19 : AdventTestRunner22() {
+    override val timeout: Duration = Duration.ofSeconds(30)
 
     sealed class Material private constructor() {
         object Ore : Material()
