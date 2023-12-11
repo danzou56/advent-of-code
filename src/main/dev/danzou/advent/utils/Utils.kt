@@ -43,6 +43,9 @@ fun <T> permutationsOf(sets: List<Set<T>>): Set<List<T>> {
     return res
 }
 
+/**
+ * Find all k-combinations within the set. Generally not performant; use .pairs() if possible
+ */
 infix fun <T> Set<T>.choose(k: Int): Set<Set<T>> {
     require(k <= this.size)
     require(k >= 0)
@@ -62,23 +65,27 @@ infix fun <T> Set<T>.choose(k: Int): Set<Set<T>> {
     return generate(this, emptySet(), k)
 }
 
-// TODO suspicious return type - should be Set<Set<T>>? why does this exist?
+/**
+ * Find all k-combinations within the list. Differs in that the resulting elements of the set are
+ * lists and so can be easily deconstructed. Generally not performant; use .pairs() if possible.
+ */
 infix fun <T> List<T>.choose(k: Int): Set<List<T>> {
     return (this.indices.toSet() choose k).map { indices ->
         this.slice(indices)
     }.toSet()
 }
 
-// TODO suspicious return type - should be Set<Set<T>>? why does this exist?
-fun <T> List<T>.pairs(): Set<List<T>> = this.flatMap { first ->
-    this.mapNotNull { second -> listOf(first, second).takeIf { first != second } }
-}.toSet()
-
-fun <T> Set<T>.pairs(): Set<Set<T>> = this.flatMap { first ->
-    this.mapNotNull { second ->
-        setOf(first, second).takeIf { it.size > 1 }
-    }
-}.toSet()
+/**
+ * Find all pairs within the collection. While the return type is a list, this is primarily for
+ * easy deconstruction and manipulation, and to improve runtime performance. Uniqueness of elements
+ * is guaranteed including when the order of the lists are reversed.
+ */
+fun <T> Collection<T>.pairs(): List<List<T>> =
+    this.flatMap { first ->
+        this.mapNotNull { second ->
+            setOf(first, second).takeIf { it.size > 1 }
+        }
+    }.toSet().map { it.toList() }
 
 /**
  * Super jank class that emulates the functionality of the Kotlin data keyword. Generates a basic
