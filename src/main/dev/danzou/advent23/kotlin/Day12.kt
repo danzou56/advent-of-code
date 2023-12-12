@@ -19,45 +19,48 @@ internal class Day12 : AdventTestRunner23() {
         return brokenSprings.zip(sizes).all { (broken, size) -> broken.value.length == size }
     }
 
-    fun arrangements(spring: String, sizes: List<Int>): List<String> {
-        val cache = mutableMapOf<Pair<String, List<Int>>, List<String>>()
+    fun arrangements(spring: String, sizes: List<Int>): Long {
+        val cache = mutableMapOf<Pair<String, List<Int>>, Long>()
 
-        fun genArrangement(spring: String, sizes: List<Int>, cur: String): List<String> {
-//            if (spring.length < sizes.size) return emptyList()
-            if (spring.isEmpty() && sizes.isEmpty()) return listOf(cur)
-            if (spring.isEmpty() && sizes.isNotEmpty()) return emptyList()
+        fun genArrangement(spring: String, sizes: List<Int>): Long {
+            if (spring to sizes in cache) return cache[spring to sizes]!!
 
-            if (spring.first() == OPERATIONAL) return genArrangement(spring.drop(1), sizes, cur + OPERATIONAL)
-            if (spring.first() == BROKEN) {
-                if (sizes.isEmpty()) return emptyList()
+
+            return (if (spring.length < sizes.size) 0
+            else if (sizes.isEmpty() && spring.isNotEmpty()) if (spring.all { it != BROKEN }) 1 else 0
+            else if (spring.isEmpty() && sizes.isEmpty()) 1
+            else if (spring.isEmpty() && sizes.isNotEmpty()) 0
+            else if (spring.first() == OPERATIONAL) {
+                genArrangement(spring.drop(1), sizes)
+            } else if (spring.first() == BROKEN) {
+                if (sizes.isEmpty()) return 0
                 val nextBrokenOrUnknown = spring.takeWhile { it == BROKEN || it == UNKNOWN }
-                if (sizes.first() > nextBrokenOrUnknown.length) return emptyList()
+                if (sizes.first() > nextBrokenOrUnknown.length) return 0
 
                 val remaining = spring.drop(sizes.first())
-                if (remaining.isEmpty() && sizes.size == 1) return listOf(cur + "$BROKEN".repeat(sizes.first()))
-                if (remaining.isEmpty()) return emptyList()
-                if (remaining.first() == BROKEN) return emptyList()
+                if (remaining.isEmpty() && sizes.size == 1) return 1
+                if (remaining.isEmpty()) return 0
+                if (remaining.first() == BROKEN) return 0
                 return genArrangement(
                     spring.drop(sizes.first() + 1),
-                    sizes.drop(1),
-                    cur + "$BROKEN".repeat(sizes.first()) + OPERATIONAL
+                    sizes.drop(1)
                 )
-            }
-            if (spring.first() == UNKNOWN) {
+            } else if (spring.first() == UNKNOWN) {
                 return genArrangement(
                     OPERATIONAL + spring.drop(1),
                     sizes,
-                    cur
                 ) + genArrangement(
                     BROKEN + spring.drop(1),
                     sizes,
-                    cur
                 )
+            } else {
+                throw IllegalArgumentException(spring.first().toString())
+            }).also {
+                if (spring to sizes !in cache) cache.put(spring to sizes, it)
             }
-            throw IllegalArgumentException(spring.first().toString())
         }
 
-        return genArrangement(spring, sizes, "")
+        return genArrangement(spring, sizes)
     }
 
     override fun part1(input: String): Any {
@@ -69,10 +72,9 @@ internal class Day12 : AdventTestRunner23() {
             .unzip()
 
         return springStrs.zip(sizes).map { (spring, sizes) ->
-            arrangements(spring, sizes).also {
-//                println("${it.size}: $it")
-            }
-        }.sumOf { it.size }
+            val size2 = arrangements(spring, sizes)
+            size2
+        }.sumOf { it }
     }
 
     override fun part2(input: String): Any {
@@ -80,15 +82,17 @@ internal class Day12 : AdventTestRunner23() {
             .map { it.split(" ") }
             .map { (spring, sizes) ->
                 (0..<5).map { spring }.joinToString(UNKNOWN.toString()) to (0..<5).flatMap {
-                    sizes.split(",").map { it.toInt() } }
+                    sizes.split(",").map { it.toInt() }
+                }
             }
             .unzip()
 
         return springStrs.zip(sizes).map { (spring, sizes) ->
+//            println(spring)
             arrangements(spring, sizes).also {
-                println("${it.size}")
+//                println("${it}")
             }
-        }.sumOf { it.size.toLong() }
+        }.sumOf { it }
     }
 
     @Test
@@ -102,8 +106,7 @@ internal class Day12 : AdventTestRunner23() {
             ?###???????? 3,2,1
         """.trimIndent()
 
-//        assertEquals(10, arrangements("?###????????", listOf(3, 2, 1)).size)
-//        assertEquals(21, part1(input))
+        assertEquals(21L, part1(input))
         assertEquals(525152L, part2(input))
     }
 }
