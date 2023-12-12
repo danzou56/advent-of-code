@@ -9,61 +9,31 @@ internal class Day12 : AdventTestRunner23() {
     val BROKEN = '#'
     val OPERATIONAL = '.'
 
-    enum class Condition {
-        UNKNOWN, BROKEN, OPERATIONAL
-    }
-
-    fun isValidArrangement(spring: String, sizes: List<Int>): Boolean {
-        val brokenSprings = Regex("$BROKEN+").findAll(spring).toList()
-        if (brokenSprings.size != sizes.size) return false
-        return brokenSprings.zip(sizes).all { (broken, size) -> broken.value.length == size }
-    }
-
-    fun arrangements(spring: String, sizes: List<Int>): Long {
+    fun arrangementsOf(spring: String, sizes: List<Int>): Long {
         val cache = mutableMapOf<Pair<String, List<Int>>, Long>()
 
-        fun genArrangement(spring: String, sizes: List<Int>): Long {
-            if (spring to sizes in cache) return cache[spring to sizes]!!
-
-
-            return (if (spring.length < sizes.size) 0
-            else if (sizes.isEmpty() && spring.isNotEmpty()) if (spring.all { it != BROKEN }) 1 else 0
-            else if (spring.isEmpty() && sizes.isEmpty()) 1
-            else if (spring.isEmpty() && sizes.isNotEmpty()) 0
-            else if (spring.first() == OPERATIONAL) {
-                genArrangement(spring.drop(1), sizes)
-            } else if (spring.first() == BROKEN) {
-                if (sizes.isEmpty()) return 0
-                val nextBrokenOrUnknown = spring.takeWhile { it == BROKEN || it == UNKNOWN }
-                if (sizes.first() > nextBrokenOrUnknown.length) return 0
-
-                val remaining = spring.drop(sizes.first())
-                if (remaining.isEmpty() && sizes.size == 1) return 1
-                if (remaining.isEmpty()) return 0
-                if (remaining.first() == BROKEN) return 0
-                return genArrangement(
-                    spring.drop(sizes.first() + 1),
-                    sizes.drop(1)
-                )
-            } else if (spring.first() == UNKNOWN) {
-                return genArrangement(
-                    OPERATIONAL + spring.drop(1),
-                    sizes,
-                ) + genArrangement(
-                    BROKEN + spring.drop(1),
-                    sizes,
-                )
-            } else {
-                throw IllegalArgumentException(spring.first().toString())
-            }).also {
-                if (spring to sizes !in cache) cache.put(spring to sizes, it)
+        fun calculate(spring: String, sizes: List<Int>): Long =
+            if (spring to sizes in cache) cache[spring to sizes]!!
+            else when (spring.firstOrNull()) {
+                OPERATIONAL -> calculate(spring.dropWhile { it == OPERATIONAL }, sizes)
+                BROKEN -> when {
+                    sizes.isEmpty() -> 0
+                    sizes.first() > spring.takeWhile { it != OPERATIONAL }.length -> 0
+                    spring.drop(sizes.first()).firstOrNull() == BROKEN -> 0
+                    else -> calculate(spring.drop(sizes.first() + 1), sizes.drop(1))
+                }
+                UNKNOWN -> calculate(OPERATIONAL + spring.drop(1), sizes) +
+                        calculate(BROKEN + spring.drop(1), sizes)
+                null -> if (sizes.isEmpty()) 1 else 0
+                else -> throw IllegalArgumentException(spring.first().toString())
+            }.also {
+                cache[spring to sizes] = it
             }
-        }
 
-        return genArrangement(spring, sizes)
+        return calculate(spring, sizes)
     }
 
-    override fun part1(input: String): Any {
+    override fun part1(input: String): Long {
         val (springStrs, sizes) = input.split("\n")
             .map { it.split(" ") }
             .map { (spring, sizes) ->
@@ -71,28 +41,27 @@ internal class Day12 : AdventTestRunner23() {
             }
             .unzip()
 
-        return springStrs.zip(sizes).map { (spring, sizes) ->
-            val size2 = arrangements(spring, sizes)
-            size2
-        }.sumOf { it }
+        return springStrs.zip(sizes).sumOf { (spring, sizes) ->
+            arrangementsOf(spring, sizes)
+        }
     }
 
-    override fun part2(input: String): Any {
+    override fun part2(input: String): Long {
         val (springStrs, sizes) = input.split("\n")
             .map { it.split(" ") }
             .map { (spring, sizes) ->
-                (0..<5).map { spring }.joinToString(UNKNOWN.toString()) to (0..<5).flatMap {
-                    sizes.split(",").map { it.toInt() }
-                }
+                Pair(
+                    (0..<5).joinToString(UNKNOWN.toString()) { spring },
+                    (0..<5).flatMap {
+                        sizes.split(",").map { it.toInt() }
+                    }
+                )
             }
             .unzip()
 
-        return springStrs.zip(sizes).map { (spring, sizes) ->
-//            println(spring)
-            arrangements(spring, sizes).also {
-//                println("${it}")
-            }
-        }.sumOf { it }
+        return springStrs.zip(sizes).sumOf { (spring, sizes) ->
+            arrangementsOf(spring, sizes)
+        }
     }
 
     @Test
