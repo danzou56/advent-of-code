@@ -33,21 +33,18 @@ internal class Day12 : AdventTestRunner23() {
         return calculate(spring, sizes)
     }
 
-    override fun part1(input: String): Long {
-        val (springStrs, sizes) = input.split("\n")
+    override fun part1(input: String): Long =
+        input.split("\n")
             .map { it.split(" ") }
             .map { (spring, sizes) ->
                 spring to sizes.split(",").map { it.toInt() }
             }
-            .unzip()
+            .sumOf { (spring, sizes) ->
+                arrangementsOf(spring, sizes)
+            }
 
-        return springStrs.zip(sizes).sumOf { (spring, sizes) ->
-            arrangementsOf(spring, sizes)
-        }
-    }
-
-    override fun part2(input: String): Long {
-        val (springStrs, sizes) = input.split("\n")
+    override fun part2(input: String): Long =
+        input.split("\n")
             .map { it.split(" ") }
             .map { (spring, sizes) ->
                 Pair(
@@ -57,12 +54,9 @@ internal class Day12 : AdventTestRunner23() {
                     }
                 )
             }
-            .unzip()
-
-        return springStrs.zip(sizes).sumOf { (spring, sizes) ->
-            arrangementsOf(spring, sizes)
-        }
-    }
+            .sumOf { (spring, sizes) ->
+                arrangementsOf(spring, sizes)
+            }
 
     @Test
     fun testExample() {
