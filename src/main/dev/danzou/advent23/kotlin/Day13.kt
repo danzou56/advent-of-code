@@ -35,7 +35,7 @@ internal class Day13 : AdventTestRunner23("Point of Incidence") {
 
     private fun summarize(colIndex: Int, rowIndex: Int): Int = colIndex + 100 * rowIndex
 
-    override fun part1(input: String): Any {
+    override fun part1(input: String): Int {
         val matrices = input.split("\n\n").map { it.asMatrix { it == '#' } }
 
         return matrices.sumOf { matrix ->
@@ -44,7 +44,7 @@ internal class Day13 : AdventTestRunner23("Point of Incidence") {
         }
     }
 
-    override fun part2(input: String): Any {
+    override fun part2(input: String): Int {
         val matrices = input.split("\n\n").map { it.asMatrix { it == '#' } }
 
         return matrices.sumOf { original ->
