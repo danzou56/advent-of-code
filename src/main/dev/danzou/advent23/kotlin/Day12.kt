@@ -4,7 +4,7 @@ import dev.danzou.advent23.AdventTestRunner23
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-internal class Day12 : AdventTestRunner23() {
+internal class Day12 : AdventTestRunner23("Hot Springs") {
     val UNKNOWN = '?'
     val BROKEN = '#'
     val OPERATIONAL = '.'

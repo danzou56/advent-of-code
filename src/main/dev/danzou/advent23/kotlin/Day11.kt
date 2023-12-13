@@ -5,7 +5,7 @@ import dev.danzou.advent23.AdventTestRunner23
 import kotlin.math.max
 import kotlin.math.min
 
-internal class Day11 : AdventTestRunner23() {
+internal class Day11 : AdventTestRunner23("Cosmic Expansion") {
     val SPACE = '.'
     val GALAXY = '#'
 
