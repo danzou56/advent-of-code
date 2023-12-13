@@ -1,89 +1,68 @@
 package dev.danzou.advent23.kotlin
 
-import dev.danzou.advent.utils.asMatrix
-import dev.danzou.advent.utils.indices2D
-import dev.danzou.advent.utils.map2D
-import dev.danzou.advent.utils.mapIndexed2D
+import dev.danzou.advent.utils.*
 import dev.danzou.advent23.AdventTestRunner23
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import kotlin.math.min
 
-internal class Day13 : AdventTestRunner23() {
+internal class Day13 : AdventTestRunner23("Point of Incidence") {
+
+    private fun reflectionIndices(matrix: Matrix<Boolean>): Pair<Collection<Int>, Collection<Int>> {
+        // It's much clearer what's going on when this logic is written as list slices, but kotlin
+        // list slices aren't particuarly fast since new lists are constantly being created. We get
+        // a 5x speed improvement just by switching colIndices calculation from list slices to list
+        // accesses by index (no substantial speedup is observed from making the refactor for
+        // rowIndices)
+        val colIndices = (1..<matrix[0].size).filter { reflIndex ->
+            val size = min(reflIndex, matrix[0].size - reflIndex)
+            (reflIndex - 1 downTo reflIndex - size)
+                .zip(reflIndex..<reflIndex + size)
+                .all { (left, right) ->
+                    matrix.all { it[left] == it[right] }
+                }
+        }
+        val rowIndices = (1..<matrix.size).filter { reflIndex ->
+            val size = min(reflIndex, matrix.size - reflIndex)
+            (reflIndex - 1 downTo reflIndex - size)
+                .zip(reflIndex..<reflIndex + size)
+                .all { (top, bottom) ->
+                    matrix[top] == matrix[bottom]
+                }
+        }
+        return colIndices to rowIndices
+    }
+
+    private fun summarize(colIndex: Int, rowIndex: Int): Int = colIndex + 100 * rowIndex
+
     override fun part1(input: String): Any {
-        val matrices = input.split("\n\n").map { it.asMatrix<Char>() }
+        val matrices = input.split("\n\n").map { it.asMatrix { it == '#' } }
 
-        return matrices.map { matrix ->
-            val colIndices = (1..<matrix[0].size).filter { reflIndex ->
-//                println(reflIndex)
-                val left = matrix.map { it.slice(0..<reflIndex) }
-                    .map { it.reversed() }
-                val right = matrix.map { it.slice(reflIndex..<matrix[0].size) }
-                val size = min(left[0].size, right[0].size)
-                right.map { it.slice(0..<size) } == left.map { it.slice(0..<size) }
-            }
-
-            val rowIndices = (1..<matrix.size).filter { reflIndex ->
-                val top = matrix.take(reflIndex).reversed()
-                val bottom = matrix.drop(reflIndex)
-                val size = min(top.size, bottom.size)
-                top.take(size) == bottom.take(size)
-            }
-
-            colIndices.sum() + rowIndices.sumOf { it * 100 }
-        }.sum()
+        return matrices.sumOf { matrix ->
+            val (colIndex, rowIndex) = reflectionIndices(matrix).toList().map { it.singleOrNull() ?: 0 }
+            summarize(colIndex, rowIndex)
+        }
     }
 
     override fun part2(input: String): Any {
-        val matrices = input.split("\n\n").map { it.asMatrix<Char>() }
+        val matrices = input.split("\n\n").map { it.asMatrix { it == '#' } }
 
-        return matrices.map { original ->
-            val (origSum, origCol, origRow) = original.let { matrix ->
-                val colIndices = (1..<matrix[0].size).filter { reflIndex ->
-//                println(reflIndex)
-                    val left = matrix.map { it.slice(0..<reflIndex) }
-                        .map { it.reversed() }
-                    val right = matrix.map { it.slice(reflIndex..<matrix[0].size) }
-                    val size = min(left[0].size, right[0].size)
-                    right.map { it.slice(0..<size) } == left.map { it.slice(0..<size) }
-                }
-
-                val rowIndices = (1..<matrix.size).filter { reflIndex ->
-                    val top = matrix.take(reflIndex).reversed()
-                    val bottom = matrix.drop(reflIndex)
-                    val size = min(top.size, bottom.size)
-                    top.take(size) == bottom.take(size)
-                }
-
-                Triple(colIndices.sum() + rowIndices.sumOf { it * 100 }, colIndices, rowIndices)
-            }
-            val res = original.indices2D.map { target ->
-                original.mapIndexed2D { pos, c ->
-                    when (pos) {
-                        target -> if (c == '.') '#' else '.'
-                        else -> c
+        return matrices.sumOf { original ->
+            val originalIndices = reflectionIndices(original).toList().map { it.singleOrNull() ?: 0 }
+            original.indices2D.asSequence()
+                .map { target ->
+                    original.mapIndexed2D { pos, b ->
+                        if (pos == target) !b
+                        else b
                     }
+                }.firstNotNullOf { matrix ->
+                    val (colIndex, rowIndex) = reflectionIndices(matrix).toList().zip(originalIndices)
+                        .map { (new, original) ->
+                            (new - original).also { require(it.size <= 1) }.singleOrNull() ?: 0
+                        }
+                    summarize(colIndex, rowIndex).takeIf { it != 0 }
                 }
-            }.map { matrix ->
-                val colIndices = (1..<matrix[0].size).filter { reflIndex ->
-                    val left = matrix.map { it.slice(0..<reflIndex) }
-                        .map { it.reversed() }
-                    val right = matrix.map { it.slice(reflIndex..<matrix[0].size) }
-                    val size = min(left[0].size, right[0].size)
-                    right.map { it.slice(0..<size) } == left.map { it.slice(0..<size) }
-                }.filter { it !in origCol }
-
-                val rowIndices = (1..<matrix.size).filter { reflIndex ->
-                    val top = matrix.take(reflIndex).reversed()
-                    val bottom = matrix.drop(reflIndex)
-                    val size = min(top.size, bottom.size)
-                    top.take(size) == bottom.take(size)
-                }.filter { it !in origRow }
-
-                (colIndices.sum() + rowIndices.sumOf { it * 100 })
-            }.toSet() - origSum - 0
-            res.single()
-        }.sum()
+        }
     }
 
     @Test
