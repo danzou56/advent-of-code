@@ -18,6 +18,7 @@ fun main() {
     val fileText = """
         package dev.danzou.advent$year.kotlin
 
+        import dev.danzou.advent.utils.*
         import dev.danzou.advent$year.AdventTestRunner$year
         import org.junit.jupiter.api.Assertions.assertEquals
         import org.junit.jupiter.api.Test
@@ -38,7 +39,7 @@ fun main() {
                 ""${'"'}.trimIndent()
         
                 assertEquals(null, part1(input))
-                // assertEquals(null, part2(input))
+        //        assertEquals(null, part2(input))
             }
         }
     """.trimIndent()
