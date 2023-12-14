@@ -44,7 +44,6 @@ internal class Day14 : AdventTestRunner23() {
         }
 
     fun move(platform: SparseMatrix<Char>, height: Int, width: Int, direction: Compass): SparseMatrix<Char> {
-
         val (range, posAxis, moveAxis) = when (direction) {
             Compass.NORTH -> Triple(0..<height, (Pos::x), (Pos::y))
             Compass.WEST -> Triple(0..<width, (Pos::y), (Pos::x))
@@ -52,31 +51,27 @@ internal class Day14 : AdventTestRunner23() {
             Compass.EAST -> Triple(width - 1 downTo 0, (Pos::y), (Pos::x))
             else -> throw IllegalArgumentException()
         }
+        val sign = moveAxis(direction.dir).sign
+        val extremeFunction: (Int, Int) -> Int = when (sign) {
+            -1 -> ::max
+            1 -> ::min
+            else -> throw IllegalArgumentException()
+        }
 
         return range.drop(1).fold(
             platform.filter { (p, _) -> moveAxis(p) == range.first }
         ) { next, index ->
-            next + platform.filter { (p, c) -> moveAxis(p) == index && c == ROUND }.mapKeys { (toMove, c) ->
-                val minToMoveTo = next.keys
-                    .filter { blocker ->
-                        posAxis(blocker) == posAxis(toMove) && moveAxis(blocker).compareTo(
-                            moveAxis(
-                                toMove
-                            )
-                        ).sign == moveAxis(direction.dir).sign
-                    }
+            next + platform.filter { (p, c) -> c == ROUND && moveAxis(p) == index  }.mapKeys { (toMove, _) ->
+                val extreme = next.keys
+                    .filter { blocker -> posAxis(blocker) == posAxis(toMove) }
+                    .filter { blocker -> moveAxis(blocker).compareTo(moveAxis(toMove)).sign == sign}
                     .map(moveAxis)
-                    .reduceOrNull { a, b ->
-                        when (moveAxis(direction.dir).sign) {
-                            -1 -> max(a, b)
-                            else -> min(a, b)
-                        }
-                    } ?: (range.first() + moveAxis(direction.dir))
+                    .reduceOrNull(extremeFunction) ?: (range.first() + sign)
                 val nextPos = when (direction) {
-                    Compass.NORTH -> Pos(toMove.x, minToMoveTo + 1)
-                    Compass.WEST -> Pos(minToMoveTo + 1, toMove.y)
-                    Compass.SOUTH -> Pos(toMove.x, minToMoveTo - 1)
-                    Compass.EAST -> Pos(minToMoveTo - 1, toMove.y)
+                    Compass.NORTH -> Pos(toMove.x, extreme - sign)
+                    Compass.WEST -> Pos(extreme - sign, toMove.y)
+                    Compass.SOUTH -> Pos(toMove.x, extreme - sign)
+                    Compass.EAST -> Pos(extreme - sign, toMove.y)
                     else -> throw IllegalArgumentException()
                 }
                 nextPos
