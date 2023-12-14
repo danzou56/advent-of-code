@@ -5,7 +5,6 @@ import dev.danzou.advent.utils.geometry.Compass
 import dev.danzou.advent23.AdventTestRunner23
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import java.util.HashMap
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sign
@@ -94,34 +93,31 @@ internal class Day14 : AdventTestRunner23() {
     }
 
     override fun part2(input: String): Any {
-        val justForSizing = input.asMatrix<Char>()
-        var platform: SparseMatrix<Char> = input.asMatrix<Char>().mapIndexed2D { p, c ->
-            p to c
-        }.flatten().filter { (_, c) -> c != EMPTY }
-            .toMap()
-        val original = HashMap(platform)
-
-        var i = 0L
-        val movements = listOf(Compass.NORTH, Compass.WEST, Compass.SOUTH, Compass.EAST)
+        var (platform, _, _) = getPlatform(input)
+        val (_, height, width) = getPlatform(input)
+        val cycles = 1_000_000_000L
         val cycled = mutableMapOf<SparseMatrix<Char>, Long>()
-        while (i < 4_000_000_000L) {
-            platform = move(platform, justForSizing.size, justForSizing[0].size, movements[(i % 4).toInt()])
-            if (true) {
-                if (platform !in cycled) cycled.put(platform, i)
-                else {
-                    throw RuntimeException()
-                    require(platform in cycled)
-                    val start = cycled[platform]!!
-                    val offset = 4_000_000_000L % (i - start)
-                    println(cycled.entries.filter { (p, _) -> load(p, justForSizing.size) == 64 }.map { (_, i) -> i })
-                    cycled.entries.single { (k, v) -> v >= start && v % i == offset }
-                        .let { (p) -> return load(p, justForSizing.size) }
-                }
+        var cur = 0L
+        while (cur < cycles) {
+            platform = cycle(platform, height, width)
+            if (platform !in cycled) cycled[platform] = cur
+            else {
+                require(platform in cycled)
+                val start = cycled[platform]!!
+                val cycleLength = cur - start
+                val offset = (1_000_000_000L - start) % cycleLength
+//                println(cycled.entries.filter { (p, _) -> load(p, height) == 64 }.map { (_, i) -> i })
+                // Why is minus 1 required here???? Where is off by one coming from?
+                cycled.entries.single { (_, i) -> i >= start && (i - start) % cycleLength == offset - 1 }
+                    .let { (p, _) -> return load(p, height) }
             }
-            i++
+//            cycled[platform] = cur
+//            if (cur > 50)
+//                throw RuntimeException()
+            cur++
         }
 
-        return load(platform, justForSizing.size)
+        return load(platform, height)
     }
 
     @Test
