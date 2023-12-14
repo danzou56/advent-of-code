@@ -2,7 +2,6 @@ package dev.danzou.advent23.kotlin
 
 import dev.danzou.advent.utils.*
 import dev.danzou.advent.utils.geometry.Compass
-import dev.danzou.advent.utils.geometry.Direction
 import dev.danzou.advent23.AdventTestRunner23
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -17,48 +16,33 @@ internal class Day14 : AdventTestRunner23() {
     val EMPTY = '.'
 
     override fun part1(input: String): Any {
-        val platform = input.asMatrix<Char>()
-
-        fun moveNorth(matrix: Matrix<Char>, row: Int): Matrix<Char> {
-            if (row == 0) return matrix
-            else {
-                val above = matrix[row - 1].mapIndexed { col, c ->
-                    if (c == EMPTY && matrix[row][col] == ROUND) ROUND
-                    else c
-                }
-                val cur = matrix[row].mapIndexed { col, c ->
-                    if (c == ROUND && matrix[row - 1][col] == EMPTY) EMPTY
-                    else c
-                }
-                return matrix.mapIndexed { i, list ->
-                    if (i == row - 1) above
-                    else if (i == row) cur
-                    else list
-                }
-            }
-        }
-
-        val rolledNorth = (1..<platform.size).fold(platform) { platform, index ->
-            (1..<platform.size).fold(platform) { platform, index ->
-                moveNorth(platform, index)
-            }
-        }.mapIndexed2D { p, c ->
-            p to c
-        }.flatten().filter { (_, c) -> c != EMPTY }
-            .toMap()
-
-        val trueRes = load(rolledNorth, platform.size)
-
-        val newRolledNorth = move(input.asMatrix<Char>().mapIndexed2D { p, c ->
-            p to c
-        }.flatten().filter { (_, c) -> c != EMPTY }
-            .toMap(), platform.size, platform[0].size, Compass.NORTH)
-
-//        return newRes
-
-        return load(newRolledNorth, platform.size)
+        val (platform, height, width) = getPlatform(input)
+        val newRolledNorth = move(platform, height, width, Compass.NORTH)
+        return load(newRolledNorth, height)
     }
 
+    fun getPlatform(input: String): Triple<SparseMatrix<Char>, Int, Int> =
+        input.asMatrix<Char>().let {
+            Triple(
+                it.mapIndexed2D { p, c ->
+                    p to c
+                }.flatten().filter { (_, c) -> c != EMPTY }
+                    .toMap(),
+                it.size,
+                it[0].size,
+            )
+        }
+
+    fun cycle(platform: SparseMatrix<Char>, height: Int, width: Int): SparseMatrix<Char> =
+        platform.let { platform ->
+            move(platform, height, width, Compass.NORTH)
+        }.let { platform ->
+            move(platform, height, width, Compass.WEST)
+        }.let { platform ->
+            move(platform, height, width, Compass.SOUTH)
+        }.let { platform ->
+            move(platform, height, width, Compass.EAST)
+        }
 
     fun move(platform: SparseMatrix<Char>, height: Int, width: Int, direction: Compass): SparseMatrix<Char> {
 
@@ -104,14 +88,6 @@ internal class Day14 : AdventTestRunner23() {
 
     }
 
-    fun load(platform: Matrix<Char>): Int {
-        return platform
-            .reversed()
-            .mapIndexed { i, row ->
-                (i + 1) * row.count { it == ROUND }
-            }.sum()
-    }
-
     fun load(platform: SparseMatrix<Char>, height: Int): Int {
         val rounds = platform.filter { (_, c) -> c == ROUND }.keys
         return rounds.sumOf { (_, y) -> (height - y) }
@@ -137,13 +113,11 @@ internal class Day14 : AdventTestRunner23() {
                     require(platform in cycled)
                     val start = cycled[platform]!!
                     val offset = 4_000_000_000L % (i - start)
-                    println(cycled.entries.filter { (p, _) -> load(p, justForSizing.size) == 64 }.map { (_, i) -> i})
+                    println(cycled.entries.filter { (p, _) -> load(p, justForSizing.size) == 64 }.map { (_, i) -> i })
                     cycled.entries.single { (k, v) -> v >= start && v % i == offset }
                         .let { (p) -> return load(p, justForSizing.size) }
                 }
             }
-//            if (platform == cycled) println("woah")
-//            if (i % 1_000_000L == 0L) println("LOL")
             i++
         }
 
@@ -165,7 +139,62 @@ internal class Day14 : AdventTestRunner23() {
             #OO..#....
         """.trimIndent()
 
+        // Single move works
+        assertEquals(getPlatform(
+            """
+                OOOO.#.O..
+                OO..#....#
+                OO..O##..O
+                O..#.OO...
+                ........#.
+                ..#....#.#
+                ..O..#.O.O
+                ..O.......
+                #....###..
+                #....#....
+            """.trimIndent()
+        ).first,
+            getPlatform(input).let { (platform, height, width) ->
+                move(
+                    platform,
+                    height,
+                    width,
+                    Compass.NORTH
+                )
+            }
+
+        )
         assertEquals(136, part1(input))
+
+        // Triple cycle works
+        assertEquals(getPlatform(
+            """
+                .....#....
+                ....#...O#
+                .....##...
+                ..O#......
+                .....OOO#.
+                .O#...O#.#
+                ....O#...O
+                .......OOO
+                #...O###.O
+                #.OOO#...O
+            """.trimIndent()
+        ).first,
+            getPlatform(input).let { (platform, height, width) ->
+                cycle(
+                    cycle(
+                        cycle(
+                            platform,
+                            height,
+                            width,
+                        ), height, width
+                    ), height, width
+                )
+            }
+
+        )
+
         assertEquals(64, part2(input))
     }
 }
