@@ -1,5 +1,7 @@
 package dev.danzou.advent22.kotlin
 
+import dev.danzou.advent.utils.AsciiArt
+import dev.danzou.advent.utils.AsciiArtFormat
 import dev.danzou.advent22.AdventTestRunner22
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -11,6 +13,7 @@ internal class Day10 : AdventTestRunner22() {
             when (instruction) {
                 is Instruction.AddX ->
                     CpuState(cycle + instruction.cycles, reg + instruction.value)
+
                 is Instruction.Noop ->
                     CpuState(cycle + instruction.cycles, reg)
             }
@@ -41,166 +44,27 @@ internal class Day10 : AdventTestRunner22() {
             }
         }.second
 
-    override fun part2(input: String): Any =
+    override fun part2(input: String): AsciiArt =
         parse(input).fold(Pair(CpuState(), "")) { (cpuState, crt), instruction ->
             cpuState.apply(instruction).let { newState ->
                 Pair(newState, (cpuState.cycle until newState.cycle).fold(crt) { crt, cycle ->
-                    crt + if (((cpuState.reg % 40) - (cycle % 40)).absoluteValue <= 1) "#" else "."
+                    crt.plus(
+                        if (((cpuState.reg % 40) - (cycle % 40)).absoluteValue <= 1) AsciiArtFormat.DEFAULT_OCCUPIED
+                        else AsciiArtFormat.DEFAULT_EMPTY
+                    )
                 })
             }
-        }.second.chunked(40).joinToString("\n")
+        }.second.chunked(40).joinToString("\n").let { art ->
+            AsciiArt(art)
+        }
 
 
     @Test
     fun testExample() {
-        val input = """
-            addx 15
-            addx -11
-            addx 6
-            addx -3
-            addx 5
-            addx -1
-            addx -8
-            addx 13
-            addx 4
-            noop
-            addx -1
-            addx 5
-            addx -1
-            addx 5
-            addx -1
-            addx 5
-            addx -1
-            addx 5
-            addx -1
-            addx -35
-            addx 1
-            addx 24
-            addx -19
-            addx 1
-            addx 16
-            addx -11
-            noop
-            noop
-            addx 21
-            addx -15
-            noop
-            noop
-            addx -3
-            addx 9
-            addx 1
-            addx -3
-            addx 8
-            addx 1
-            addx 5
-            noop
-            noop
-            noop
-            noop
-            noop
-            addx -36
-            noop
-            addx 1
-            addx 7
-            noop
-            noop
-            noop
-            addx 2
-            addx 6
-            noop
-            noop
-            noop
-            noop
-            noop
-            addx 1
-            noop
-            noop
-            addx 7
-            addx 1
-            noop
-            addx -13
-            addx 13
-            addx 7
-            noop
-            addx 1
-            addx -33
-            noop
-            noop
-            noop
-            addx 2
-            noop
-            noop
-            noop
-            addx 8
-            noop
-            addx -1
-            addx 2
-            addx 1
-            noop
-            addx 17
-            addx -9
-            addx 1
-            addx 1
-            addx -3
-            addx 11
-            noop
-            noop
-            addx 1
-            noop
-            addx 1
-            noop
-            noop
-            addx -13
-            addx -19
-            addx 1
-            addx 3
-            addx 26
-            addx -30
-            addx 12
-            addx -1
-            addx 3
-            addx 1
-            noop
-            noop
-            noop
-            addx -9
-            addx 18
-            addx 1
-            addx 2
-            noop
-            noop
-            addx 9
-            noop
-            noop
-            noop
-            addx -1
-            addx 2
-            addx -37
-            addx 1
-            addx 3
-            noop
-            addx 15
-            addx -21
-            addx 22
-            addx -6
-            addx 1
-            noop
-            addx 2
-            addx 1
-            noop
-            addx -10
-            noop
-            noop
-            addx 20
-            addx 1
-            addx 2
-            addx 2
-            addx -6
-            addx -11
-            noop
-            noop
-            noop
-        """.trimIndent()
+        val input = readFileString(
+            "$baseInputPath/day$day.ex.in"
+        )
+
         val expectedCrt = """
             ##..##..##..##..##..##..##..##..##..##..
             ###...###...###...###...###...###...###.
@@ -211,6 +75,6 @@ internal class Day10 : AdventTestRunner22() {
         """.trimIndent()
 
         assertEquals(13140, part1(input))
-        assertEquals(expectedCrt, part2(input))
+        assertEquals(expectedCrt, part2(input).art)
     }
 }

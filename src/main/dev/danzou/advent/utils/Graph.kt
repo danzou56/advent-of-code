@@ -11,15 +11,65 @@ class Graph<T>(val verticies: Set<Vertex<T>>, val edges: Map<Vertex<T>, VertexSe
 data class Vertex<T>(val name: T)
 typealias VertexSet<T> = Set<Vertex<T>>
 typealias NeighborFunction<T> = (T) -> Set<T>
+typealias CostFunction<T> = (T, T) -> Int
 
+/**
+ * Perform depth first search, returning all discovered nodes. May stack overflow for very large
+ * graphs; if this is undesirable, use bfs
+ */
 fun <T> dfs(init: T, getNeighbors: NeighborFunction<T>): Set<T> {
-    fun dfs(cur: T, discovered: Set<T>): Set<T> {
-        return getNeighbors(cur)
-            .filter { v -> v !in discovered }
-            .fold(discovered + cur) { acc, v -> acc + dfs(v, acc) }
+    val stack = Stack<T>()
+    val discovered = mutableSetOf<T>()
+    stack.push(init)
+    while (stack.isNotEmpty()) {
+        val vertex = stack.pop()
+        if (vertex !in discovered) {
+            discovered.add(vertex)
+            for (adjacent in getNeighbors(vertex)) {
+                stack.push(adjacent)
+            }
+        }
     }
 
-    return dfs(init, emptySet())
+    return discovered
+}
+
+/**
+ * Perform breadth first search, returning all discovered nodes
+ */
+fun <T> bfs(init: T, getNeighbors: NeighborFunction<T>): Set<T> {
+    val queue: Queue<T> = LinkedList()
+    val discovered = mutableSetOf(init)
+    queue.add(init)
+    while (queue.isNotEmpty()) {
+        val cur = queue.poll()!!
+        for (adjacent in getNeighbors(cur)) {
+            if (adjacent !in discovered) {
+                discovered.add(adjacent)
+                queue.add(adjacent)
+            }
+        }
+    }
+    return discovered
+}
+
+/**
+ * Perform breadth first search, returning all discovered nodes and their shortest path
+ */
+fun <T> findAllPaths(init: T, getNeighbors: NeighborFunction<T>): Set<List<T>> {
+    val queue: Queue<T> = LinkedList()
+    val discovered = mutableMapOf(init to listOf(init))
+    queue.add(init)
+    while (queue.isNotEmpty()) {
+        val cur = queue.poll()!!
+        for (adjacent in getNeighbors(cur)) {
+            if (adjacent !in discovered) {
+                discovered[adjacent] = discovered[cur]!! + adjacent
+                queue.add(adjacent)
+            }
+        }
+    }
+    return discovered.values.toSet()
 }
 
 fun <T> findPaths(init: T, target: T, getNeighbors: NeighborFunction<T>): Set<List<T>> {
@@ -27,6 +77,19 @@ fun <T> findPaths(init: T, target: T, getNeighbors: NeighborFunction<T>): Set<Li
         if (cur == target) return setOf(path + cur)
         return getNeighbors(cur)
             .filter { v -> v !in path }
+            .map { v -> findPaths(v, path + cur) }
+            .flatten()
+            .toSet()
+    }
+
+    return findPaths(init, emptyList())
+}
+
+fun <T> findPaths(init: T, target: T, getNeighbors: (T, List<T>) -> Set<T>): Set<List<T>> {
+    fun findPaths(cur: T, path: List<T>): Set<List<T>> {
+        if (cur == target) return setOf(path + cur)
+        return getNeighbors(cur, path)
+//            .filter { v -> v !in path }
             .map { v -> findPaths(v, path + cur) }
             .flatten()
             .toSet()
@@ -45,7 +108,12 @@ fun <T> findPaths(init: T, target: T, getNeighbors: NeighborFunction<T>): Set<Li
  * @param getCost
  * @return Shortest path or empty list if no such path exists
  */
-fun <T> doDijkstras(init: T, target: (T) -> Boolean, getNeighbors: NeighborFunction<T>, getCost: (T, T) -> Int = { _, _ -> 1 }): List<T> {
+fun <T> doDijkstras(
+    init: T,
+    target: (T) -> Boolean,
+    getNeighbors: NeighborFunction<T>,
+    getCost: (T, T) -> Int = { _, _ -> 1 }
+): List<T> {
     val costs = mutableMapOf(init to 0)
     // vertex is always in cost map so dereference is safe
     val queue = PriorityQueue(Comparator.comparingInt<T> { costs[it]!! })
@@ -64,7 +132,6 @@ fun <T> doDijkstras(init: T, target: (T) -> Boolean, getNeighbors: NeighborFunct
                 if (cost < (costs[adjacent] ?: Int.MAX_VALUE)) {
                     costs[adjacent] = cost
                     predecessors[adjacent] = cur
-                    queue.remove(adjacent)
                     queue.add(adjacent)
                 }
             }

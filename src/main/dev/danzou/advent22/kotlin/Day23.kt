@@ -37,7 +37,7 @@ internal class Day23 : AdventTestRunner22() {
         tailrec fun step(elves: Set<Pos>, step: Int, limit: Int): Pair<Set<Pos>, Int> {
             if (limit != -1 && step >= limit) return Pair(elves, step + 1)
             // if for all elves, each of their surrounding directions contain nothing, we are done
-            if (elves.all { k -> Compass.directions().all { k + it.dir !in elves } })
+            if (elves.all { k -> Compass.ALL.all { k + it.dir !in elves } })
                 return Pair(elves, step + 1)
 
             val indices = indexIterator.next().let { start -> start until start + DIRECTIONS }

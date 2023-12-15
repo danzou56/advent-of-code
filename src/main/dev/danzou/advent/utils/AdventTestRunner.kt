@@ -3,63 +3,115 @@ package dev.danzou.advent.utils
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertTimeoutPreemptively
 import java.io.IOException
+import java.net.URI
+import java.net.http.HttpClient
+import java.net.http.HttpRequest
+import java.net.http.HttpResponse
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Duration
+import java.time.LocalDate
+import java.time.Month
+import kotlin.io.path.createFile
+import kotlin.io.path.notExists
+import kotlin.io.path.writeText
 import kotlin.test.assertEquals
 
-abstract class AdventTestRunner(protected val year: Int) {
-    protected val day: Int
-        get() = this.javaClass.simpleName.drop(3).takeWhile(Char::isDigit).toInt()
+abstract class AdventTestRunner(protected val year: Int, protected val name: String? = null) {
+    protected val day = this.javaClass.simpleName.drop(3).takeWhile(Char::isDigit).toInt()
 
-    protected val timeout: Duration = Duration.ofSeconds(60)
-    private val DATA_ROOT = "src/main/resources/dev/danzou"
-    private val basePath = "$DATA_ROOT/advent$year"
+    protected val today = LocalDate.now().let { today ->
+        today.year % 100 == year && today.month == Month.DECEMBER && today.dayOfMonth == day
+    }
+    protected open val timeout: Duration = Duration.ofSeconds(if (today) 600 else 15)
 
-    private val input: String = readFileLines(
-        "$basePath/inputs/day$day.in"
-    ).joinToString("\n")
+    private val dataRoot = "data/advent"
+    private val basePath = "$dataRoot/advent$year"
+    protected val baseInputPath = "$basePath/inputs"
+    protected val baseOutputPath = "$basePath/outputs"
+
+    private val input: String = readFileString(
+        "$baseInputPath/day$day.in",
+        "$AOC_BASE_URL/20$year/day/$day/input"
+    ).also { require(it.isNotEmpty()) }
 
     private val expected: List<String?> = readFileLines(
-        "$basePath/outputs/day$day.out"
+        "$baseOutputPath/day$day.out"
     ).let { lines ->
         if (lines.size <= 2) lines
         else listOf(lines.first(), lines.drop(1).joinToString("\n"))
     }
 
-    abstract fun part1(
-        input: String = this.input,
-    ): Any
+    abstract fun part1(input: String = this.input): Any
 
-    abstract fun part2(
-        input: String = this.input,
-    ): Any
+    abstract fun part2(input: String = this.input): Any
 
     @Test
     fun testPart1() {
         val part1 = assertTimeoutPreemptively(timeout, ::part1)
         println(part1)
-        assertEquals(expected.getOrNull(0), part1.toString())
+        assertEqualAnswer(expected.getOrNull(0), part1)
     }
 
     @Test
     fun testPart2() {
         val part2 = assertTimeoutPreemptively(timeout, ::part2)
         println(part2)
-        assertEquals(expected.getOrNull(1), part2.toString())
+        assertEqualAnswer(expected.getOrNull(1), part2)
     }
 
     companion object {
-        fun readFileLines(name: String): List<String> {
+        const val AOC_TOKEN_KEY = "AOC_TOKEN"
+        const val AOC_BASE_URL = "https://adventofcode.com"
+        const val AOC_GIT_URL_KEY = "AOC_GIT_URL"
+        const val CONTACT_EMAIL_KEY = "CONTACT_EMAIL"
+
+        fun readFileLines(name: String, fallbackUrl: String? = null): List<String> {
             return try {
-                val lines = Files.readAllLines(Path.of(name))
-                if (lines.isEmpty() || lines[0].isEmpty())
-                    throw IOException("Empty file!")
-                else lines
+                val path = Path.of(name)
+                if (path.notExists()) {
+                    println("No such file $name; creating empty file")
+                    path.createFile()
+                }
+
+                val lines = Files.readAllLines(path)
+                if (lines.isNotEmpty() && lines[0].isNotEmpty()) return lines
+                if (fallbackUrl == null) throw IOException("Empty file")
+                return DotEnv[AOC_TOKEN_KEY]?.let { token ->
+                    val httpRequest = HttpRequest.newBuilder()
+                        .uri(URI(fallbackUrl))
+                        .headers("Cookie", "session=$token")
+                        .headers(
+                            "User-Agent",
+                            "${DotEnv.getValue(AOC_GIT_URL_KEY)} by ${DotEnv.getValue(CONTACT_EMAIL_KEY)}"
+                        )
+                        .GET()
+                        .build()
+                    val client = HttpClient.newHttpClient()
+                    val response = client.send(httpRequest, HttpResponse.BodyHandlers.ofString())
+                    if (response.statusCode() == 200) {
+                        path.writeText(response.body())
+                        println("Retrieved AOC input and wrote into input file")
+                        return@let Files.readAllLines(path)
+                    }
+                    throw IOException("AOC fallback URL $fallbackUrl responded with code ${response.statusCode()}")
+                } ?: throw IllegalArgumentException("Fallback URL provided but no token")
             } catch (e: IOException) {
                 e.printStackTrace()
                 println("occurred while reading $name; returning empty list instead")
                 emptyList()
+            }
+        }
+
+        fun readFileString(name: String, fallbackUrl: String? = null): String =
+            readFileLines(name, fallbackUrl).joinToString("\n")
+
+        fun assertEqualAnswer(expected: String?, actual: Any?) {
+            when (actual) {
+                is AsciiArt -> if (actual.isText) assertEquals(expected, actual.text)
+                else assertEquals(expected, actual.art)
+
+                else -> assertEquals(expected, actual.toString())
             }
         }
     }

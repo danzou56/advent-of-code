@@ -20,16 +20,15 @@ enum class Compass(val dir: Pos) {
     NORTHEAST(Pos(1, -1)),
     SOUTHEAST(Pos(1, 1)),
     SOUTHWEST(Pos(-1, 1)),
-    NORTHWEST(Pos(-1, -1));
+    NORTHWEST(Pos(-1, -1)),
+    CENTER(Pos(0, 0));
 
     companion object {
-        fun cardinalDirections(): Set<Compass> =
-            setOf(NORTH, EAST, SOUTH, WEST)
-
-        fun ordinalDirections(): Set<Compass> =
-            setOf(NORTHEAST, SOUTHEAST, SOUTHWEST, NORTHWEST)
-
-        fun directions(): Set<Compass> =
-            values().toSet()
+        val CARDINAL: Set<Compass> = setOf(NORTH, EAST, SOUTH, WEST)
+        val CARDINAL_DIRECTIONS: Set<Pos> = CARDINAL.map(Compass::dir).toSet()
+        val ORDINAL: Set<Compass> = setOf(NORTHEAST, SOUTHEAST, SOUTHWEST, NORTHWEST)
+        val ORDINAL_DIRECTIONS: Set<Pos> = ORDINAL.map(Compass::dir).toSet()
+        val ALL: Set<Compass> = CARDINAL + ORDINAL
+        val ALL_DIRECTIONS: Set<Pos> = CARDINAL_DIRECTIONS + ORDINAL_DIRECTIONS
     }
 }

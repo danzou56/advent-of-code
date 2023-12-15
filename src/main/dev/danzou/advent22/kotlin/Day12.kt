@@ -17,8 +17,8 @@ internal class Day12 : AdventTestRunner22() {
                         else -> c
                     }
                 },
-                matrix.indexOfFirst { it.contains('S') }.let { i -> Pos(i, matrix[i].indexOf('S')) },
-                matrix.indexOfFirst { it.contains('E') }.let { i -> Pos(i, matrix[i].indexOf('E')) },
+                matrix.indexOfFirst { it.contains('S') }.let { y -> Pos(matrix[y].indexOf('S'), y) },
+                matrix.indexOfFirst { it.contains('E') }.let { y -> Pos(matrix[y].indexOf('E'), y) },
             )
         }
 
@@ -29,7 +29,7 @@ internal class Day12 : AdventTestRunner22() {
             start,
             { it == end },
             { cur ->
-                matrix.getNeighboringPos(cur.first, cur.second).filter { next ->
+                matrix.neighboringPos(cur).filter { next ->
                     matrix[next] <= matrix[cur] + 1
                 }.toSet()
             }
@@ -46,7 +46,7 @@ internal class Day12 : AdventTestRunner22() {
                 start,
                 { it == end },
                 { cur ->
-                    matrix.getNeighboringPos(cur.first, cur.second).filter { next ->
+                    matrix.neighboringPos(cur).filter { next ->
                         matrix[next] <= matrix[cur] + 1
                     }.toSet()
                 }

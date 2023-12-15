@@ -1,15 +1,19 @@
 package dev.danzou.advent22.kotlin
 
+import dev.danzou.advent.utils.Data
 import dev.danzou.advent.utils.Node
 import dev.danzou.advent.utils.geometry.toPair
 import dev.danzou.advent22.AdventTestRunner22
-import dev.danzou.advent22.kotlin.utils.FileNode
 
 internal class Day7 : AdventTestRunner22() {
+    sealed class FileNode(val name: String) : Data() {
+        class Dir(name: String) : FileNode(name)
+        class File(name: String, val size: Long) : FileNode(name)
+    }
+
     fun buildTree(input: String): Node<FileNode> {
         val fileTree: Node<FileNode> = Node(emptySet(), null, FileNode.Dir("/"))
         var cur = fileTree
-//        input.split(Regex(pattern = "\n?(?=$)")).drop(2).forEach { rawLines ->
         input.split(Regex("\n?\\$ ")).drop(2).forEach { rawLines ->
             val lines = rawLines.split("\n")
             val command = lines.first()
@@ -38,7 +42,6 @@ internal class Day7 : AdventTestRunner22() {
         when (this.data) {
             is FileNode.Dir -> this.children.sumOf { it.getSize() }
             is FileNode.File -> this.data.size
-            else -> throw NotImplementedError()
         }
 
     override fun part1(input: String): Any {
