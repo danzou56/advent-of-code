@@ -66,15 +66,15 @@ class Day17 : AdventTestRunner22() {
             Shape.Vertical,
             Shape.Square
         )
-        private var cur = 0L
+        var cur = 0L
 
         override fun hasNext(): Boolean = cur <= limit
         override fun next(): Shape = pieceSequence[(cur++ % pieceSequence.size).toInt()]
-            .also { if (cur % 10_000 == 0L) println(cur) }
+//            .also { if (cur % 10_000 == 0L) println(cur) }
     }
 
     class DirectionIterator(private val directions: List<Go>) : Iterator<Direction> {
-        private var cur = 0
+        var cur = 0
             set(value) {
                 field = value % directions.size
             }
@@ -94,12 +94,15 @@ class Day17 : AdventTestRunner22() {
             }
         }
 
-    fun run(limit: Long, gos: List<Go>): Int {
+    fun run(limit: Long, gos: List<Go>): Long {
         val pieces = PieceIterator(limit)
         val directions = DirectionIterator(gos)
 
-        tailrec fun step(stack: Shape, piece: Shape): Shape {
-            if (!pieces.hasNext()) return stack
+        val seen = mutableMapOf<Pair<Int, Int>, Pair<Int, Long>>()
+
+        tailrec fun step(stack: Shape, piece: Shape, steps: Long, skip: Boolean): Long {
+            require(steps <= limit)
+            if (steps == limit) return stack.points.maxOf(Point::y).toLong() + 1
 
             val movedLeftRight = piece.move(directions.next(), stack)
                 .getOrDefault(piece)
@@ -107,43 +110,50 @@ class Day17 : AdventTestRunner22() {
             val movedDown = movedDownResult
                 .getOrDefault(movedLeftRight)
 
-            return if (movedDownResult.isFailure) {
-                val newStack = stack + movedDown
+            if (movedDownResult.isSuccess) return step(stack, movedDown, steps, skip)
 
-                val targetYs = movedDown.points.map { it.y }.toSet()
-                val cullable = newStack.points.filter { it.y in targetYs }
-                    .groupBy { it.y }
-                    .any { (y, ps) ->
-                        ps.map { it.x }.size == 7
-                    }
-//                if (newStack.points.groupBy { it.y }.filter { it.value.size == 7 }.isNotEmpty()) {
-//                    println("cull?")
-//                }
+            val next = (stack + movedDown).let { stack ->
+                val newPoints = movedDown.points.map(Point::y).toSet()
+                val lines = stack.points.filter { it.y in newPoints }
+                    .groupBy(Point::y)
+                    .filter { (_, ps) -> ps.map(Point::x).size == 7 }
+                // Can't cull anything
+                if (lines.isEmpty()) return@let stack
 
-                val filter: (Pos) -> Boolean =
-                    when (cullable) {
-                        true -> run lambda@{
-//                            println("cullable")
-                            val minY = movedDown.points.minOf { it.y }
-                            return@lambda { it: Pos -> it.y > minY - 1 }
+                val min = lines.keys.min()
+                return@let Shape(stack.points.filter { (_, y) -> y >= min }.toSet())
+                    .also { stack ->
+                        if (!skip) return@also
+                        val height = stack.points.maxOf(Point::y)
+                        val key = (pieces.cur % 5).toInt() to directions.cur
+                        if (key !in seen) {
+                            seen[key] = height to steps
+                            return@also
                         }
-                        false -> { _: Pos -> true }
-                    }
-                val culledStack = Shape(newStack.points.filter(filter).toSet())
-                if(culledStack.points.maxOfOrNull { it.y } != newStack.points.maxOfOrNull { it.y })
-                    println("uhoh")
 
-                step(
-                    culledStack,
-                    pieces.next() + Pos(2, culledStack.points.maxOf { it.y } + 3 + 1)
-                )
-            } else {
-                step(stack, movedDown)
+                        val (lastSeenHeight, lastSeenSteps) = seen[key]!!
+                        val heightDiff = height - lastSeenHeight
+                        val stepsDiff = steps - lastSeenSteps
+                        val remainingCycles = (limit - steps) / stepsDiff
+                        val offset = (limit - steps) % stepsDiff
+                        require(steps + stepsDiff * remainingCycles + offset == limit)
+                        return heightDiff * remainingCycles + step(
+                            stack,
+                            pieces.next() + Pos(2, height + 3 + 1),
+                            limit - offset + 1,
+                            false
+                        )
+                    }
             }
+            return step(
+                next,
+                pieces.next() + Pos(2, next.points.maxOf { it.y } + 3 + 1),
+                steps + 1,
+                skip
+            )
         }
 
-        val stack = step(Shape(emptySet()), pieces.next() + Pos(2, 3))
-        return stack.points.maxOf { it.y } + 1
+        return step(Shape(emptySet()), pieces.next() + Pos(2, 3), 0, true)
     }
 
     override fun part1(input: String): Any {
@@ -162,8 +172,10 @@ class Day17 : AdventTestRunner22() {
             >>><<><>><<<>><>>><<<>>><<<><<<>><>><<>>
         """.trimIndent()
 
-        assertEquals(17, run(10, parseInput(input)))
-        assertEquals(3068, part1(input))
+        assertEquals(17L, run(10, parseInput(input)))
+        // For some reason, the cycle detecting logic breaks the example input
+        assertEquals(3068L, part1(input))
+//        assertEquals(1514285714288L, part2(input))
     }
 
 }
