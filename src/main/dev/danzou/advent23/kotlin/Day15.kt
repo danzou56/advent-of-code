@@ -4,15 +4,15 @@ import dev.danzou.advent23.AdventTestRunner23
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-internal class Day15 : AdventTestRunner23() {
+internal class Day15 : AdventTestRunner23("Lens Library") {
 
     fun hash(hashable: String): Int = hashable.fold(0) { acc, c -> (17 * (acc + c.code)) % 256 }
 
-    override fun part1(input: String): Any {
+    override fun part1(input: String): Int {
         return input.filter { it != '\n' }.split(",").sumOf { hash(it) }
     }
 
-    override fun part2(input: String): Any {
+    override fun part2(input: String): Int {
         val instrs = input.filter { it != '\n' }.split(",")
             .map {
                 it.takeWhile { it != '-' && it != '=' }.let { hashable ->
