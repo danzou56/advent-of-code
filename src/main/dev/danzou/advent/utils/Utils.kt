@@ -16,6 +16,21 @@ fun <T> List<T>.update(index: Int, item: T): List<T> = toMutableList().apply { t
 
 fun <T> Int.times(initial: T, operation: (T) -> T): T = (0 until this).fold(initial) { acc, _ -> operation(acc) }
 
+fun <T> Iterable<T>.frequencyMap(): Map<T, Int> =
+    this.groupingBy { it }.eachCount()
+
+inline fun <reified T> String.getValue(): T =
+    this.getValues<T>().single()
+
+inline fun <reified T> String.getValues(): List<T> =
+    when (T::class) {
+        Int::class -> Regex("-?\\d+").findAll(this).map { it.value.toInt() }.toList()
+        UInt::class -> Regex("\\d+").findAll(this).map { it.value.toUInt() }.toList()
+        Long::class -> Regex("-?\\d+").findAll(this).map { it.value.toLong() }.toList()
+        ULong::class -> Regex("\\d+").findAll(this).map { it.value.toULong() }.toList()
+        else -> throw UnsupportedOperationException("Type ${T::class.simpleName} not supported for getValues")
+    } as List<T>
+
 fun <T> permutationsOf(sets: List<Set<T>>): Set<List<T>> {
     val res = mutableSetOf<List<T>>()
     fun generate(cur: List<T>): Any {
@@ -28,13 +43,16 @@ fun <T> permutationsOf(sets: List<Set<T>>): Set<List<T>> {
     return res
 }
 
+/**
+ * Find all k-combinations within the set. Generally not performant; use .pairs() if possible
+ */
 infix fun <T> Set<T>.choose(k: Int): Set<Set<T>> {
     require(k <= this.size)
     require(k >= 0)
 
     fun generate(remaining: Set<T>, current: Set<T>, k: Int): Set<Set<T>> {
-        require(remaining.isNotEmpty())
         if (k == 0) return setOf(current)
+        require(remaining.isNotEmpty())
         return remaining.flatMap {
             generate(
                 remaining - it,
@@ -47,11 +65,27 @@ infix fun <T> Set<T>.choose(k: Int): Set<Set<T>> {
     return generate(this, emptySet(), k)
 }
 
+/**
+ * Find all k-combinations within the list. Differs in that the resulting elements of the set are
+ * lists and so can be easily deconstructed. Generally not performant; use .pairs() if possible.
+ */
 infix fun <T> List<T>.choose(k: Int): Set<List<T>> {
     return (this.indices.toSet() choose k).map { indices ->
         this.slice(indices)
     }.toSet()
 }
+
+/**
+ * Find all pairs within the collection. While the return type is a list, this is primarily for
+ * easy deconstruction and manipulation, and to improve runtime performance. Uniqueness of elements
+ * is guaranteed including when the order of the lists are reversed.
+ */
+fun <T> Collection<T>.pairs(): List<List<T>> =
+    this.flatMap { first ->
+        this.mapNotNull { second ->
+            setOf(first, second).takeIf { it.size > 1 }
+        }
+    }.toSet().map { it.toList() }
 
 /**
  * Super jank class that emulates the functionality of the Kotlin data keyword. Generates a basic

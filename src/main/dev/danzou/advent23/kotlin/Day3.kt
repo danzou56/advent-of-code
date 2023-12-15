@@ -7,7 +7,7 @@ import dev.danzou.advent23.AdventTestRunner23
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-internal class Day3 : AdventTestRunner23() {
+internal class Day3 : AdventTestRunner23("Gear Ratios") {
 
     private fun getPartMatchesByRow(input: String): Map<Int, Sequence<MatchResult>> =
         input.split("\n")

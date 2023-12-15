@@ -18,15 +18,28 @@ fun main() {
     val fileText = """
         package dev.danzou.advent$year.kotlin
 
+        import dev.danzou.advent.utils.*
         import dev.danzou.advent$year.AdventTestRunner$year
+        import org.junit.jupiter.api.Assertions.assertEquals
+        import org.junit.jupiter.api.Test
     
         internal class Day$day : AdventTestRunner$year() {
             override fun part1(input: String): Any {
-                TODO("Not yet implemented")
+                return input.split("\n")
             }
     
             override fun part2(input: String): Any {
-                TODO("Not yet implemented")
+                return input.split("\n")
+            }
+            
+            @Test
+            fun testExample() {
+                val input = ""${'"'}
+                    
+                ""${'"'}.trimIndent()
+        
+                assertEquals(null, part1(input))
+        //        assertEquals(null, part2(input))
             }
         }
     """.trimIndent()

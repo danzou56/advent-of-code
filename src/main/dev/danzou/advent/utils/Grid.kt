@@ -22,6 +22,17 @@ val Pos.x: Int
 val Pos.y: Int
     get() = this.second
 
+inline fun <reified T> String.asMatrix(): Matrix<T> {
+    return when (T::class) {
+        Int::class -> this.asMatrix(Char::digitToInt)
+        Char::class -> this.asMatrix { it }
+        else -> throw IllegalArgumentException("Class ${T::class.simpleName} not supported for asMatrix conversion without transformer")
+    } as Matrix<T>
+}
+
+fun <T> String.asMatrix(transformer: (Char) -> T): Matrix<T> =
+    this.split("\n").map { it.map(transformer) }
+
 fun List<Int>.toPos(): Pos = this.toPair()
 fun List<Int>.toPoint(): Point = this.toPair()
 
@@ -80,4 +91,6 @@ fun <T> RaggedMatrix<T>.padRowEnds(defaultValue: (Int, Int) -> T): Matrix<T> {
 
 operator fun <T> Matrix<T>.get(p: Pos): T = this[p.second][p.first]
 fun <T> Matrix<T>.getOrNull(p: Pos): T? = this.getOrNull(p.second)?.getOrNull(p.first)
+fun <T> Matrix<T>.getOrElse(p: Pos, defaultValue: (Pos) -> T): T = this.getOrNull(p) ?: defaultValue(p)
+fun <T> Matrix<T>.getOrElse(p: Pos, defaultValue: (Int, Int) -> T): T = this.getOrNull(p) ?: defaultValue(p.x, p.y)
 operator fun <T> MutableMatrix<T>.set(p: Pos, value: T) { this[p.second][p.first] = value }

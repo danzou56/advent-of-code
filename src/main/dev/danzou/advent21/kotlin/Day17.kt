@@ -1,27 +1,17 @@
 package dev.danzou.advent21.kotlin
 
 import dev.danzou.advent.utils.gaussianSum
+import dev.danzou.advent.utils.quadSolve
 import dev.danzou.advent21.AdventTestRunner21
 import kotlin.math.*
 
 internal class Day17 : AdventTestRunner21("Trick Shot") {
-    val E = 1e-5
-
     fun getBounds(input: String): List<Int> =
         Regex("""target area: x=(\d+)\.\.(\d+), y=(-\d+)\.\.(-\d+)""")
             .find(input)!!
             .destructured
             .toList()
             .map(String::toInt)
-
-    fun quadSolve(a: Double, b: Double, c: Double): List<Double> {
-        val discriminant = b * b - 4 * a * c
-        return when {
-            discriminant < -E -> emptyList()
-            discriminant in -E..E -> listOf(-b / (2 * a))
-            else -> listOf(-b + sqrt(discriminant), -b - sqrt(discriminant)).map { it / (2 * a) }
-        }
-    }
 
     fun simulateUntilPeak(v_x0: Int, v_y0: Int): Int {
         var s_x = 0
