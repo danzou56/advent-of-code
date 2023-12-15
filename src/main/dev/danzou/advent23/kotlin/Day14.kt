@@ -9,8 +9,8 @@ import kotlin.math.sign
 
 internal class Day14 : AdventTestRunner23() {
     class Platform(matrix: Matrix<Char>) {
-        val height = matrix.size
-        val width = matrix[0].size
+        private val height = matrix.size
+        private val width = matrix[0].size
         private val _platform = matrix
             .mapIndexed2D { p, c -> p to c }
             .flatten()
@@ -21,9 +21,11 @@ internal class Day14 : AdventTestRunner23() {
                         (0..<height).flatMap { y -> listOf(-1 to y, width to y) })
                     .associateWith { CUBE }
             )
-        // The only reason the setter for this is public is so part 2 can easily reuse the load
-        // function that's a part of this class
+        // Settable so I can be lazy about implementation and not have to keep on copying all these
+        // maps and sets over and over again
         var rounds = _platform.filter { (_, c) -> c == ROUND }.keys
+            // The only reason the setter for this is public is so part 2 can easily reuse the load
+            // function that's a part of this class
             set(rounds) {
                 require(this.rounds.size == rounds.size)
                 field = rounds
@@ -46,47 +48,60 @@ internal class Day14 : AdventTestRunner23() {
                     .filter { !it.isEmpty() }
             }
         val platform
-            get() = rounds.associateWith { ROUND } + blockers.filter { p -> p.x !in 0..<width && p.y !in 0..<height }
-                .associateWith { CUBE }
+            get() = rounds.associateWith { ROUND } +
+                    blockers.filter { p -> p.x !in 0..<width && p.y !in 0..<height }
+                        .associateWith { CUBE }
 
         fun tilt(direction: Compass): Platform {
-            val pairBuilder: (Int, Int) -> Pair<Int, Int>
+            // Make liberal use of lambdas to make the behavior applicable to all directions.
+            // The position on the axis on which the rock can't move
             val posAxis: (Pos) -> Int
+            // The position on the axis on which the rock is able to move
             val moveAxis: (Pos) -> Int
+            // Given (posAxis, moveAxis), a Pos representing the rock's position on the platform
+            // after correcting for not knowing which is x-axis and which is y-axis
+            val makePos: (Int, Int) -> Pos
+            // The grouped ranges for every column in the posAxis
             val blockers: Map<Int, List<IntRange>>
             when (direction) {
                 Compass.NORTH, Compass.SOUTH -> {
-                    pairBuilder = ::Pair
                     posAxis = Pos::x
                     moveAxis = Pos::y
+                    makePos = ::Pos
                     blockers = blockersGroupedByColumn
                 }
-
                 Compass.WEST, Compass.EAST -> {
-                    pairBuilder = { a: Int, b: Int -> Pair(b, a) }
                     posAxis = Pos::y
                     moveAxis = Pos::x
+                    makePos = { a: Int, b: Int -> Pos(b, a) }
                     blockers = blockersGroupedByRow
                 }
-
                 else -> throw IllegalArgumentException()
             }
+            // The direction the rocks are moving along moveAxis
             val sign = moveAxis(direction.dir).sign
-            val rangeEnd: (IntRange) -> Int = when (sign) {
+            // The side of the range towards the movement direction
+            val rangeStart: (IntRange) -> Int = when (sign) {
                 -1 -> { it -> it.first }
                 else -> { it -> it.last }
             }
 
             val groupedRounds = rounds.groupBy(posAxis)
                 .mapValues { (_, ps) -> ps.map(moveAxis) }
+            // (Assuming NORTH for this explanation) For every column of ranges, count the number of
+            // round rocks in each range. Place that many round rocks starting at start of the
+            // range, thus "moving" them in the correct direction.
             rounds = blockers
-                .mapValues { (index, ps) ->
-                    ps.map { range -> range to (groupedRounds[index] ?: emptyList()) }
-                        .map { (range, list) -> range to list.count { it in range } }
-                        .map { (range, count) -> range to (0..<count).map { rangeEnd(range) - sign * it } }
-                        .flatMap { (_, list) -> list }
+                .mapValues { (index, ranges) ->
+                    ranges
+                        // Rocks within the same column
+                        .map { range -> range to (groupedRounds[index] ?: emptyList()) }
+                        // The number of rocks within the given range
+                        .map { (range, ps) -> range to ps.count { it in range } }
+                        // Repositioned against the start of the range
+                        .flatMap { (range, posCount) -> (0..<posCount).map { rangeStart(range) - sign * it } }
                 }
-                .flatMap { (pos, list) -> list.map { pairBuilder(pos, it) } }
+                .flatMap { (index, moveds) -> moveds.map { makePos(index, it) } }
                 .toSet()
             return this
         }
@@ -154,7 +169,7 @@ internal class Day14 : AdventTestRunner23() {
             #OO..#....
         """.trimIndent()
 
-        // Single move works
+        // Check single move
         assertEquals(
             Platform.fromString(
                 """
@@ -174,7 +189,7 @@ internal class Day14 : AdventTestRunner23() {
         )
         assertEquals(136, part1(input))
 
-        // Triple cycle works
+        // Check triple cycle
         assertEquals(
             Platform.fromString(
                 """
