@@ -5,8 +5,6 @@ import dev.danzou.advent.utils.geometry.Compass
 import dev.danzou.advent23.AdventTestRunner23
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import kotlin.math.max
-import kotlin.math.min
 import kotlin.math.sign
 
 internal class Day14 : AdventTestRunner23() {
@@ -23,7 +21,13 @@ internal class Day14 : AdventTestRunner23() {
                         (0..<height).flatMap { y -> listOf(-1 to y, width to y) })
                     .associateWith { CUBE }
             )
-        private var rounds = _platform.filter { (_, c) -> c == ROUND }.keys
+        // The only reason the setter for this is public is so part 2 can easily reuse the load
+        // function that's a part of this class
+        var rounds = _platform.filter { (_, c) -> c == ROUND }.keys
+            set(rounds) {
+                require(this.rounds.size == rounds.size)
+                field = rounds
+            }
         private val blockers = _platform.filter { (_, c) -> c == CUBE }.keys
         private val blockersGroupedByColumn = blockers.groupBy(Pos::x)
             .mapValues { (_, ps) ->
@@ -46,23 +50,6 @@ internal class Day14 : AdventTestRunner23() {
                 .associateWith { CUBE }
 
         fun tilt(direction: Compass): Platform {
-            /*
-                        val (pairBuilder: (Int, Int) -> Pair<Int, Int>, posAxis, moveAxis) = when (direction) {
-                            Compass.NORTH -> Triple({ posAxis: Int, moveAxis: Int -> Pair(posAxis, moveAxis) }, (Pos::x), (Pos::y))
-                            Compass.WEST -> Triple({ posAxis: Int, moveAxis: Int -> Pair(moveAxis, posAxis) }, (Pos::y), (Pos::x))
-                            Compass.SOUTH -> Triple({ posAxis: Int, moveAxis: Int -> Pair(posAxis, moveAxis) }, (Pos::x), (Pos::y))
-                            Compass.EAST -> Triple({ posAxis: Int, moveAxis: Int -> Pair(moveAxis, posAxis) }, (Pos::y), (Pos::x))
-                            else -> throw IllegalArgumentException()
-                        }
-                        val blockers = when (direction) {
-                            Compass.NORTH -> blockersGroupedByColumn
-                            Compass.SOUTH -> blockersGroupedByColumn
-                            Compass.EAST -> blockersGroupedByRow
-                            Compass.WEST -> blockersGroupedByRow
-                            else -> throw IllegalArgumentException()
-                        }
-            */
-
             val pairBuilder: (Int, Int) -> Pair<Int, Int>
             val posAxis: (Pos) -> Int
             val moveAxis: (Pos) -> Int
@@ -86,8 +73,8 @@ internal class Day14 : AdventTestRunner23() {
             }
             val sign = moveAxis(direction.dir).sign
             val rangeEnd: (IntRange) -> Int = when (sign) {
-                -1 -> { it: IntRange -> it.first }
-                else -> { it: IntRange -> it.last }
+                -1 -> { it -> it.first }
+                else -> { it -> it.last }
             }
 
             val groupedRounds = rounds.groupBy(posAxis)
@@ -100,9 +87,7 @@ internal class Day14 : AdventTestRunner23() {
                         .flatMap { (_, list) -> list }
                 }
                 .flatMap { (pos, list) -> list.map { pairBuilder(pos, it) } }
-                .also { require(it.size == it.toSet().size) }
                 .toSet()
-                .also { require(it.size == rounds.size) }
             return this
         }
 
@@ -117,9 +102,9 @@ internal class Day14 : AdventTestRunner23() {
         fun load() = rounds.sumOf { (_, y) -> (height - y) }
 
         companion object {
-            val ROUND = 'O'
-            val CUBE = '#'
-            val EMPTY = '.'
+            const val ROUND = 'O'
+            const val CUBE = '#'
+            const val EMPTY = '.'
 
             fun fromString(input: String): Platform = Platform(input.asMatrix<Char>())
         }
@@ -131,36 +116,27 @@ internal class Day14 : AdventTestRunner23() {
         return platform.load()
     }
 
-    fun load(platform: SparseMatrix<Char>, height: Int): Int {
-        val rounds = platform.filter { (_, c) -> c == Platform.ROUND }.keys
-        return rounds.sumOf { (_, y) -> (height - y) }
-    }
-
     override fun part2(input: String): Any {
-        var platform = Platform.fromString(input)
-        val cycles = 1_000_000_000L
-        val cycled = mutableMapOf<SparseMatrix<Char>, Long>()
-        var cur = 0L
-        while (cur < cycles) {
+        val platform = Platform.fromString(input)
+        val cycled = mutableMapOf<Set<Pos>, Long>()
+        val max = 1_000_000_000L
+
+        // Start at 1 as the original platform is "0"; changing where we start affects the offset
+        // of `max` (calculated `(max - start) % interval`)
+        val stop = generateSequence(1L) { it + 1 }.first { cur ->
             platform.cycle()
-            if (platform.platform !in cycled) cycled[platform.platform] = cur
-            else {
-                require(platform.platform in cycled)
-                val start = cycled[platform.platform]!!
-                val cycleLength = cur - start
-                val offset = (1_000_000_000L - start) % cycleLength
-//                println(cycled.entries.filter { (p, _) -> load(p, height) == 64 }.map { (_, i) -> i })
-                // Why is minus 1 required here???? Where is off by one coming from?
-                cycled.entries.single { (_, i) -> i >= start && (i - start) % cycleLength == offset - 1 }
-                    .let { (p, _) -> return load(p, platform.height) }
-            }
-//            cycled[platform] = cur
-//            if (cur > 50)
-//                throw RuntimeException()
-            cur++
+            cycled.putIfAbsent(platform.rounds, cur) != null
         }
-        return 0
-//        return load(platform, height)
+
+        val start = cycled[platform.rounds]!!
+        val interval = stop - start
+        val offset = (max - start) % interval
+        return cycled.entries
+            .single { (_, i) -> i >= start && (i - start) % interval == offset }
+            .let { (rounds, _) ->
+                platform.rounds = rounds
+                platform.load()
+            }
     }
 
     @Test
