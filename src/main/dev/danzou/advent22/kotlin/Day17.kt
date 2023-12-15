@@ -8,6 +8,8 @@ import dev.danzou.advent.utils.y
 import dev.danzou.advent22.AdventTestRunner22
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertTimeoutPreemptively
+import java.time.Duration
 
 class Day17 : AdventTestRunner22() {
 
@@ -58,7 +60,7 @@ class Day17 : AdventTestRunner22() {
 
     }
 
-    class PieceIterator(private val limit: Long) : Iterator<Shape> {
+    class PieceIterator : Iterator<Shape> {
         private val pieceSequence = arrayOf(
             Shape.Horizontal,
             Shape.Plus,
@@ -66,11 +68,13 @@ class Day17 : AdventTestRunner22() {
             Shape.Vertical,
             Shape.Square
         )
-        var cur = 0L
+        var cur = 0
+            set(value) {
+                field = value % pieceSequence.size
+            }
 
-        override fun hasNext(): Boolean = cur <= limit
-        override fun next(): Shape = pieceSequence[(cur++ % pieceSequence.size).toInt()]
-//            .also { if (cur % 10_000 == 0L) println(cur) }
+        override fun hasNext(): Boolean = true
+        override fun next(): Shape = pieceSequence[cur++]
     }
 
     class DirectionIterator(private val directions: List<Go>) : Iterator<Direction> {
@@ -95,7 +99,7 @@ class Day17 : AdventTestRunner22() {
         }
 
     fun run(limit: Long, gos: List<Go>): Long {
-        val pieces = PieceIterator(limit)
+        val pieces = PieceIterator()
         val directions = DirectionIterator(gos)
 
         val seen = mutableMapOf<Pair<Int, Int>, Pair<Int, Long>>()
@@ -120,30 +124,36 @@ class Day17 : AdventTestRunner22() {
                 // Can't cull anything
                 if (lines.isEmpty()) return@let stack
 
+                // Cull everything below
                 val min = lines.keys.min()
-                return@let Shape(stack.points.filter { (_, y) -> y >= min }.toSet())
-                    .also { stack ->
-                        if (!skip) return@also
-                        val height = stack.points.maxOf(Point::y)
-                        val key = (pieces.cur % 5).toInt() to directions.cur
-                        if (key !in seen) {
-                            seen[key] = height to steps
-                            return@also
-                        }
+                val filtered = Shape(stack.points.filter { (_, y) -> y >= min }.toSet())
+                // Don't perform cycle logic when we're doing the final leg
+                if (!skip) return@let filtered
 
-                        val (lastSeenHeight, lastSeenSteps) = seen[key]!!
-                        val heightDiff = height - lastSeenHeight
-                        val stepsDiff = steps - lastSeenSteps
-                        val remainingCycles = (limit - steps) / stepsDiff
-                        val offset = (limit - steps) % stepsDiff
-                        require(steps + stepsDiff * remainingCycles + offset == limit)
-                        return heightDiff * remainingCycles + step(
-                            stack,
-                            pieces.next() + Pos(2, height + 3 + 1),
-                            limit - offset + 1,
-                            false
-                        )
-                    }
+                // Store height and steps in cache accessed by piece and direction cursor (and
+                // implicit stack shape)
+                val height = stack.points.maxOf(Point::y)
+                val key = pieces.cur to directions.cur
+                if (key !in seen) {
+                    seen[key] = height to steps
+                    return@let filtered
+                }
+
+                // If we've been here before, calculate the offsets so we can skip to the end
+                val (lastSeenHeight, lastSeenSteps) = seen[key]!!
+                val heightDiff = height - lastSeenHeight
+                val stepsDiff = steps - lastSeenSteps
+                val remainingCycles = (limit - steps) / stepsDiff
+                val offset = (limit - steps) % stepsDiff
+                require(steps + stepsDiff * remainingCycles + offset == limit)
+                // Apparently you're allowed to mix tailrec and non-tailrec calls - tailrec calls
+                // will be optimized and non-tailrec calls won't be!
+                return heightDiff * remainingCycles + step(
+                    stack,
+                    pieces.next() + Pos(2, height + 3 + 1),
+                    limit - offset + 1,
+                    false
+                )
             }
             return step(
                 next,
@@ -173,9 +183,11 @@ class Day17 : AdventTestRunner22() {
         """.trimIndent()
 
         assertEquals(17L, run(10, parseInput(input)))
-        // For some reason, the cycle detecting logic breaks the example input
         assertEquals(3068L, part1(input))
-//        assertEquals(1514285714288L, part2(input))
+        // For some reason, the cycle detecting logic breaks the example input
+        assertTimeoutPreemptively(Duration.ofSeconds(5)) {
+            assertEquals(1514285714288L, part2(input))
+        }
     }
 
 }
