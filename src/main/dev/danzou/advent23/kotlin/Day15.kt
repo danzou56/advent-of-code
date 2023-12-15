@@ -9,32 +9,28 @@ internal class Day15 : AdventTestRunner23("Lens Library") {
     fun hash(hashable: String): Int = hashable.fold(0) { acc, c -> (17 * (acc + c.code)) % 256 }
 
     override fun part1(input: String): Int {
-        return input.filter { it != '\n' }.split(",").sumOf { hash(it) }
+        return input.split(",").sumOf(::hash)
     }
 
     override fun part2(input: String): Int {
-        val instrs = input.filter { it != '\n' }.split(",")
-            .map {
-                it.takeWhile { it != '-' && it != '=' }.let { hashable ->
-                    Triple(hashable, it[hashable.length], it.substringAfter(it[hashable.length]))
-                }
-            }
+        val instrs = input.split(",").map { it.split('-', '=') }
 
-        // Woah, mutation????? for some reason, it was just easier to reason about like this today.
-        // Default map implementation happens to preserve insertion order!
+        // Woah, mutation??? The solution is much easier to read as mutating maps inside the
+        // random-access list versus folding over the instructions with a list maps. Even better,
+        // the default kotlin map implementation preserves insertion order. When we go to find the
+        // slot of each lens, we can iterate through the entry set under that assumption.
         val boxes = List(256) { mutableMapOf<String, Int>() }
-        instrs.forEach { (hashable, instr, num) ->
+        instrs.forEach { (hashable, num) ->
             val box = hash(hashable)
-            when (instr) {
-                '=' -> boxes[box].put(hashable, num.toInt())
-                '-' -> boxes[box].remove(hashable)
-                else -> throw IllegalArgumentException()
+            when (num) {
+                "" -> boxes[box].remove(hashable)
+                else -> boxes[box].put(hashable, num.toInt())
             }
         }
 
-        return boxes.mapIndexed { boxIndex, box ->
-            box.entries.mapIndexed { index, (_, num) ->
-                (1 + boxIndex) * (1 + index) * num
+        return boxes.mapIndexed { box, lenses ->
+            lenses.entries.mapIndexed { slot, (_, focalLength) ->
+                (1 + box) * (1 + slot) * focalLength
             }.sum()
         }.sum()
     }
