@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import kotlin.math.sign
 
-internal class Day14 : AdventTestRunner23() {
+internal class Day14 : AdventTestRunner23("Parabolic Reflector Dish") {
     class Platform(matrix: Matrix<Char>) {
         private val height = matrix.size
         private val width = matrix[0].size
@@ -125,13 +125,13 @@ internal class Day14 : AdventTestRunner23() {
         }
     }
 
-    override fun part1(input: String): Any {
+    override fun part1(input: String): Int {
         val platform = Platform.fromString(input)
         platform.tilt(Compass.NORTH)
         return platform.load()
     }
 
-    override fun part2(input: String): Any {
+    override fun part2(input: String): Int {
         val platform = Platform.fromString(input)
         val cycled = mutableMapOf<Set<Pos>, Long>()
         val max = 1_000_000_000L
