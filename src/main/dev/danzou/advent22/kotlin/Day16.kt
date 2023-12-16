@@ -4,8 +4,11 @@ import dev.danzou.advent.utils.*
 import dev.danzou.advent22.AdventTestRunner22
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import java.time.Duration
 
 internal class Day16 : AdventTestRunner22() {
+    override val timeout = Duration.ofMinutes(5)
+
     data class Valve(val name: String)
 
     class Volcano(
@@ -17,11 +20,14 @@ internal class Day16 : AdventTestRunner22() {
             require(path.first() == Valve("AA")) { "path must start with ${Valve("AA")}" }
 
             // weird thing here: the list produced should have an extra zero at
-            // and one fewer number at the back. This is because the pressure
-            // released by opening a valve isn't produced until the **next**
-            // step and not the current one
+            // the front and one fewer number at the back. This is because the
+            // pressure released by opening a valve isn't produced until the
+            // **next** step and not the current one
             return path.windowed(2).fold(Pair(listOf(0), emptySet<Valve>())) { (pressures, opened), (prev, next) ->
-                if (prev == next && prev !in opened) Pair(pressures + (pressures.last() + valves[prev]!!), opened + prev)
+                if (prev == next && prev !in opened) Pair(
+                    pressures + (pressures.last() + valves[prev]!!),
+                    opened + prev
+                )
                 else Pair(pressures + pressures.last(), opened)
             }.first.dropLast(1).sum()
         }
@@ -60,95 +66,130 @@ internal class Day16 : AdventTestRunner22() {
         }
     }
 
-    override fun part1(input: String): Any {
-        val limit = 30
+    override fun part1(input: String): Int {
+        val LIMIT = 30
+        val NEIGHBOR_THRESHOLD = 2
         val volcano = Volcano.fromString(input)
-        val costCeiling = volcano.valves.map { limit * it.value }.max()
+        val costCeiling = volcano.valves.map { it.value }.sum()
         val openable = volcano.valves.filter { it.value > 0 }.keys
 
-        data class State(val time: Int, val valve: Valve, val opened: Set<Valve>)
+        data class State(val time: Int, val valve: Valve, val opened: Set<Valve>, val releasing: Int)
 
         val path = doDijkstras(
-            init = State(0, Valve("AA"), emptySet<Valve>()),
-            target = { (t, _, opened) -> t >= limit || opened == openable },
-            getNeighbors = { (t, valve, opened) ->
-                if (valve !in opened && volcano.valves[valve]!! > 0)
-                        setOf(State(t + 1, valve, opened + valve))
-                else volcano.tunnels[valve]!!.map { State(t + 1, it, opened) }.toSet()
+            init = State(0, Valve("AA"), emptySet(), 0),
+            target = { (t) -> t >= LIMIT },
+            getNeighbors = { (t, valve, opened, releasing) ->
+                val nexts by lazy {
+                    volcano.tunnels[valve]!!.map { State(t + 1, it, opened, releasing) }.toSet()
+                }
+                when {
+                    opened.size == openable.size -> setOf(State(t + 1, valve, opened, releasing))
+                    valve in openable && valve !in opened -> {
+                        val openIt = State(
+                            t + 1,
+                            valve,
+                            opened + valve,
+                            releasing + volcano.valves[valve]!!
+                        )
+                        if (nexts.any { volcano.valves[it.valve]!! >= NEIGHBOR_THRESHOLD * volcano.valves[valve]!! })
+                            nexts + openIt
+                        else
+                            setOf(openIt)
+                    }
+
+                    else -> nexts
+                }
             },
-            getCost = { prev, next ->
-                require(prev.time + 1 == next.time)
-                if (prev.valve == next.valve)
-                    costCeiling - volcano.valves[prev.valve]!! * (limit - prev.time)
-                else costCeiling
+            getCost = { _, (_, _, _, releasing) ->
+                costCeiling - releasing
             }
         )
 
         val valves = path.map { it.valve }
         assert(valves.isNotEmpty())
-        return volcano.pressureReleasedFrom(
-            (valves + List(limit - valves.size + 1) { valves.last() })
-        )
+//        println(path.map { it.valve.name })
+        return volcano.pressureReleasedFrom(valves)
     }
 
     override fun part2(input: String): Any {
+//        return 0
         val limit = 26
         val volcano = Volcano.fromString(input)
-        val costCeiling = volcano.valves.map { limit * it.value }.max()
+        val costCeiling = volcano.valves.map { it.value }.sum()
         val openable = volcano.valves.filter { it.value > 0 }.keys
 
-        data class State(val time: Int, val selfValve: Valve, val elephantValve: Valve, val opened: Set<Valve>) {
-            override fun equals(other: Any?): Boolean =
-                this === other || when (other) {
-                    is State -> (this.selfValve == other.selfValve && this.elephantValve == other.elephantValve || this.selfValve == other.elephantValve && this.elephantValve == other.selfValve) && this.time == other.time && this.opened == other.opened
-                    else -> false
-                }
+        data class State(
+            val time: Int,
+            val selfValve: Valve,
+            val elephantValve: Valve,
+            val opened: Set<Valve>,
+            val releasing: Int
+        ) {
+            /*            override fun equals(other: Any?): Boolean =
+                            this === other || when (other) {
+                                is State -> (this.selfValve == other.selfValve && this.elephantValve == other.elephantValve || this.selfValve == other.elephantValve && this.elephantValve == other.selfValve) && this.time == other.time && this.opened == other.opened
+                                else -> false
+                            }
 
-            override fun hashCode(): Int {
-                var result = time
-                result = 31 * result + selfValve.hashCode() * elephantValve.hashCode()
-                result = 31 * result + opened.hashCode()
-                return result
-            }
+                        override fun hashCode(): Int {
+                            var result = time
+                            result = 31 * result + selfValve.hashCode() * elephantValve.hashCode()
+                            result = 31 * result + opened.hashCode()
+                            return result
+                        }*/
         }
 
-        operator fun <T, U> Collection<T>.times(other: Collection<U>): Set<Pair<T, U>> =
-            this.flatMap { l -> other.map { r -> l to r } }.toSet()
-
         val path = doDijkstras(
-            init = State(0, Valve("AA"), Valve("AA"), emptySet<Valve>()),
-            target = { (t, _, _, opened) -> t >= limit || opened == openable },
-            getNeighbors = { (t, selfValve, elephantValve, opened) ->
+            init = State(0, Valve("AA"), Valve("AA"), emptySet(), 0),
+            target = { (t, _, _, opened) -> t >= limit },
+            getNeighbors = successors@{ (t, selfValve, elephantValve, opened, releasing) ->
+                if (opened.size == openable.size)
+                    return@successors setOf(State(t + 1, selfValve, elephantValve, opened, releasing))
+
                 val nextSelfValves: Set<Valve> by lazy {
                     volcano.tunnels[selfValve]!!.toSet()
                 }
+
                 val nextElephantValves: Set<Valve> by lazy {
                     volcano.tunnels[elephantValve]!!.toSet()
                 }
-                if (selfValve !in opened && volcano.valves[selfValve]!! > 0) {
-                    if (elephantValve != selfValve && elephantValve !in opened && volcano.valves[elephantValve]!! > 0) {
-                        setOf(State(t + 1, selfValve, elephantValve, opened + selfValve + elephantValve))
+
+                if (selfValve in openable && selfValve !in opened) {
+                    if (elephantValve != selfValve && elephantValve in openable && elephantValve !in opened) {
+                        // Both at different, openable valves
+                        setOf(
+                            State(
+                                t + 1,
+                                selfValve,
+                                elephantValve,
+                                opened + selfValve + elephantValve,
+                                releasing + volcano.valves[selfValve]!! + volcano.valves[elephantValve]!!
+                            )
+                        )
                     } else {
+                        // Both at same valve OR self at openable valve
                         val opened = opened + selfValve
                         nextElephantValves.map {
-                            State(t + 1, selfValve, it, opened)
+                            State(t + 1, selfValve, it, opened, releasing + volcano.valves[selfValve]!!)
                         }.toSet()
                     }
+                } else if (elephantValve in openable && elephantValve !in opened) {
+                    // Elephant at openable valve
+                    val opened = opened + elephantValve
+                    nextSelfValves.map {
+                        State(t + 1, it, elephantValve, opened, releasing + volcano.valves[elephantValve]!!)
+                    }.toSet()
                 } else {
-                    nextSelfValves.flatMap { selfValve -> nextElephantValves.map { elephantValve ->
-                        State(t + 1, selfValve, elephantValve, opened)
-                    } }.toSet()
+                    // Neither at openable valve
+                    nextSelfValves.flatMap { selfValve ->
+                        nextElephantValves.map { elephantValve ->
+                            State(t + 1, selfValve, elephantValve, opened, releasing)
+                        }
+                    }.toSet()
                 }
             },
-            getCost = { prev, next ->
-                require(prev.time + 1 == next.time)
-                val selfCost = if (prev.selfValve == next.selfValve)
-                    costCeiling - volcano.valves[prev.selfValve]!! * (limit - prev.time)
-                else costCeiling
-                val elephantCost = if (prev.elephantValve == next.elephantValve && (prev.elephantValve != prev.selfValve && prev.elephantValve != next.selfValve))
-                    costCeiling - volcano.valves[prev.elephantValve]!! * (limit - prev.time)
-                else costCeiling
-                selfCost + elephantCost
+            getCost = { _, (_, _, _, _, releasing) ->
+                costCeiling - releasing
             }
         )
 
@@ -158,7 +199,10 @@ internal class Day16 : AdventTestRunner22() {
         return volcano.pressureReleasedFrom(
             (selfValves + List(limit - selfValves.size + 1) { selfValves.last() }),
             (elephantValves + List(limit - elephantValves.size + 1) { elephantValves.last() })
-        )
+        ).also {
+            assert(it != 2535)
+//            assert(it > 2535)
+        }
     }
 
     @Test
@@ -183,7 +227,7 @@ internal class Day16 : AdventTestRunner22() {
 
         assertEquals(31, expectedPath.size)
         assertEquals(1651, volcano.pressureReleasedFrom(expectedPath))
-//        assertEquals(1651, part1(input))
+        assertEquals(1651, part1(input))
 
         val selfPath = """
             AA,II,JJ,JJ,II,AA,BB,BB,CC,CC
@@ -192,10 +236,12 @@ internal class Day16 : AdventTestRunner22() {
             AA,DD,DD,EE,FF,GG,HH,HH,GG,FF,EE,EE
         """.trimIndent().split(",").map { Valve(it) }
 
-        assertEquals(1707, volcano.pressureReleasedFrom(
-            (selfPath + List(26 - selfPath.size + 1) { selfPath.last() }),
-            (elephantPath + List(26 - elephantPath.size + 1) { elephantPath.last() })
-        ))
+        assertEquals(
+            1707, volcano.pressureReleasedFrom(
+                (selfPath + List(26 - selfPath.size + 1) { selfPath.last() }).also { require(it.size == 27) },
+                (elephantPath + List(26 - elephantPath.size + 1) { elephantPath.last() })
+            )
+        )
         assertEquals(1707, part2(input))
     }
 }
