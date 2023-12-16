@@ -9,117 +9,73 @@ import org.junit.jupiter.api.Test
 
 internal class Day16 : AdventTestRunner23() {
 
-    override fun part1(input: String): Any {
-        val room = input.asMatrix<Char>()
-        val valid = room.indices2D
+    fun getEnergizedCells(cavern: Matrix<Char>, start: Pos, dir: Compass): Set<Pos> {
         val energized = mutableSetOf<Pos>()
-        val movedThrough = mutableSetOf<Pair<Pos, Pos>>()
+        val seen = mutableSetOf<Pair<Pos, Pos>>()
 
-        fun move(cur: Pos, vel: Pos) {
-            val next = cur + vel
-            if (next !in valid) return
-            energized.add(next)
-            if (cur to vel in movedThrough) return
-            movedThrough.add(Pair(cur, vel))
-            when (room[next]) {
+        fun move(cur: Pos, vel: Compass) {
+            val next = cur + vel.dir
+            when (cavern.getOrNull(next)?.also {
+                energized.add(next)
+                if (cur to vel.dir in seen) return
+                seen.add(cur to vel.dir)
+            }) {
+                null -> return
                 '.' -> move(next, vel)
-                '-' -> if (vel.x != 0) {
-                    require(vel == Compass.WEST.dir || vel == Compass.EAST.dir)
-                    move(next, vel)
-                } else {
-                    move(next, Compass.EAST.dir)
-                    move(next, Compass.WEST.dir)
+                '-' -> when (vel) {
+                    Compass.WEST, Compass.EAST -> move(next, vel)
+                    else -> {
+                        move(next, Compass.EAST)
+                        move(next, Compass.WEST)
+                    }
                 }
-
-                '|' -> if (vel.y != 0) {
-                    require(vel == Compass.NORTH.dir || vel == Compass.SOUTH.dir)
-                    move(next, vel)
-                } else {
-                    require(vel == Compass.EAST.dir || vel == Compass.WEST.dir)
-                    move(next, Compass.NORTH.dir)
-                    move(next, Compass.SOUTH.dir)
+                '|' -> when (vel) {
+                    Compass.NORTH, Compass.SOUTH -> move(next, vel)
+                    else -> {
+                        move(next, Compass.NORTH)
+                        move(next, Compass.SOUTH)
+                    }
                 }
                 '/' -> when (vel) {
-                    Compass.NORTH.dir -> move(next, Compass.EAST.dir)
-                    Compass.EAST.dir -> move(next, Compass.NORTH.dir)
-                    Compass.SOUTH.dir -> move(next, Compass.WEST.dir)
-                    Compass.WEST.dir -> move(next, Compass.SOUTH.dir)
+                    Compass.NORTH -> move(next, Compass.EAST)
+                    Compass.EAST -> move(next, Compass.NORTH)
+                    Compass.SOUTH -> move(next, Compass.WEST)
+                    Compass.WEST -> move(next, Compass.SOUTH)
+                    else -> throw IllegalArgumentException()
                 }
 
                 '\\' -> when (vel) {
-                    Compass.NORTH.dir -> move(next, Compass.WEST.dir)
-                    Compass.EAST.dir -> move(next, Compass.SOUTH.dir)
-                    Compass.SOUTH.dir -> move(next, Compass.EAST.dir)
-                    Compass.WEST.dir -> move(next, Compass.NORTH.dir)
+                    Compass.NORTH -> move(next, Compass.WEST)
+                    Compass.EAST -> move(next, Compass.SOUTH)
+                    Compass.SOUTH -> move(next, Compass.EAST)
+                    Compass.WEST -> move(next, Compass.NORTH)
+                    else -> throw IllegalArgumentException()
                 }
                 else -> throw IllegalArgumentException()
             }
         }
 
-        move(-1 to 0, Compass.EAST.dir)
+        move(start, dir)
+        return energized
+    }
 
-        return energized.size
+    override fun part1(input: String): Any {
+        val cavern = input.asMatrix<Char>()
+        return getEnergizedCells(cavern, -1 to 0, Compass.EAST).size
     }
 
     override fun part2(input: String): Any {
-        val room = input.asMatrix<Char>()
-        val valid = room.indices2D
-
-        tailrec fun move(cur: Pos, vel: Pos, energized: MutableSet<Pos>, movedThrough: MutableSet<Pair<Pos, Pos>>) {
-            val next = cur + vel
-            if (next !in valid) return
-            energized.add(next)
-            if (cur to vel in movedThrough) return
-            movedThrough.add(Pair(cur, vel))
-            when (room[next]) {
-                '.' -> move(next, vel, energized, movedThrough)
-                '-' -> if (vel.x != 0) {
-                    require(vel == Compass.WEST.dir || vel == Compass.EAST.dir)
-                    move(next, vel, energized, movedThrough)
-                } else {
-                    move(next, Compass.EAST.dir, energized, movedThrough)
-                    move(next, Compass.WEST.dir, energized, movedThrough)
-                }
-
-                '|' -> if (vel.y != 0) {
-                    require(vel == Compass.NORTH.dir || vel == Compass.SOUTH.dir)
-                    move(next, vel, energized, movedThrough)
-                } else {
-                    require(vel == Compass.EAST.dir || vel == Compass.WEST.dir)
-                    move(next, Compass.NORTH.dir, energized, movedThrough)
-                    move(next, Compass.SOUTH.dir, energized, movedThrough)
-                }
-                '/' -> when (vel) {
-                    Compass.NORTH.dir -> move(next, Compass.EAST.dir, energized, movedThrough)
-                    Compass.EAST.dir -> move(next, Compass.NORTH.dir, energized, movedThrough)
-                    Compass.SOUTH.dir -> move(next, Compass.WEST.dir, energized, movedThrough)
-                    Compass.WEST.dir -> move(next, Compass.SOUTH.dir, energized, movedThrough)
-                }
-
-                '\\' -> when (vel) {
-                    Compass.NORTH.dir -> move(next, Compass.WEST.dir, energized, movedThrough)
-                    Compass.EAST.dir -> move(next, Compass.SOUTH.dir, energized, movedThrough)
-                    Compass.SOUTH.dir -> move(next, Compass.EAST.dir, energized, movedThrough)
-                    Compass.WEST.dir -> move(next, Compass.NORTH.dir, energized, movedThrough)
-                }
-                else -> throw IllegalArgumentException()
-            }
-        }
-
-        val starts = (0..<room[0].size).map { x -> (x to -1) to Compass.SOUTH.dir } +
-                (0..<room[0].size).map { x -> (x to room.size) to Compass.NORTH.dir } +
-                (0..<room.size).map { y -> (-1 to y) to Compass.EAST.dir } +
-                (0..<room.size).map { y -> (room[0].size to y) to Compass.WEST.dir }
+        val cavern = input.asMatrix<Char>()
+        val starts = cavern[0].indices.map { x -> (x to -1) to Compass.SOUTH } +
+                cavern[0].indices.map { x -> (x to cavern.size) to Compass.NORTH } +
+                cavern.indices.map { y -> (-1 to y) to Compass.EAST } +
+                cavern.indices.map { y -> (cavern[0].size to y) to Compass.WEST }
 
         return starts.maxOf { (initPos, initVel) ->
-            val energized = mutableSetOf<Pos>()
-            val movedThrough = mutableSetOf<Pair<Pos, Pos>>()
-
-            move(initPos, initVel, energized, movedThrough)
-            energized.size
+            getEnergizedCells(cavern, initPos, initVel).size
         }
     }
-    
+
     @Test
     fun testExample() {
         val input = """
