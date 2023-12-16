@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test
 import java.time.Duration
 
 internal class Day16 : AdventTestRunner22() {
-    override val timeout = Duration.ofMinutes(5)
+    override val timeout = Duration.ofSeconds(30)
 
     data class Valve(val name: String)
 
@@ -68,8 +68,16 @@ internal class Day16 : AdventTestRunner22() {
 
     override fun part1(input: String): Int {
         val LIMIT = 30
+        // Threshold at which we consider _not_ opening a valve - that is, it is more beneficial to
+        // skip the valve and open the next one if any neighbor is NEIGHBOR_THRESHOLD times larger
+        // than the current. Not formally checked, but it intuitively makes sense.
         val NEIGHBOR_THRESHOLD = 2
         val volcano = Volcano.fromString(input)
+        // To find "maximal path", we subtract the actual cost from the total weight of all valves
+        // releasing at once. Once all valves are opened, then the cost is zero, but while valves
+        // are closed, it's advantageous to open them, that is, the cost decreases. This value (M)
+        // makes the path satisfying max_p { Σ_p p[i] } the same as p for min_p { Σ_p (M - p[i]) }
+        // where M - p[i] >= 0
         val costCeiling = volcano.valves.map { it.value }.sum()
         val openable = volcano.valves.filter { it.value > 0 }.keys
 
@@ -100,20 +108,17 @@ internal class Day16 : AdventTestRunner22() {
                     else -> nexts
                 }
             },
-            getCost = { _, (_, _, _, releasing) ->
-                costCeiling - releasing
-            }
+            getCost = { _, (_, _, _, releasing) -> costCeiling - releasing }
         )
 
-        val valves = path.map { it.valve }
-        assert(valves.isNotEmpty())
-//        println(path.map { it.valve.name })
-        return volcano.pressureReleasedFrom(valves)
+        // Pressure isn't generated until the _next_ step, so drop the last element of the path
+        // before calculating its length
+        return path.dropLast(1).sumOf { it.releasing }
     }
 
-    override fun part2(input: String): Any {
-//        return 0
-        val limit = 26
+    override fun part2(input: String): Int {
+        val LIMIT = 26
+        val NEIGHBOR_THRESHOLD = 2
         val volcano = Volcano.fromString(input)
         val costCeiling = volcano.valves.map { it.value }.sum()
         val openable = volcano.valves.filter { it.value > 0 }.keys
@@ -124,85 +129,61 @@ internal class Day16 : AdventTestRunner22() {
             val elephantValve: Valve,
             val opened: Set<Valve>,
             val releasing: Int
-        ) {
-            /*            override fun equals(other: Any?): Boolean =
-                            this === other || when (other) {
-                                is State -> (this.selfValve == other.selfValve && this.elephantValve == other.elephantValve || this.selfValve == other.elephantValve && this.elephantValve == other.selfValve) && this.time == other.time && this.opened == other.opened
-                                else -> false
-                            }
+        )
 
-                        override fun hashCode(): Int {
-                            var result = time
-                            result = 31 * result + selfValve.hashCode() * elephantValve.hashCode()
-                            result = 31 * result + opened.hashCode()
-                            return result
-                        }*/
-        }
+        fun nextSubStates(valve: Valve, nexts: Collection<Valve>, opened: Set<Valve>): Collection<Triple<Valve, Valve?, Int>> =
+            when {
+                valve in openable && valve !in opened -> {
+                    val openIt = Triple(
+                        valve,
+                        valve,
+                        volcano.valves[valve]!!
+                    )
+                    if (nexts.any { volcano.valves[it]!! >= NEIGHBOR_THRESHOLD * volcano.valves[valve]!! })
+                        nexts.map { next ->
+                            Triple(next, null, 0)
+                        } + openIt
+                    else
+                        listOf(openIt)
+                }
+                else -> nexts.map { next ->
+                    Triple(next, null, 0)
+                }
+            }
 
         val path = doDijkstras(
             init = State(0, Valve("AA"), Valve("AA"), emptySet(), 0),
-            target = { (t, _, _, opened) -> t >= limit },
+            target = { (t) -> t >= LIMIT },
             getNeighbors = successors@{ (t, selfValve, elephantValve, opened, releasing) ->
                 if (opened.size == openable.size)
                     return@successors setOf(State(t + 1, selfValve, elephantValve, opened, releasing))
 
-                val nextSelfValves: Set<Valve> by lazy {
-                    volcano.tunnels[selfValve]!!.toSet()
+                val nextSelfStates = (selfValve to volcano.tunnels[selfValve]!!).let { (valve, nexts) ->
+                    nextSubStates(valve, nexts, opened)
+                }
+                val nextElephantStates = (elephantValve to volcano.tunnels[elephantValve]!!).let { (valve, nexts) ->
+                    nextSubStates(valve, nexts, opened)
                 }
 
-                val nextElephantValves: Set<Valve> by lazy {
-                    volcano.tunnels[elephantValve]!!.toSet()
-                }
-
-                if (selfValve in openable && selfValve !in opened) {
-                    if (elephantValve != selfValve && elephantValve in openable && elephantValve !in opened) {
-                        // Both at different, openable valves
-                        setOf(
-                            State(
-                                t + 1,
-                                selfValve,
-                                elephantValve,
-                                opened + selfValve + elephantValve,
-                                releasing + volcano.valves[selfValve]!! + volcano.valves[elephantValve]!!
-                            )
+                return@successors nextSelfStates.flatMap { (nextSelfValve, selfOpened, selfReleasing) ->
+                    nextElephantStates.mapNotNull { (nextElephantValve, elephantOpened, elephantOpening) ->
+                        if (selfOpened != null && elephantOpened != null && elephantOpened == selfOpened) null
+                        else State(
+                            t + 1,
+                            nextSelfValve,
+                            nextElephantValve,
+                            opened + setOfNotNull(selfOpened, elephantOpened),
+                            releasing + selfReleasing + elephantOpening
                         )
-                    } else {
-                        // Both at same valve OR self at openable valve
-                        val opened = opened + selfValve
-                        nextElephantValves.map {
-                            State(t + 1, selfValve, it, opened, releasing + volcano.valves[selfValve]!!)
-                        }.toSet()
                     }
-                } else if (elephantValve in openable && elephantValve !in opened) {
-                    // Elephant at openable valve
-                    val opened = opened + elephantValve
-                    nextSelfValves.map {
-                        State(t + 1, it, elephantValve, opened, releasing + volcano.valves[elephantValve]!!)
-                    }.toSet()
-                } else {
-                    // Neither at openable valve
-                    nextSelfValves.flatMap { selfValve ->
-                        nextElephantValves.map { elephantValve ->
-                            State(t + 1, selfValve, elephantValve, opened, releasing)
-                        }
-                    }.toSet()
-                }
+                }.toSet()
             },
             getCost = { _, (_, _, _, _, releasing) ->
                 costCeiling - releasing
             }
         )
 
-        val selfValves = path.map { it.selfValve }
-        val elephantValves = path.map { it.elephantValve }
-        assert(selfValves.isNotEmpty())
-        return volcano.pressureReleasedFrom(
-            (selfValves + List(limit - selfValves.size + 1) { selfValves.last() }),
-            (elephantValves + List(limit - elephantValves.size + 1) { elephantValves.last() })
-        ).also {
-            assert(it != 2535)
-//            assert(it > 2535)
-        }
+        return path.dropLast(1).sumOf { it.releasing }
     }
 
     @Test
