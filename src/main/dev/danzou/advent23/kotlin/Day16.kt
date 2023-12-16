@@ -7,19 +7,21 @@ import dev.danzou.advent23.AdventTestRunner23
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-internal class Day16 : AdventTestRunner23() {
-
+internal class Day16 : AdventTestRunner23("The Floor Will Be Lava") {
     fun getEnergizedCells(cavern: Matrix<Char>, start: Pos, dir: Compass): Set<Pos> {
         val energized = mutableSetOf<Pos>()
-        val seen = mutableSetOf<Pair<Pos, Pos>>()
+        val visited = mutableSetOf<Pair<Pos, Pos>>()
 
+        // Even though not all recursive calls are in tail position, using tailrec can
+        // optimize the tail calls to not create an extra stack frame
         fun move(cur: Pos, vel: Compass) {
+            if (cur to vel.dir in visited) return
+            visited.add(cur to vel.dir)
+
+            // To keep calls in tail position, add to energized _before_ making
+            // the recursive call
             val next = cur + vel.dir
-            when (cavern.getOrNull(next)?.also {
-                energized.add(next)
-                if (cur to vel.dir in seen) return
-                seen.add(cur to vel.dir)
-            }) {
+            when (cavern.getOrNull(next)?.also { energized.add(next) }) {
                 null -> return
                 '.' -> move(next, vel)
                 '-' -> when (vel) {
@@ -43,7 +45,6 @@ internal class Day16 : AdventTestRunner23() {
                     Compass.WEST -> move(next, Compass.SOUTH)
                     else -> throw IllegalArgumentException()
                 }
-
                 '\\' -> when (vel) {
                     Compass.NORTH -> move(next, Compass.WEST)
                     Compass.EAST -> move(next, Compass.SOUTH)
