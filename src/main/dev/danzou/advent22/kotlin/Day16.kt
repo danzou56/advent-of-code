@@ -15,41 +15,6 @@ internal class Day16 : AdventTestRunner22() {
         val valves: Map<Valve, Int>,
         val tunnels: Map<Valve, Set<Valve>>,
     ) {
-        fun pressureReleasedFrom(path: List<Valve>): Int {
-            require(path.isNotEmpty()) { "path must be non empty" }
-            require(path.first() == Valve("AA")) { "path must start with ${Valve("AA")}" }
-
-            // weird thing here: the list produced should have an extra zero at
-            // the front and one fewer number at the back. This is because the
-            // pressure released by opening a valve isn't produced until the
-            // **next** step and not the current one
-            return path.windowed(2).fold(Pair(listOf(0), emptySet<Valve>())) { (pressures, opened), (prev, next) ->
-                if (prev == next && prev !in opened) Pair(
-                    pressures + (pressures.last() + valves[prev]!!),
-                    opened + prev
-                )
-                else Pair(pressures + pressures.last(), opened)
-            }.first.dropLast(1).sum()
-        }
-
-        fun pressureReleasedFrom(path: List<Valve>, elephantPath: List<Valve>): Int {
-            return path.zip(elephantPath).windowed(2)
-                .fold(Pair(listOf(0), emptySet<Valve>())) { (pressures, opened), (prev, next) ->
-                    var pressure = pressures.last()
-                    val valvesOpened = mutableSetOf<Valve>()
-                    if (prev.first == next.first && prev.first !in opened) {
-                        pressure += valves[prev.first]!!
-                        valvesOpened += prev.first
-                    }
-                    if (prev.second == next.second && prev.second !in opened) {
-                        pressure += valves[prev.second]!!
-                        valvesOpened += prev.second
-                    }
-
-                    Pair(pressures + pressure, opened + valvesOpened)
-                }.first.dropLast(1).sum()
-        }
-
         companion object {
             fun fromString(input: String): Volcano {
                 val entries = input.split("\n")
@@ -201,28 +166,7 @@ internal class Day16 : AdventTestRunner22() {
             Valve JJ has flow rate=21; tunnel leads to valve II
         """.trimIndent()
 
-        val volcano = Volcano.fromString(input)
-        val expectedPath = """
-            AA,DD,DD,CC,BB,BB,AA,II,JJ,JJ,II,AA,DD,EE,FF,GG,HH,HH,GG,FF,EE,EE,DD,CC,CC,CC,CC,CC,CC,CC,CC
-        """.trimIndent().split(",").map { Valve(it) }
-
-        assertEquals(31, expectedPath.size)
-        assertEquals(1651, volcano.pressureReleasedFrom(expectedPath))
         assertEquals(1651, part1(input))
-
-        val selfPath = """
-            AA,II,JJ,JJ,II,AA,BB,BB,CC,CC
-        """.trimIndent().split(",").map { Valve(it) }
-        val elephantPath = """
-            AA,DD,DD,EE,FF,GG,HH,HH,GG,FF,EE,EE
-        """.trimIndent().split(",").map { Valve(it) }
-
-        assertEquals(
-            1707, volcano.pressureReleasedFrom(
-                (selfPath + List(26 - selfPath.size + 1) { selfPath.last() }).also { require(it.size == 27) },
-                (elephantPath + List(26 - elephantPath.size + 1) { elephantPath.last() })
-            )
-        )
         assertEquals(1707, part2(input))
     }
 }
