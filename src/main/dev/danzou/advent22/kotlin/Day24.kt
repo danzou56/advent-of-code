@@ -1,6 +1,7 @@
 package dev.danzou.advent22.kotlin
 
 import dev.danzou.advent.utils.*
+import dev.danzou.advent.utils.geometry.Compass.Companion.CARDINAL_DIRECTIONS
 import dev.danzou.advent.utils.geometry.Direction
 import dev.danzou.advent.utils.geometry.plus
 import dev.danzou.advent22.AdventTestRunner22
@@ -59,45 +60,47 @@ internal class Day24 : AdventTestRunner22() {
     override fun part1(input: String): Any {
         val basin = BlizzardBasin.fromString(input)
         val init = Pair(basin.entrance, 0)
-        val path = doDijkstras(
+        val path = aStar(
             init,
             { (p, _) -> basin.exit == p },
-            { (p, t) ->
-                cardinalDirections
+            getNeighbors = { (p, t) ->
+                CARDINAL_DIRECTIONS
                     .plus(Pos(0, 0))
                     .map { delta -> Pair(p + delta, t + 1) }
                     .filter { (p, t) -> !basin.isOccupied(p, t) }
                     .toSet()
-            }
+            },
+            estimateCost = { (p, _) -> p.manhattanDistanceTo(basin.exit) }
         )
         return path.size - 1
     }
 
     override fun part2(input: String): Any {
         val basin = BlizzardBasin.fromString(input)
-        val exitTarget: (Pair<Pos, Int>) -> Boolean = { (p, _) -> basin.exit == p }
-        val entranceTarget: (Pair<Pos, Int>) -> Boolean = { (p, _) -> basin.entrance == p }
         val getNeighbors: NeighborFunction<Pair<Pos, Int>> = { (p, t) ->
-            cardinalDirections
+            CARDINAL_DIRECTIONS
                 .plus(Pos(0, 0))
                 .map { delta -> Pair(p + delta, t + 1) }
                 .filter { (p, t) -> !basin.isOccupied(p, t) }
                 .toSet()
         }
-        val first = doDijkstras(
+        val first = aStar(
             Pair(basin.entrance, 0),
-            exitTarget,
-            getNeighbors
+            { (p, _) -> basin.exit == p},
+            getNeighbors = getNeighbors,
+            estimateCost = { (p, _) -> p.manhattanDistanceTo(basin.exit) }
         )
-        val second = doDijkstras(
+        val second = aStar(
             Pair(basin.exit, first.size - 1),
-            entranceTarget,
-            getNeighbors
+            { (p, _) -> basin.entrance == p},
+            getNeighbors = getNeighbors,
+            estimateCost = { (p, _) -> p.manhattanDistanceTo(basin.entrance) }
         )
-        val third = doDijkstras(
+        val third = aStar(
             Pair(basin.entrance, first.size + second.size - 2),
-            exitTarget,
-            getNeighbors
+            { (p, _) -> basin.exit == p},
+            getNeighbors = getNeighbors,
+            estimateCost = { (p, _) -> p.manhattanDistanceTo(basin.exit) }
         )
         return first.size + second.size + third.size - 3
     }

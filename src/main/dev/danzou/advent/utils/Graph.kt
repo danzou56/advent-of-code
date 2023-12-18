@@ -145,3 +145,44 @@ fun <T> doDijkstras(
 
     return res
 }
+
+fun <T> aStar(
+    init: T,
+    target: (T) -> Boolean,
+    getNeighbors: NeighborFunction<T>,
+    getCost: (T, T) -> Int = { _, _ -> 1 },
+    estimateCost: (T) -> Int = { _ -> 0 },
+): List<T> {
+    val costs = mutableMapOf(init to 0)
+    val estimatedCosts = mutableMapOf(init to estimateCost(init))
+    // vertex is always in cost map so dereference is safe
+    val queue = PriorityQueue<T>(compareBy { estimatedCosts[it]!! })
+
+    val predecessors = mutableMapOf<T, T>()
+
+    var cur = init
+    while (!target(cur)) {
+        for (adjacent in getNeighbors(cur)) {
+            // cur is always in costs map so dereference is safe
+            val cost = costs[cur]!! + getCost(cur, adjacent)
+
+            if (cost < (costs[adjacent] ?: Int.MAX_VALUE)) {
+                costs[adjacent] = cost
+                predecessors[adjacent] = cur
+                estimatedCosts[adjacent] = cost + estimateCost(adjacent)
+
+                queue.add(adjacent)
+            }
+        }
+        cur = queue.poll() ?: return emptyList()
+    }
+
+    // Backtrack the shortest path
+    val res = mutableListOf(cur)
+    while (predecessors.containsKey(cur)) {
+        cur = predecessors[cur]!!
+        res.add(0, cur)
+    }
+
+    return res
+}
