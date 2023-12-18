@@ -2,11 +2,11 @@
 
 My own solutions for Advent of Code, primarily written in Kotlin.
 
-| Year | Incomplete | Notes                                   | 
-|------|------------|-----------------------------------------|
-| 2021 | None  🎉   | 24 - slow                               |         
-| 2022 | 22/2, 25/2 | 16, 19 - slow, 17/2 - broken on example |
-| 2023 | Ongoing    |                                         |         
+| Year | Incomplete | Notes                                       | 
+|------|------------|---------------------------------------------|
+| 2021 | None  🎉   | 24 - slow                                   |         
+| 2022 | 22/2, 25/2 | 16, 19, 23 - slow, 17/2 - broken on example |
+| 2023 | Ongoing    |                                             |         
 
 ## Automation Information
 
