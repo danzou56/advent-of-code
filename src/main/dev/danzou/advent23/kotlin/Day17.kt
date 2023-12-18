@@ -1,6 +1,7 @@
 package dev.danzou.advent23.kotlin
 
 import dev.danzou.advent.utils.*
+import dev.danzou.advent.utils.geometry.Compass.Companion.CARDINAL_DIRECTIONS
 import dev.danzou.advent.utils.geometry.minus
 import dev.danzou.advent.utils.geometry.plus
 import dev.danzou.advent.utils.geometry.times
@@ -8,83 +9,55 @@ import dev.danzou.advent23.AdventTestRunner23
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.time.Duration
-import kotlin.math.max
 
 internal class Day17 : AdventTestRunner23("Clumsy Crucible") {
-    override val timeout: Duration = Duration.ofSeconds(30)
 
-    override fun part1(input: String): Int {
-        val matrix = input.asMatrix<Int>()
-
-        val path = doDijkstras(
-            listOf<Pos?>(null, null, null, 0 to 0),
-            { curs -> curs.last()!! == matrix[0].size - 1 to matrix.size - 1 },
-            { curs ->
-                val cur = curs.last()
-                require(cur != null)
-                val disallowedDir = curs.let { (last3, last2, last1, cur) ->
-                    if (last3 != null && last2 != null && last1 != null && cur != null) {
-                        val diff3 = last2.minus(last3)
-                        val diff2 = last1.minus(last2)
-                        val diff1 = cur.minus(last1)
-                        if (diff3 == diff2 && diff2 == diff1)
-                            setOf(diff1)
-                        else
-                            emptySet()
-                    } else emptySet()
-                } + setOfNotNull(curs[2]?.minus(cur))
-
-                matrix.neighboringPos(cur).filter {
-                    (it - cur) !in disallowedDir
-                }.map {
-                    (curs + it).takeLast(4)
-                }.toSet()
-            },
-            { _, curs -> matrix[curs.last()!!] }
-        )
-        return path.drop(1).map { it.last()!! }.toSet().sumOf { matrix[it] }
-    }
-
-    override fun part2(input: String): Any {
-        val matrix = input.asMatrix<Int>()
-        val indices = matrix.indices2D.toSet()
+    fun findCruciblePath(city: Matrix<Int>, minDistance: Int, maxDistance: Int): List<Pos> {
+        val target = city[0].size - 1 to city.size - 1
 
         val path = doDijkstras(
             listOf(0 to 0),
-            { curs -> curs.last() == matrix[0].size - 1 to matrix.size - 1 },
+            { curs -> curs.last() == target },
             { curs ->
                 val cur = curs.last()
-                val disallowedDir = curs.windowed(2).map { (last, cur) ->
-                    cur - last
-                }.let { diffs ->
-                    if (diffs.size == 10 && diffs.all { it == diffs.last() })
-                        setOf(diffs.last())
-                    else
-                        emptySet()
-                } + setOfNotNull(curs.getOrNull(curs.size - 2)?.minus(cur))
+                val prevDiff = curs.getOrNull(curs.size - 2)?.let { cur - it }
+                val disallowedDiff = setOfNotNull(
+                    curs.getOrNull(maxDistance)?.minus(curs[maxDistance - 1]),
+                    prevDiff?.times(-1)
+                )
 
-                val lastDiff = curs.getOrNull(curs.size - 2)?.let { cur - it }
-                matrix.neighboringPos(cur).filter {
-                    (it - cur) !in disallowedDir
-                }.mapNotNull { next ->
-                    val nextDiff = next - cur
-                    if (nextDiff != lastDiff) {
-                        val nexts = (1..4).map { cur + (nextDiff * it) }
-                        // If we land outside the matrix, we can't actually go in this direction
-                        if (nexts.last() !in indices) return@mapNotNull null
-                        curs + nexts
-                    } else {
-                        curs + next
+                CARDINAL_DIRECTIONS.filter { diff ->
+                    diff !in disallowedDiff
+                }.map { diff ->
+                    when (diff) {
+                        prevDiff -> curs.takeLast(maxDistance) + (cur + diff)
+                        else -> (0..minDistance).map { cur + (diff * it) }
                     }
-                }.map {
-                    it.takeLast(11)
+                }.filter { nexts ->
+                    city.containsPos(nexts.last())
                 }.toSet()
             },
             { last, curs ->
-                curs.takeLastWhile { it != last.last() }.sumOf { matrix[it] }
-            }
+                curs.takeLastWhile { it != last.last() }.sumOf { city[it] }
+            },
+//            { curs -> curs.last().manhattanDistanceTo(target) }
         )
-        return path.flatten().toSet().sumOf { matrix[it] } - matrix[0 to 0]
+
+        return path.flatten().toSet().sortedBy { pos -> path.indexOfFirst { state -> pos in state } }
+    }
+
+    override fun part1(input: String): Int {
+        val city = input.asMatrix<Int>()
+
+        val path = findCruciblePath(city, 1, 3)
+        return path.sumOf { city[it] } - city[0 to 0]
+    }
+
+    override fun part2(input: String): Int {
+        val city = input.asMatrix<Int>()
+
+        val path = findCruciblePath(city, 4, 10)
+        return path.sumOf { city[it] } - city[0 to 0]
     }
 
     @Test
