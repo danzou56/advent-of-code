@@ -5,6 +5,7 @@ import dev.danzou.advent.utils.geometry.Direction
 import dev.danzou.advent.utils.geometry.plus
 import dev.danzou.advent.utils.geometry.toPair
 import kotlin.math.absoluteValue
+import kotlin.math.max
 
 val cardinalDirections = Direction.entries.map { it.dir }.toSet()
 
@@ -38,6 +39,11 @@ fun List<Int>.toPoint(): Point = this.toPair()
 
 fun Pos.manhattanDistanceTo(other: Pos): Int =
     (this.first - other.first).absoluteValue + (this.second - other.second).absoluteValue
+
+fun Pos.chessDistanceTo(other: Pos): Int = this.chebyshevDistanceTo(other)
+
+fun Pos.chebyshevDistanceTo(other: Pos): Int =
+    max((this.first - other.first).absoluteValue, (this.second - other.second).absoluteValue)
 
 fun <T> Matrix<T>.neighboring(p: Pos): List<T> =
     this.neighboringPos(p).map { this[it] }
