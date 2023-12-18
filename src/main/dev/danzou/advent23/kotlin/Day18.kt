@@ -27,10 +27,13 @@ internal class Day18 : AdventTestRunner23("Lavaduct Lagoon") {
         }.let { (_, border) ->
             require(border.first() == border.last())
             require(border.size % 2 == 1)
-            val area = abs(
-                border.windowed(2)
-                    .map { it.map { it.toList().map(Int::toLong) } }
-                    .sumOf { det2(it) } / 2
+            // By shoelace formula, for every adjacent pair of points p_i, p_j,
+            // A = 1 / 2 * | Σ det(p_i, p_j) |
+            // (the absolute value corrects for whether the pairs are all in clockwise direction or
+            // in counter-clockwise direction)
+            val area = abs(border.windowed(2)
+                .map { it.map { it.toList().map(Int::toLong) } }
+                .sumOf { det2(it) } / 2
             )
             val (_, borderSize) = border.drop(1).fold(border.first() to 0) { (cur, size), pos ->
                 pos to size + cur.manhattanDistanceTo(pos)
