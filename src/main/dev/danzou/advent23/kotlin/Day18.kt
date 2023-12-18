@@ -35,8 +35,11 @@ internal class Day18 : AdventTestRunner23("Lavaduct Lagoon") {
             val (_, borderSize) = border.drop(1).fold(border.first() to 0) { (cur, size), pos ->
                 pos to size + cur.manhattanDistanceTo(pos)
             }
-            // Not completely sure why it isn't just area? What's this extra bit for? According to
-            // Wikipedia, it should just be half the sum over the determinants
+            // The integer points inside the polygon and on its boundary can be found by
+            // 1. Finding the "traditional" area via the shoelace formula (for why this isn't our
+            //    area, consider the unit square versus the "area" of (0, 0), (0, 1), (1, 1), (1, 0))
+            // 2. Determining the number of interior points via Pick's Theorem - A = i + b / 2 - 1
+            // 3. Calculating our area by summing the number of interior points and boundary points
             area + borderSize / 2 + 1
         }
 
