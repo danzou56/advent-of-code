@@ -117,26 +117,20 @@ fun <T> doDijkstras(
     val costs = mutableMapOf(init to 0)
     // vertex is always in cost map so dereference is safe
     val queue = PriorityQueue(Comparator.comparingInt<T> { costs[it]!! })
-
-    val visited = mutableSetOf<T>()
     val predecessors = mutableMapOf<T, T>()
 
     var cur = init
     while (!target(cur)) {
         for (adjacent in getNeighbors(cur)) {
-            // Second visits are always the same or higher cost
-            if (!visited.contains(adjacent)) {
-                // cur is always in costs map so dereference is safe
-                val cost = costs[cur]!! + getCost(cur, adjacent)
+            // cur is always in costs map so dereference is safe
+            val cost = costs[cur]!! + getCost(cur, adjacent)
 
-                if (cost < (costs[adjacent] ?: Int.MAX_VALUE)) {
-                    costs[adjacent] = cost
-                    predecessors[adjacent] = cur
-                    queue.add(adjacent)
-                }
+            if (cost < (costs[adjacent] ?: Int.MAX_VALUE)) {
+                costs[adjacent] = cost
+                predecessors[adjacent] = cur
+                queue.add(adjacent)
             }
         }
-        visited.add(cur)
 
         // If queue is emptied, there exists no path to the end vertex
         cur = queue.poll() ?: return emptyList()
