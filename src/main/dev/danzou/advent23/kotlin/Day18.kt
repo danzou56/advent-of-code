@@ -60,7 +60,6 @@ internal class Day18 : AdventTestRunner23("Lavaduct Lagoon") {
             }
 
         return areaFromDigPlan(instrs)
-
     }
 
     override fun part2(input: String): Long {

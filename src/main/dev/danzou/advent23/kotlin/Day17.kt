@@ -40,7 +40,6 @@ internal class Day17 : AdventTestRunner23("Clumsy Crucible") {
             { last, curs ->
                 curs.takeLastWhile { it != last.last() }.sumOf { city[it] }
             },
-//            { curs -> curs.last().manhattanDistanceTo(target) }
         )
 
         return path.flatten().toSet().sortedBy { pos -> path.indexOfFirst { state -> pos in state } }
