@@ -113,7 +113,6 @@ internal class Day19 : AdventTestRunner23() {
     override fun part2(input: String): Long {
         val workflows = Rule.workflowsFromString(input)
 
-
         // Quirk: the xmas part numbers are represented differently in part 1 and part 2. Here,
         // they're represented as list of int ranges. The list is always ordered such that each
         // part's gate is at the same index. Since the rule operand is stored as a string, we use
