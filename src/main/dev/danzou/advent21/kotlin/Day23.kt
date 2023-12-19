@@ -8,7 +8,7 @@ import java.time.Duration
 import kotlin.test.assertEquals
 
 internal class Day23 : AdventTestRunner21("Amphipod") {
-    override val timeout = Duration.ofSeconds(90)
+    override val timeout = Duration.ofSeconds(60)
 
     sealed class Amphipod(val cost: Int) {
         data object Amber : Amphipod(1)
@@ -91,7 +91,7 @@ internal class Day23 : AdventTestRunner21("Amphipod") {
             // costs cache - we get the path length in bfs, and then keep it until we need it
             // otherwise we'd have to recalculate each time
             val costs = mutableMapOf<Pair<SparseMatrix<Amphipod>, SparseMatrix<Amphipod>>, Int>()
-            val path = doDijkstras(
+            val path = aStar(
                 init,
                 { it == target },
                 { occupied ->
@@ -103,7 +103,16 @@ internal class Day23 : AdventTestRunner21("Amphipod") {
                     )
                     nexts.map { (next, _) -> next }.toSet()
                 },
-                { src, dst -> costs.remove(src to dst)!! }
+                { src, dst -> costs.remove(src to dst)!! },
+                { cur ->
+                    cur.entries.sumOf { (pos, amphipod) ->
+                        when (pos) {
+                            in rooms[amphipod]!! -> 0
+                            else -> amphipod.cost *
+                                    (pos.manhattanDistanceTo(rooms[amphipod]!!.first()) + (pos.y - 1))
+                        }
+                    }
+                }
             )
             return path.windowed(2).fold(0) { cost, (src, dst) ->
                 cost + nextBurrows(src)
@@ -140,12 +149,12 @@ internal class Day23 : AdventTestRunner21("Amphipod") {
         val (burrow, occupied) = Burrow.fromString(input)
         val (_, target) = Burrow.fromString(
             """
-            #############
-            #...........#
-            ###A#B#C#D###
-              #A#B#C#D#
-              #########
-        """.trimIndent()
+                #############
+                #...........#
+                ###A#B#C#D###
+                  #A#B#C#D#
+                  #########
+            """.trimIndent()
         )
         return burrow.lowestCostBetween(occupied, target)
     }
@@ -154,7 +163,7 @@ internal class Day23 : AdventTestRunner21("Amphipod") {
         val supplementalInput = """
             |  #D#C#B#A#
             |  #D#B#A#C#
-        """.trimMargin(marginPrefix="|")
+        """.trimMargin(marginPrefix = "|")
         val (burrow, occupied) = Burrow.fromString(
             input.split("\n").let {
                 it.take(3) + supplementalInput.split("\n") + it.drop(3)
