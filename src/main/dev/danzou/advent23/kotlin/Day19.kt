@@ -102,6 +102,9 @@ internal class Day19 : AdventTestRunner23() {
             .map { it.split(',', '=') }
             .map { it.windowed(2, step = 2).associate { it.first() to it.last().toInt() } }
 
+        // Quirk: the xmas part numbers are represented differently in part 1 and part 2. Here,
+        // they're represented as a map of string to their value. Since rules store the operand as
+        // a string, we directly access the part's value with the rule operand.
         return commands.filter { xmas ->
             accept(workflows, xmas)
         }.sumOf { it.values.sum() }
@@ -110,20 +113,28 @@ internal class Day19 : AdventTestRunner23() {
     override fun part2(input: String): Long {
         val workflows = Rule.workflowsFromString(input)
 
+
+        // Quirk: the xmas part numbers are represented differently in part 1 and part 2. Here,
+        // they're represented as list of int ranges. The list is always ordered such that each
+        // part's gate is at the same index. Since the rule operand is stored as a string, we use
+        // the xmasToIndex map to find the correct index to update.
+        //
         // Given a workflow label and input gates, determine the next workflow labels to traverse
         // and their respective gates
         fun successors(label: String, xmasGates: List<IntRange>): Set<Pair<String, List<IntRange>>> {
             if (label == REJECT || label == ACCEPT) return emptySet()
-            
+
             return workflows[label]!!.fold(
                 xmasGates to emptyList<Pair<String, List<IntRange>>>()
             ) { (gateAcc, nexts), rule ->
                 when (rule) {
-                    // Technically emptyList() should be List(4) { IntRange.EMPTY }, but Immediate
-                    // should always be the last in the list and so the value is never used
+                    // Technically `emptyList()` should be `List(4) { IntRange.EMPTY }`, but
+                    // Immediate is always the last in the list and so the value is never used
                     is Rule.Immediate -> emptyList<IntRange>() to nexts + (rule.sink to gateAcc)
                     is Rule.Compare -> gateAcc.mapIndexed { index, xmasGate ->
                         when (index) {
+                            // Determine the gate for this sink and the inversion of the gate to be
+                            // applied to subsequent rules in this workflow
                             xmasToIndex[rule.operand] -> Pair(
                                 xmasGate.intersect(rule.operator.not().makeGate(rule.literal)),
                                 xmasGate.intersect(rule.operator.makeGate(rule.literal))
@@ -141,13 +152,13 @@ internal class Day19 : AdventTestRunner23() {
 
         // The possible ways to end up in an accept/reject state along with the input ranges we used
         // to get there can be modeled as a tree. Perform a search on the tree to discover all of
-        // its leaf nodes (that is, whether the ranges were accepted or rejected)
+        // its leaf nodes (that is, whether the ranges were accepted or rejected).
         val discovered = bfs("in" to List(4) { MIN_PART..MAX_PART }) { (label, gates) ->
             successors(label, gates)
         }
 
-        val terminals = discovered.filter { (label, _) -> label == ACCEPT || label == REJECT }
         // The total count of all terminals is just the total number of all possibilities
+        val terminals = discovered.filter { (label, _) -> label == ACCEPT || label == REJECT }
         require(terminals.sumOf { (_, gates) ->
             gates
                 .map { it.last - it.first + 1 }
