@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.util.*
 
-internal class Day20 : AdventTestRunner23() {
+internal class Day20 : AdventTestRunner23("Pulse Propagataion") {
 
     enum class Pulse {
         HIGH { override fun not() = LOW },
@@ -167,6 +167,5 @@ internal class Day20 : AdventTestRunner23() {
         """.trimIndent()
 
         assertEquals(32000000L, part1(input))
-//        assertEquals(null, part2(input))
     }
 }
