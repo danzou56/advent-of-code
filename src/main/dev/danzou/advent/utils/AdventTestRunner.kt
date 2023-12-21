@@ -33,7 +33,7 @@ abstract class AdventTestRunner(protected val year: Int, protected val name: Str
     private val input: String = readFileString(
         "$baseInputPath/day$day.in",
         "$AOC_BASE_URL/20$year/day/$day/input"
-    ).also { require(it.isNotEmpty()) }
+    ).also { require(it.isNotEmpty()) { "File ${baseInputPath}/day$day.in was empty" } }
 
     private val expected: List<String?> = readFileLines(
         "$baseOutputPath/day$day.out"
