@@ -9,8 +9,12 @@ import java.util.*
 internal class Day20 : AdventTestRunner23("Pulse Propagataion") {
 
     enum class Pulse {
-        HIGH { override fun not() = LOW },
-        LOW { override fun not() = HIGH };
+        HIGH {
+            override fun not() = LOW
+        },
+        LOW {
+            override fun not() = HIGH
+        };
 
         abstract operator fun not(): Pulse
     }
@@ -46,24 +50,24 @@ internal class Day20 : AdventTestRunner23("Pulse Propagataion") {
 
         companion object {
             fun fromString(input: String): Map<String, Module> {
-                val conjunctions = input.split("\n")
-                    .filter { it.startsWith("&") }
-                    .map { it.drop(1).takeWhile { it.isLetter() } }
-                    .toSet()
+                val conjunctionInputs = mutableMapOf<String, MutableList<String>>().apply {
+                    val conjunctions = input.split("\n")
+                        .filter { it.startsWith("&") }
+                        .map { it.drop(1).takeWhile(Char::isLetter) }
+                        .toSet()
 
-                val conjunctionInputs = mutableMapOf<String, List<String>>()
-                input.split("\n")
-                    .map { it.split(" -> ") }
-                    .map { (source, targets) ->
-                        targets.split(", ")
-                            .onEach { target ->
-                                if (target in conjunctions)
-                                    conjunctionInputs[target] = (conjunctionInputs[target]
-                                        ?: emptyList()) + source.dropWhile { it == '&' || it == '%' }
-                            }
-                    }
+                    input.split("\n")
+                        .map { it.split(" -> ") }
+                        .map { (source, targets) -> source to targets.split(", ") }
+                        .flatMap { (source, targets) -> targets.map { target -> source to target } }
+                        .filter { (_, target) -> target in conjunctions }
+                        .forEach { (source, target) ->
+                            this.computeIfAbsent(target) { mutableListOf() }
+                                .add(source.dropWhile { it == '&' || it == '%' })
+                        }
+                }
 
-                val modules: Map<String, Module> = input.split("\n")
+                val modules = input.split("\n")
                     .map { it.split(" -> ") }
                     .map { (source, targets) -> source to targets.split(", ") }
                     .map { (source, targets) ->
