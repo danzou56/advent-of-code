@@ -83,6 +83,43 @@ internal class Day22 : AdventTestRunner22("Monkey Map") {
         return step(Pose(start, Compass.EAST), instructions)
     }
 
+    fun move3d(board: SparseMatrix<BoardCell>, instructions: List<Instruction>): Pose {
+        val start =
+            board.filter { (pos, cell) -> pos.y == 0 && cell == BoardCell.EMPTY }.minBy { (pos, _) -> pos.x }.key
+
+        tailrec fun step(pose: Pose, instructions: List<Instruction>): Pose {
+            if (instructions.isEmpty()) return pose
+
+            return when (val next = instructions.first()) {
+                is Instruction.Move ->
+                    if (next.steps <= 0) step(pose, instructions.drop(1))
+                    else when (board[pose.pos + pose.dir.dir]) {
+                        BoardCell.EMPTY -> step(
+                            Pose(pose.pos + pose.dir.dir, pose.dir),
+                            listOf(Instruction.Move(next.steps - 1)) + instructions.drop(1)
+                        )
+                        BoardCell.WALL -> step(
+                            pose,
+                            instructions.drop(1)
+                        )
+                        null -> TODO()
+                    }
+
+                is Instruction.ClockwiseTurn -> step(
+                    Pose(pose.pos, clockwiseTurnFrom[pose.dir]!!),
+                    instructions.drop(1)
+                )
+
+                is Instruction.CounterClockwiseTurn -> step(
+                    Pose(pose.pos, counterClockwiseTurnFrom[pose.dir]!!),
+                    instructions.drop(1)
+                )
+            }
+        }
+
+        return step(Pose(start, Compass.EAST), instructions)
+    }
+
     fun getBoard(input: String): SparseMatrix<BoardCell> =
         input.split("\n").dropLast(2).flatMapIndexed { y, row ->
             row.mapIndexedNotNull { x, c ->
@@ -114,7 +151,8 @@ internal class Day22 : AdventTestRunner22("Monkey Map") {
     }
 
     override fun part2(input: String): Any {
-        TODO("Not yet implemented")
+        val pose = move3d(getBoard(input), getInstructions(input))
+        return calculatePassword(pose)
     }
 
     @Test
