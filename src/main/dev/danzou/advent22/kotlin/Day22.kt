@@ -10,7 +10,7 @@ import kotlin.test.assertEquals
 
 typealias Pose = Pair<Pos, Compass>
 
-internal class Day22 : AdventTestRunner22() {
+internal class Day22 : AdventTestRunner22("Monkey Map") {
 
     val Pose.pos
         get() = this.first
@@ -29,7 +29,7 @@ internal class Day22 : AdventTestRunner22() {
     )
     private val counterClockwiseTurnFrom = clockwiseTurnFrom.map { (k, v) -> v to k }.toMap()
 
-    fun move(board: SparseMatrix<BoardCell>, instructions: List<Instruction>): Pose {
+    fun move2d(board: SparseMatrix<BoardCell>, instructions: List<Instruction>): Pose {
         val start =
             board.filter { (pos, cell) -> pos.y == 0 && cell == BoardCell.EMPTY }.minBy { (pos, _) -> pos.x }.key
 
@@ -97,18 +97,20 @@ internal class Day22 : AdventTestRunner22() {
     fun getInstructions(input: String): List<Instruction> =
         tokenize(input.split("\n").last())
 
-    override fun part1(input: String): Any {
-        val pose = move(getBoard(input), getInstructions(input))
-        return listOf(
-            (pose.x + 1) * 4,
-            (pose.y + 1) * 1000,
-            listOf(
-                Compass.EAST,
-                Compass.SOUTH,
-                Compass.WEST,
-                Compass.NORTH
-            ).indexOf(pose.dir)
-        ).sum()
+    fun calculatePassword(pose: Pose): Int = listOf(
+        (pose.x + 1) * 4,
+        (pose.y + 1) * 1000,
+        listOf(
+            Compass.EAST,
+            Compass.SOUTH,
+            Compass.WEST,
+            Compass.NORTH
+        ).indexOf(pose.dir)
+    ).sum()
+
+    override fun part1(input: String): Int {
+        val pose = move2d(getBoard(input), getInstructions(input))
+        return calculatePassword(pose)
     }
 
     override fun part2(input: String): Any {
@@ -137,7 +139,7 @@ internal class Day22 : AdventTestRunner22() {
         val board = getBoard(input)
         val instructions = getInstructions(input)
 
-        assertEquals(Pose(Pos(7, 5), Compass.EAST), move(board, instructions))
+        assertEquals(Pose(Pos(7, 5), Compass.EAST), move2d(board, instructions))
         assertEquals(6032, part1(input))
     }
 
