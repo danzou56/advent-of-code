@@ -1,69 +1,65 @@
 package dev.danzou.advent22.kotlin
 
 import dev.danzou.advent.utils.*
-import dev.danzou.advent.utils.geometry.Direction
+import dev.danzou.advent.utils.geometry.Compass
 import dev.danzou.advent.utils.geometry.plus
 import dev.danzou.advent22.AdventTestRunner22
 import org.junit.jupiter.api.Test
 import java.lang.IllegalArgumentException
 import kotlin.test.assertEquals
 
-typealias Pose = Pair<Pos, Direction>
-val Pose.pos
-    get() = this.first
-val Pose.dir
-    get() = this.second
-val Pose.x
-    get() = this.pos.x
-val Pose.y
-    get() = this.pos.y
+typealias Pose = Pair<Pos, Compass>
 
 internal class Day22 : AdventTestRunner22() {
 
+    val Pose.pos
+        get() = this.first
+    val Pose.dir
+        get() = this.second
+    val Pose.x
+        get() = this.pos.x
+    val Pose.y
+        get() = this.pos.y
+
     private val clockwiseTurnFrom = mapOf(
-        Direction.LEFT to Direction.UP,
-        Direction.UP to Direction.RIGHT,
-        Direction.RIGHT to Direction.DOWN,
-        Direction.DOWN to Direction.LEFT,
+        Compass.WEST to Compass.NORTH,
+        Compass.NORTH to Compass.EAST,
+        Compass.EAST to Compass.SOUTH,
+        Compass.SOUTH to Compass.WEST,
     )
     private val counterClockwiseTurnFrom = clockwiseTurnFrom.map { (k, v) -> v to k }.toMap()
 
     fun move(board: SparseMatrix<BoardCell>, instructions: List<Instruction>): Pose {
-        val start = board.filter { (pos, cell) -> pos.y == 0 && cell == BoardCell.EMPTY }.minBy { (pos, _) -> pos.x }.key
+        val start =
+            board.filter { (pos, cell) -> pos.y == 0 && cell == BoardCell.EMPTY }.minBy { (pos, _) -> pos.x }.key
+
         tailrec fun step(pose: Pose, instructions: List<Instruction>): Pose {
             if (instructions.isEmpty()) return pose
 
             return when (val next = instructions.first()) {
                 is Instruction.Move ->
                     if (next.steps <= 0) step(pose, instructions.drop(1))
-                    else when (board[pose.pos + pose.dir.invDir]) {
+                    else when (board[pose.pos + pose.dir.dir]) {
                         BoardCell.EMPTY -> step(
-                            Pose(pose.pos + pose.dir.invDir, pose.dir),
+                            Pose(pose.pos + pose.dir.dir, pose.dir),
                             listOf(Instruction.Move(next.steps - 1)) + instructions.drop(1)
                         )
-
                         BoardCell.WALL -> step(
                             pose,
                             instructions.drop(1)
                         )
-
                         null -> when (pose.dir) {
-                            Direction.LEFT -> board.filter { (pos, _) -> pos.y == pose.pos.y }
-                                .maxBy { (pos, _) -> pos.x }
-
-                            Direction.RIGHT -> board.filter { (pos, _) -> pos.y == pose.pos.y }
-                                .minBy { (pos, _) -> pos.x }
-
-                            Direction.UP -> board.filter { (pos, _) -> pos.x == pose.pos.x }.maxBy { (pos, _) -> pos.y }
-                            Direction.DOWN -> board.filter { (pos, _) -> pos.x == pose.pos.x }
-                                .minBy { (pos, _) -> pos.y }
+                            Compass.WEST -> board.filter { (pos, _) -> pos.y == pose.y }.maxBy { (pos, _) -> pos.x }
+                            Compass.EAST -> board.filter { (pos, _) -> pos.y == pose.y }.minBy { (pos, _) -> pos.x }
+                            Compass.NORTH -> board.filter { (pos, _) -> pos.x == pose.x }.maxBy { (pos, _) -> pos.y }
+                            Compass.SOUTH -> board.filter { (pos, _) -> pos.x == pose.x }.minBy { (pos, _) -> pos.y }
+                            else -> throw IllegalArgumentException()
                         }.let { (pos, cell) ->
                             when (cell) {
                                 BoardCell.WALL -> step(
                                     pose,
                                     instructions.drop(1)
                                 )
-
                                 BoardCell.EMPTY -> step(
                                     Pose(pos, pose.dir),
                                     listOf(Instruction.Move(next.steps - 1)) + instructions.drop(1)
@@ -84,17 +80,19 @@ internal class Day22 : AdventTestRunner22() {
             }
         }
 
-        return step(Pose(start, Direction.RIGHT), instructions)
+        return step(Pose(start, Compass.EAST), instructions)
     }
 
     fun getBoard(input: String): SparseMatrix<BoardCell> =
-        input.split("\n").dropLast(2).flatMapIndexed { y, row -> row.mapIndexedNotNull { x, c ->
-            when (c) {
-                '#' -> Pos(x, y) to BoardCell.WALL
-                '.' -> Pos(x, y) to BoardCell.EMPTY
-                else -> null
+        input.split("\n").dropLast(2).flatMapIndexed { y, row ->
+            row.mapIndexedNotNull { x, c ->
+                when (c) {
+                    '#' -> Pos(x, y) to BoardCell.WALL
+                    '.' -> Pos(x, y) to BoardCell.EMPTY
+                    else -> null
+                }
             }
-        }}.toMap()
+        }.toMap()
 
     fun getInstructions(input: String): List<Instruction> =
         tokenize(input.split("\n").last())
@@ -105,11 +103,12 @@ internal class Day22 : AdventTestRunner22() {
             (pose.x + 1) * 4,
             (pose.y + 1) * 1000,
             listOf(
-                Direction.RIGHT,
-                Direction.DOWN,
-                Direction.LEFT,
-                Direction.UP
-            ).indexOf(pose.dir)).sum()
+                Compass.EAST,
+                Compass.SOUTH,
+                Compass.WEST,
+                Compass.NORTH
+            ).indexOf(pose.dir)
+        ).sum()
     }
 
     override fun part2(input: String): Any {
@@ -138,7 +137,7 @@ internal class Day22 : AdventTestRunner22() {
         val board = getBoard(input)
         val instructions = getInstructions(input)
 
-        assertEquals(Pose(Pos(7, 5), Direction.RIGHT), move(board, instructions))
+        assertEquals(Pose(Pos(7, 5), Compass.EAST), move(board, instructions))
         assertEquals(6032, part1(input))
     }
 
@@ -147,32 +146,26 @@ internal class Day22 : AdventTestRunner22() {
     }
 
     sealed class Instruction {
-        class Move(val steps: Int) : Instruction() {
-            override fun toString(): String {
-                return "${super.toString()}($steps)"
-            }
-        }
-        object ClockwiseTurn : Instruction()
-        object CounterClockwiseTurn : Instruction()
-
-        override fun toString(): String {
-            return this.javaClass.simpleName
-        }
+        data class Move(val steps: Int) : Instruction()
+        data object ClockwiseTurn : Instruction()
+        data object CounterClockwiseTurn : Instruction()
     }
 
     fun tokenize(line: String): List<Instruction> {
         val toks = mutableListOf<Instruction>()
-        fun step(line: String) {
+        tailrec fun step(line: String) {
             if (line.isEmpty()) return
-            toks.add(when (line.first()) {
-                'R' -> Instruction.ClockwiseTurn
-                'L' -> Instruction.CounterClockwiseTurn
-                else -> {
-                    val res = Regex("""^\d+""").find(line) ?: throw IllegalArgumentException()
-                    toks.add(Instruction.Move(res.value.toInt()))
-                    return step(line.drop(res.value.length))
+            toks.add(
+                when (line.first()) {
+                    'R' -> Instruction.ClockwiseTurn
+                    'L' -> Instruction.CounterClockwiseTurn
+                    else -> {
+                        val res = line.takeWhile { it.isDigit() }
+                        toks.add(Instruction.Move(res.toInt()))
+                        return step(line.drop(res.length))
+                    }
                 }
-            })
+            )
             return step(line.drop(1))
         }
 
