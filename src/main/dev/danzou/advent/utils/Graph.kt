@@ -14,8 +14,7 @@ typealias NeighborFunction<T> = (T) -> Set<T>
 typealias CostFunction<T> = (T, T) -> Int
 
 /**
- * Perform depth first search, returning all discovered nodes. May stack overflow for very large
- * graphs; if this is undesirable, use bfs
+ * Perform depth first search, returning all discovered nodes.
  */
 fun <T> dfs(init: T, getNeighbors: NeighborFunction<T>): Set<T> {
     val stack = Stack<T>()
@@ -37,15 +36,21 @@ fun <T> dfs(init: T, getNeighbors: NeighborFunction<T>): Set<T> {
 /**
  * Perform breadth first search, returning all discovered nodes
  */
-fun <T> bfs(init: T, getNeighbors: NeighborFunction<T>): Set<T> {
+fun <T> bfs(init: T, getNeighbors: NeighborFunction<T>): Set<T> =
+    bfsWithDistance(init, getNeighbors).keys
+
+/**
+ * Perform breadth first search, returning all discovered nodes and their distance from init
+ */
+fun <T> bfsWithDistance(init: T, getNeighbors: NeighborFunction<T>): Map<T, Int> {
     val queue: Queue<T> = LinkedList()
-    val discovered = mutableSetOf(init)
+    val discovered = mutableMapOf(init to 0)
     queue.add(init)
     while (queue.isNotEmpty()) {
         val cur = queue.poll()!!
         for (adjacent in getNeighbors(cur)) {
             if (adjacent !in discovered) {
-                discovered.add(adjacent)
+                discovered[adjacent] = discovered[cur]!! + 1
                 queue.add(adjacent)
             }
         }

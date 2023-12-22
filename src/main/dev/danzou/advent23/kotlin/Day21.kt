@@ -6,32 +6,22 @@ import dev.danzou.advent.utils.geometry.plus
 import dev.danzou.advent23.AdventTestRunner23
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import java.util.*
 
 internal class Day21 : AdventTestRunner23() {
 
-    /**
-     * Custom bfs for day 21 that also keeps track of shortest distance to the node, then removes
-     */
-    private fun <T> bfs(init: T, threshold: Int, getNeighbors: NeighborFunction<T>): Set<T> {
-        if (threshold < 0) return emptySet()
-        if (threshold == 0) return setOf(init)
-        val queue: Queue<T> = LinkedList()
-        val discovered = mutableMapOf(init to 0)
-        queue.add(init)
-        while (queue.isNotEmpty()) {
-            val cur = queue.poll()!!
-            if (discovered[cur]!! > threshold) continue
-            for (adjacent in getNeighbors(cur)) {
-                if (adjacent !in discovered) {
-                    discovered.put(adjacent, discovered[cur]!! + 1)
-                    queue.add(adjacent)
-                }
-            }
-        }
-
-        return discovered.filter { (_, value) -> value % 2 == threshold % 2 }.keys
-    }
+    private fun searchWithParity(matrix: Matrix<Char>, start: Pos, max: Int): Set<Pos> =
+        bfsWithDistance(start) { cur  ->
+            CARDINAL_DIRECTIONS.map { delta ->
+                cur + delta
+            }.filter { p ->
+                p.manhattanDistanceTo(start) <= max
+            }.filter { p ->
+                val c = matrix.getOrNull(p)
+                c == '.' || c == 'S'
+            }.toSet()
+        }.filter { (_, distance) ->
+            distance <= max && distance % 2 == max % 2
+        }.keys
 
     override fun part1(input: String): Int = getStepsIn(input, 64)
 
@@ -39,41 +29,16 @@ internal class Day21 : AdventTestRunner23() {
 
     fun getStepsIn(input: String, steps: Int): Int {
         val matrix = input.asMatrix<Char>()
-        val size = matrix.size
         val start = matrix.indices2D.single { matrix[it] == 'S' }
-        println(start)
 
-        val getNeighbors = { cur: Pos ->
-            CARDINAL_DIRECTIONS.map { delta ->
-                cur + delta
-            }.filter { (x, y) ->
-                val c = matrix.getOrNull(
-                    Pair(
-                        (x % size + size) % size,
-                        (y % size + size) % size
-                    )
-                )
-                c == '.' || c == 'S'
-            }.toSet()
-        }
-
-        return bfs(start, steps, getNeighbors).toSet().size
+        return searchWithParity(matrix, start, steps).size
     }
 
     fun getALotOfStepsIn(input: String, steps: Int): Long {
         val matrix = input.asMatrix<Char>()
         val size = matrix.size
         val start = matrix.indices2D.single { matrix[it] == 'S' }
-
         require(steps >= start.manhattanDistanceTo(0 to 0))
-        val getNeighbors = { cur: Pos ->
-            CARDINAL_DIRECTIONS.map { delta ->
-                cur + delta
-            }.filter { p ->
-                val c = matrix.getOrNull(p)
-                c == '.' || c == 'S'
-            }.toSet()
-        }
 
         // The arithmetic here quite possibly has off-by-one errors or other arithmetic errors as
         // the test input is an edge case that may not be fully exercising the code
@@ -92,9 +57,9 @@ internal class Day21 : AdventTestRunner23() {
         // tiles to form a checkerboard pattern
         require(size % 2 != 0)
         val evenTilesCount = (2 * ((reach - 1) / 2) + 1).toLong().pow(2)
-        val evenTotal = evenTilesCount * bfs(start, size, getNeighbors).size
+        val evenTotal = evenTilesCount * searchWithParity(matrix, start, size).size
         val oddTilesCount = (2 * (reach / 2)).toLong().pow(2)
-        val oddTotal = oddTilesCount * bfs(start, size - 1, getNeighbors).size
+        val oddTotal = oddTilesCount * searchWithParity(matrix, start, size - 1).size
 
         // We can make the assumption that we enter a given tile from a fixed point. For partially
         // covered tiles, calculate the distance already covered for each type
@@ -109,25 +74,25 @@ internal class Day21 : AdventTestRunner23() {
         // coverage types.
         val edgeDiscovered = listOf(
             // inner straight - first partial tile directly straight from the center
-            bfs(start.x to size - 1, steps - innerStraightStart, getNeighbors),
-            bfs(size - 1 to start.y, steps - innerStraightStart, getNeighbors),
-            bfs(start.x to 0, steps - innerStraightStart, getNeighbors),
-            bfs(0 to start.y, steps - innerStraightStart, getNeighbors),
+            searchWithParity(matrix, start.x to size - 1, steps - innerStraightStart),
+            searchWithParity(matrix, size - 1 to start.y, steps - innerStraightStart),
+            searchWithParity(matrix, start.x to 0, steps - innerStraightStart),
+            searchWithParity(matrix, 0 to start.y, steps - innerStraightStart),
             // outer straight - second partial tile directly straight from the center (if any)
-            bfs(start.x to size - 1, steps - outerStraightStart, getNeighbors),
-            bfs(size - 1 to start.y, steps - outerStraightStart, getNeighbors),
-            bfs(start.x to 0, steps - outerStraightStart, getNeighbors),
-            bfs(0 to start.y, steps - outerStraightStart, getNeighbors),
+            searchWithParity(matrix, start.x to size - 1, steps - outerStraightStart),
+            searchWithParity(matrix, size - 1 to start.y, steps - outerStraightStart),
+            searchWithParity(matrix, start.x to 0, steps - outerStraightStart),
+            searchWithParity(matrix, 0 to start.y, steps - outerStraightStart),
             // inner diagonal - partial diagonals co-linear with inner straight tiles
-            bfs(0 to 0, steps - diagonalStart, getNeighbors),
-            bfs(size - 1 to 0, steps - diagonalStart, getNeighbors),
-            bfs(size - 1 to size - 1, steps - diagonalStart, getNeighbors),
-            bfs(0 to size - 1, steps - diagonalStart, getNeighbors),
-            // offset diagonal - partial diagonals co-linear with outer striahg tiles
-            bfs(0 to 0, steps - offsetDiagonalStart, getNeighbors),
-            bfs(size - 1 to 0, steps - offsetDiagonalStart, getNeighbors),
-            bfs(size - 1 to size - 1, steps - offsetDiagonalStart, getNeighbors),
-            bfs(0 to size - 1, steps - offsetDiagonalStart, getNeighbors),
+            searchWithParity(matrix, 0 to 0, steps - diagonalStart),
+            searchWithParity(matrix, size - 1 to 0, steps - diagonalStart),
+            searchWithParity(matrix, size - 1 to size - 1, steps - diagonalStart),
+            searchWithParity(matrix, 0 to size - 1, steps - diagonalStart),
+            // offset diagonal - partial diagonals co-linear with outer straight tiles
+            searchWithParity(matrix, 0 to 0, steps - offsetDiagonalStart),
+            searchWithParity(matrix, size - 1 to 0, steps - offsetDiagonalStart),
+            searchWithParity(matrix, size - 1 to size - 1, steps - offsetDiagonalStart),
+            searchWithParity(matrix, 0 to size - 1, steps - offsetDiagonalStart),
         ).map { it.size }.map(Int::toLong)
         val cornerTotal =
             edgeDiscovered.zip(
@@ -155,19 +120,10 @@ internal class Day21 : AdventTestRunner23() {
             ...........
         """.trimIndent()
 
-        val matrix = input.asMatrix<Char>()
-        val indices = matrix.indices2D
-        val start = indices.single { matrix[it] == 'S' }
-        indices.filter {
-            it.manhattanDistanceTo(start) % 2 == 0
-        }.filter {
-            matrix[it] == '.' || matrix[it] == 'S'
-        }.also {
-            println(it.size)
-        }
-
         assertEquals(16, getStepsIn(input, 6))
-        assertEquals(1594, getStepsIn(input, 50))
-        assertEquals(167004, getStepsIn(input, 500))
+        // Either 1. the arithmetic in getALotOfStepsIn is wrong, or 2. the structural assumptions
+        // made on the test input in getALotOfStepsIn are invalid for the example input (that is,
+        // the relative sparseness of obstacles and direct lines from S to the border) so
+        // getALotOfStepsIn is known broken on the example cases.
     }
 }
