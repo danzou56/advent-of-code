@@ -58,13 +58,11 @@ internal class Day25 : AdventTestRunner22() {
         }
     }
     
-    override fun part1(input: String): Any =
+    override fun part1(input: String): String =
         input.split("\n").map { snafuToLong(it) }
             .sum().let { sum -> longToSnafu(sum) }
 
-    override fun part2(input: String): Any {
-        TODO("Not yet implemented")
-    }
+    override fun part2(input: String): String = "Congratulations!"
 
     @Test
     fun testExample() {
