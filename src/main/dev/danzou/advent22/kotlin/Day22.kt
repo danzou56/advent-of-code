@@ -2,9 +2,14 @@ package dev.danzou.advent22.kotlin
 
 import dev.danzou.advent.utils.*
 import dev.danzou.advent.utils.geometry.Compass
+import dev.danzou.advent.utils.geometry.Compass.Companion.CARDINAL
+import dev.danzou.advent.utils.geometry.Compass.Companion.CARDINAL_DIRECTIONS
+import dev.danzou.advent.utils.geometry.minus
 import dev.danzou.advent.utils.geometry.plus
+import dev.danzou.advent.utils.geometry.times
 import dev.danzou.advent22.AdventTestRunner22
 import org.junit.jupiter.api.Test
+import org.w3c.dom.css.Counter
 import java.lang.IllegalArgumentException
 import kotlin.test.assertEquals
 
@@ -60,6 +65,7 @@ internal class Day22 : AdventTestRunner22("Monkey Map") {
                                     pose,
                                     instructions.drop(1)
                                 )
+
                                 BoardCell.EMPTY -> step(
                                     Pose(pos, pose.dir),
                                     listOf(Instruction.Move(next.steps - 1)) + instructions.drop(1)
@@ -83,9 +89,105 @@ internal class Day22 : AdventTestRunner22("Monkey Map") {
         return step(Pose(start, Compass.EAST), instructions)
     }
 
+    /**
+     * Maps an invalid source coordinate to a valid destination
+     */
+    data class EdgeWrapping(
+        val source: List<Pose>,
+        val destination: List<Pose>
+    ) {
+        private val wrap = source.zip(destination).toMap()
+        private val _source = source.toSet()
+
+        init {
+            require(source.size == destination.size)
+        }
+
+        infix operator fun contains(pose: Pose): Boolean = pose in _source
+        operator fun invoke(pose: Pose): Pose {
+            return wrap[pose]!!
+        }
+    }
+
     fun move3d(board: SparseMatrix<BoardCell>, instructions: List<Instruction>): Pose {
-        val start =
-            board.filter { (pos, cell) -> pos.y == 0 && cell == BoardCell.EMPTY }.minBy { (pos, _) -> pos.x }.key
+        val start = board.filter { (pos, cell) ->
+            pos.y == 0 && cell == BoardCell.EMPTY
+        }.keys.minBy(Pos::x)
+
+        // Hard coded against the example input
+        val faceSize = 50
+        val faceOffsets = 0..<faceSize
+
+        // Hard coding of how to wrap over the side of the cube
+        //      6W<-1N 2N->6S
+        //          ┌─┬─┐
+        //   4W<-1W │1│2│ 2E->5E
+        //          ├─┼─┘
+        //  4N<->3W │3│ 3E<->2S
+        //        ┌─┼─┤
+        // 1W<-4W │4│5│ 5E->2E
+        //        ├─┼─┘
+        // 1N<-6W │6│ 6E<->5S
+        //        └─┘
+        //        6S->2N
+        val edgeMappings = mapOf(
+            "1N->6W" to EdgeWrapping(
+                faceOffsets.map { (faceSize + it to -1) to Compass.NORTH },
+                faceOffsets.map { (0 to 3 * faceSize + it) to Compass.EAST }
+            ),
+            "6W->1N" to EdgeWrapping(
+                faceOffsets.map { (-1 to 3 * faceSize + it) to Compass.WEST },
+                faceOffsets.map { (faceSize + it to 0) to Compass.SOUTH },
+            ),
+            "2N->6S" to EdgeWrapping(
+                faceOffsets.map { (2 * faceSize + it to -1) to Compass.NORTH },
+                faceOffsets.map { (it to 4 * faceSize - 1) to Compass.NORTH }
+            ),
+            "6S->2N" to EdgeWrapping(
+                faceOffsets.map { (it to 4 * faceSize) to Compass.SOUTH },
+                faceOffsets.map { (2 * faceSize + it to 0) to Compass.SOUTH }
+            ),
+            "2E->5E" to EdgeWrapping(
+                faceOffsets.map { (3 * faceSize to it) to Compass.EAST }.reversed(),
+                faceOffsets.map { (2 * faceSize - 1 to 2 * faceSize + it) to Compass.WEST }
+            ),
+            "5E->2E" to EdgeWrapping(
+                faceOffsets.map { (2 * faceSize to 2 * faceSize + it) to Compass.EAST },
+                faceOffsets.map { (3 * faceSize - 1 to it) to Compass.WEST }.reversed()
+            ),
+            "2S->3E" to EdgeWrapping(
+                faceOffsets.map { (2 * faceSize + it to faceSize) to Compass.SOUTH },
+                faceOffsets.map { (2 * faceSize - 1 to faceSize + it) to Compass.WEST }
+            ),
+            "3E->2S" to EdgeWrapping(
+                faceOffsets.map { (2 * faceSize to faceSize + it) to Compass.EAST },
+                faceOffsets.map { (2 * faceSize + it to faceSize - 1) to Compass.NORTH },
+            ),
+            "5S->6E" to EdgeWrapping(
+                faceOffsets.map { (faceSize + it to 3 * faceSize) to Compass.SOUTH },
+                faceOffsets.map { (faceSize - 1 to 3 * faceSize + it) to Compass.WEST }
+            ),
+            "6E->5S" to EdgeWrapping(
+                faceOffsets.map { (faceSize to 3 * faceSize + it) to Compass.EAST },
+                faceOffsets.map { (faceSize + it to 3 * faceSize - 1) to Compass.NORTH },
+            ),
+            "4W->1W" to EdgeWrapping(
+                faceOffsets.map { (-1 to 2 * faceSize + it) to Compass.WEST },
+                faceOffsets.map { (faceSize to it) to Compass.EAST }.reversed()
+            ),
+            "1W->4W" to EdgeWrapping(
+                faceOffsets.map { (faceSize - 1 to it) to Compass.WEST }.reversed(),
+                faceOffsets.map { (0 to 2 * faceSize + it) to Compass.EAST }
+            ),
+            "4N->3W" to EdgeWrapping(
+                faceOffsets.map { (it to 2 * faceSize - 1) to Compass.NORTH },
+                faceOffsets.map { (faceSize to faceSize + it) to Compass.EAST }
+            ),
+            "3W->4N" to EdgeWrapping(
+                faceOffsets.map { (faceSize - 1 to faceSize + it) to Compass.WEST },
+                faceOffsets.map { (it to 2 * faceSize) to Compass.SOUTH }
+            ),
+        ).values.toList()
 
         tailrec fun step(pose: Pose, instructions: List<Instruction>): Pose {
             if (instructions.isEmpty()) return pose
@@ -102,7 +204,24 @@ internal class Day22 : AdventTestRunner22("Monkey Map") {
                             pose,
                             instructions.drop(1)
                         )
-                        null -> TODO()
+                        // This coordinate is invalid and necessitates wrapping over an edge
+                        null -> (pose.pos + pose.dir.dir to pose.dir).let { badPose ->
+                            edgeMappings.single { it.contains(badPose) }(badPose)
+                        }.let { nextPose ->
+                            // Look ahead to make sure next pose is actually valid (can't reuse
+                            // above since previous position isn't in scope).
+                            when (board[nextPose.pos]) {
+                                BoardCell.EMPTY -> step(
+                                    nextPose,
+                                    listOf(Instruction.Move(next.steps - 1)) + instructions.drop(1)
+                                )
+                                BoardCell.WALL -> step(
+                                    pose,
+                                    instructions.drop(1)
+                                )
+                                null -> throw IllegalStateException()
+                            }
+                        }
                     }
 
                 is Instruction.ClockwiseTurn -> step(
