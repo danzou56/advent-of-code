@@ -7,7 +7,7 @@ import dev.danzou.advent23.AdventTestRunner23
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-internal class Day21 : AdventTestRunner23() {
+internal class Day21 : AdventTestRunner23("Step Counter") {
 
     private fun searchWithParity(matrix: Matrix<Char>, start: Pos, max: Int): Set<Pos> =
         bfsWithDistance(start) { cur  ->

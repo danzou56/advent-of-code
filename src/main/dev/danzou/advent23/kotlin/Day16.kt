@@ -60,12 +60,12 @@ internal class Day16 : AdventTestRunner23("The Floor Will Be Lava") {
         return energized
     }
 
-    override fun part1(input: String): Any {
+    override fun part1(input: String): Int {
         val cavern = input.asMatrix<Char>()
         return getEnergizedCells(cavern, -1 to 0, Compass.EAST).size
     }
 
-    override fun part2(input: String): Any {
+    override fun part2(input: String): Int {
         val cavern = input.asMatrix<Char>()
         val starts = cavern[0].indices.map { x -> (x to -1) to Compass.SOUTH } +
                 cavern[0].indices.map { x -> (x to cavern.size) to Compass.NORTH } +

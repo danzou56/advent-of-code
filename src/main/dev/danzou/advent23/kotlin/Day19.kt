@@ -5,7 +5,7 @@ import dev.danzou.advent23.AdventTestRunner23
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-internal class Day19 : AdventTestRunner23() {
+internal class Day19 : AdventTestRunner23("Aplenty") {
 
     companion object {
         val xmasToIndex = "xmas".toList().map(Char::toString).zip(0..<4).toMap()

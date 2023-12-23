@@ -27,7 +27,7 @@ internal class Day7 : AdventTestRunner23("Camel Cards") {
         }
     }
 
-    override fun part1(input: String): Any {
+    override fun part1(input: String): Long {
         return input.split("\n")
             .map { it.split(" ") }
             .sortedBy { (hand, _) -> hand.map(cardValues::getValue).joinToString("") }

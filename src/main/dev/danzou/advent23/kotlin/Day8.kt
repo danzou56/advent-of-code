@@ -5,7 +5,7 @@ import dev.danzou.advent23.AdventTestRunner23
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-internal class Day8 : AdventTestRunner23() {
+internal class Day8 : AdventTestRunner23("Haunted Wasteland") {
 
     fun getNetwork(input: String): Map<String, List<String>> =
         input.split("\n").drop(2)
