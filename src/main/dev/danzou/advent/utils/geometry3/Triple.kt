@@ -3,9 +3,13 @@ package dev.danzou.advent.utils.geometry3
 import java.lang.IndexOutOfBoundsException
 
 typealias Pos3 = Triple<Int, Int, Int>
-typealias Point3 = Triple<Int, Int, Int>
+typealias Pos3L = Triple<Long, Long, Long>
 
 operator fun Triple<Int, Int, Int>.plus(other: Triple<Int, Int, Int>): Triple<Int, Int, Int> =
+    Triple(this.first + other.first, this.second + other.second, this.third + other.third)
+
+@JvmName("plusLong")
+operator fun Triple<Long, Long, Long>.plus(other: Triple<Long, Long, Long>): Triple<Long, Long, Long> =
     Triple(this.first + other.first, this.second + other.second, this.third + other.third)
 
 operator fun <T> Triple<T, T, T>.get(i: Int): T = when (i) {
@@ -22,11 +26,11 @@ fun <T> List<T>.toTriple(): Triple<T, T, T> {
     return Triple(this[0], this[1], this[2])
 }
 
-val Pos3.x: Int
+val <T, U, V> Triple<T, U, V>.x: T
     get() = this.first
 
-val Pos3.y: Int
+val <T, U, V> Triple<T, U, V>.y: U
     get() = this.second
 
-val Pos3.z: Int
+val <T, U, V> Triple<T, U, V>.z: V
     get() = this.third

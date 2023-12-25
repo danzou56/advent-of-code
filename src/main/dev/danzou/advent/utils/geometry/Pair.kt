@@ -2,13 +2,14 @@ package dev.danzou.advent.utils.geometry
 
 import java.lang.IndexOutOfBoundsException
 
-// Absolutely bizarre way, but idk what I'm doing and it seems aight ig
-inline operator fun <reified T : Number> Pair<T, T>.plus(other: Pair<T, T>): Pair<T, T> =
-    when (T::class) {
-        Int::class -> Pair(this.first as Int + other.first as Int, this.second as Int + other.second as Int)
-        Long::class -> Pair(this.first as Long + other.first as Long, this.second as Long + other.second as Long)
-        else -> throw IllegalArgumentException()
-    } as Pair<T, T>
+typealias PosL = Pair<Long, Long>
+
+operator fun Pair<Int, Int>.plus(other: Pair<Int, Int>): Pair<Int, Int> =
+    Pair(this.first + other.first, this.second + other.second)
+
+@JvmName("plusLong")
+operator fun Pair<Long, Long>.plus(other: Pair<Long, Long>): Pair<Long, Long> =
+    Pair(this.first + other.first, this.second + other.second)
 
 operator fun Pair<Int, Int>.minus(other: Pair<Int, Int>): Pair<Int, Int> =
     Pair(this.first - other.first, this.second - other.second)
