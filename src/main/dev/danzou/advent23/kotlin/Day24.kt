@@ -138,8 +138,8 @@ internal class Day24 : AdventTestRunner23("Never Tell Me The Odds") {
      *          (pᵣ - pᵢ) × (vᵢ + vᵣ) = 0              (cross product of parallel vectors is 0)
      *                   (expand LHS) = 0
      * Taking i = j, k, l (i.e. any three hailstones), use the common pᵣ×vᵣ term to cancel terms
-     * and reduce the three vector equations to two equations with linear terms pᵣ, vᵣ. This gives 6
-     * linear equations with 6 unknowns.
+     * and reduce the three vector equations to two equations with linear terms pᵣ, vᵣ. This gives
+     * 6 linear equations with 6 unknowns.
      *
      * For this implementation, we choose i = 1, 2, 3 and use the second equation with i = 2 to
      * cancel out the common term such that the two equations have pairings i = 1, 2 and i = 3, 2.
@@ -150,24 +150,17 @@ internal class Day24 : AdventTestRunner23("Never Tell Me The Odds") {
         // x, y, z ->                       y, z, x             z, x, y
         val crossProductIndexOrder = listOf(1, 2, 0).zip(listOf(2, 0, 1))
 
-        fun posBlock(h1: DoubleArray, h2: DoubleArray): RealMatrix {
+        /**
+         * Computes the matrix block corresponding to v×(h₁-h₂) where v is unknown and is presumed
+         * to be a part of the right hand multiplicand column vector and h₁, h₂ are known vectors.
+         */
+        fun crossProductMatrixBlock(h1: DoubleArray, h2: DoubleArray): RealMatrix {
             return MatrixUtils.createRealMatrix(3, 3).apply {
                 crossProductIndexOrder.mapIndexed { i, (i1, i2) ->
                     assert(getEntry(i, i1) == 0.0)
                     setEntry(i, i1, h1[i2] - h2[i2])
                     assert(getEntry(i, i2) == 0.0)
                     setEntry(i, i2, -h1[i1] - -h2[i1])
-                }
-            }
-        }
-
-        fun velBlock(h1: DoubleArray, h2: DoubleArray): RealMatrix {
-            return MatrixUtils.createRealMatrix(3, 3).apply {
-                crossProductIndexOrder.mapIndexed { i, (i1, i2) ->
-                    assert(getEntry(i, i2) == 0.0)
-                    setEntry(i, i2, h1[i1] - h2[i1])
-                    assert(getEntry(i, i1) == 0.0)
-                    setEntry(i, i1, -h1[i2] - -h2[i2])
                 }
             }
         }
@@ -180,11 +173,11 @@ internal class Day24 : AdventTestRunner23("Never Tell Me The Odds") {
         }
 
         val A = MatrixUtils.createRealMatrix(6, 6).apply {
-            setSubMatrix(posBlock(h1P, h2P).data, 0, 0)
-            setSubMatrix(posBlock(h3P, h2P).data, 3, 0)
+            setSubMatrix(crossProductMatrixBlock(h1P, h2P).data, 0, 0)
+            setSubMatrix(crossProductMatrixBlock(h3P, h2P).data, 3, 0)
 
-            setSubMatrix(posBlock(h1V, h2V).scalarMultiply(-1.0).data, 0, 3)
-            setSubMatrix(posBlock(h3V, h2V).scalarMultiply(-1.0).data, 3, 3)
+            setSubMatrix(crossProductMatrixBlock(h1V, h2V).scalarMultiply(-1.0).data, 0, 3)
+            setSubMatrix(crossProductMatrixBlock(h3V, h2V).scalarMultiply(-1.0).data, 3, 3)
         }
 
         val cross1 = Vector3D(h1P).crossProduct(Vector3D(h1V))
