@@ -7,15 +7,12 @@ import dev.danzou.advent23.AdventTestRunner23
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.time.Duration
-import java.util.*
-import kotlin.math.max
 
-internal class Day23 : AdventTestRunner23() {
+internal class Day23 : AdventTestRunner23("A Long Walk") {
 
-    override val timeout: Duration
-        get() = Duration.ofSeconds(30)
+    override val timeout = Duration.ofSeconds(30)
 
-    override fun part1(input: String): Any {
+    override fun part1(input: String): Int {
         val matrix = input.asMatrix<Char>()
         val start = 1 to 0
         val target = matrix[0].size - 2 to matrix.size - 1
@@ -39,10 +36,11 @@ internal class Day23 : AdventTestRunner23() {
                 }
                 .toSet()
         }
+
         return paths.maxOf { it.size - 1 }
     }
 
-    override fun part2(input: String): Any {
+    override fun part2(input: String): Int {
         val matrix = input.asMatrix<Char>()
         val start = 1 to 0
         val target = matrix[0].size - 2 to matrix.size - 1
@@ -86,13 +84,11 @@ internal class Day23 : AdventTestRunner23() {
         val paths = findPaths(start, target) { cur ->
             junctionMap[cur]!!
         }
-        return paths.map {
-            it.windowed(2).fold(0) { acc, (prev, cur) ->
-                if (junctionCosts[prev to cur] == null)
-                    acc + 0
-                else acc + junctionCosts[prev to cur]!!
+        return paths.maxOf {
+            it.windowed(2).sumOf { (prev, cur) ->
+                junctionCosts[prev to cur]!!
             }
-        }.max()
+        }
     }
 
     @Test

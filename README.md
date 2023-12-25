@@ -6,7 +6,7 @@ My own solutions for Advent of Code, primarily written in Kotlin.
 |------|------------|---------------------------------------------|
 | 2021 | None 🎉    | 23, 24 - slow                               |         
 | 2022 | None 🎉    | 16, 19 - slow, 17/2, 19 - broken on example |
-| 2023 | Ongoing    |                                             |         
+| 2023 | Ongoing    | 23 - slow                                   |         
 
 ## Automation Information
 
