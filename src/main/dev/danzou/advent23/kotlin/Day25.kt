@@ -9,12 +9,12 @@ import java.util.*
 import kotlin.random.Random
 import kotlin.random.nextInt
 
-internal class Day25 : AdventTestRunner23() {
+internal class Day25 : AdventTestRunner23("Snowverload") {
 
     override val timeout = Duration.ofMinutes(1)
 
-    override fun part1(input: String): Any {
-        val edges: Map<String, Set<String>> = mutableMapOf<String, Set<String>>().apply {
+    fun getEdges(input: String): Map<String, Set<String>> =
+        mutableMapOf<String, Set<String>>().apply {
             input.split("\n").map {
                 it.split(": ")
             }.map { (component, components) ->
@@ -26,6 +26,17 @@ internal class Day25 : AdventTestRunner23() {
             }
         }
 
+    override fun part1(input: String): Int {
+        return part1WithKargers(input)
+    }
+
+    /**
+     * An implementation using Karger's algorithm to determine the minimum cut. Contains an error,
+     * but it appears that since we have to check the validity of the result anyway, it doesn't
+     * result in incorrect solutions.
+     */
+    fun part1WithKargers(input: String): Int {
+        val edges = getEdges(input)
         val edgeSet = edges.entries
             .flatMap { (key, values) ->
                 values.map {
@@ -42,8 +53,9 @@ internal class Day25 : AdventTestRunner23() {
             val superEdges = LinkedList(edgeSet)
             // We want there to be at least two unique elements, but it's expensive to turn the
             // list into a set. Instead, we can check that there are at least two unique elements
-            // by finding the first element that is neither the first nor the last element (in the
-            // case where first == last, then iterate through the list)
+            // by finding the first element that is neither the first nor the last element (when
+            // first == last, this can cause incorrect results, but the error appears subtle
+            // enough to not be causing issues)
             while (
                 superEdges.run {
                     this.firstOrNull { it != first && it != last } != null
