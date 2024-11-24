@@ -37,7 +37,7 @@ fun <T> String.asMatrix(transformer: (Char) -> T): Matrix<T> =
 fun List<Int>.toPos(): Pos = this.toPair()
 fun List<Int>.toPoint(): Point = this.toPair()
 
-fun Pos.manhattanDistanceTo(other: Pos): Int =
+infix fun Pos.manhattanDistanceTo(other: Pos): Int =
     (this.first - other.first).absoluteValue + (this.second - other.second).absoluteValue
 
 fun Pos.chessDistanceTo(other: Pos): Int = this.chebyshevDistanceTo(other)
