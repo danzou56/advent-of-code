@@ -47,14 +47,14 @@ fun writeAocFile(year: Int, day: Int) {
             
             @Test
             fun testExample() {
-              val input = 
-                  ""${'"'}
-                    
-                  ""${'"'}
-                      .trimIndent()
-        
-              assertEquals(null, part1(input))
-              // assertEquals(null, part2(input))
+              ""${'"'}
+                
+              ""${'"'}
+                  .trimIndent()
+                  .let { input ->
+                    assertEquals(null, part1(input))
+                    // assertEquals(null, part2(input))
+                  }
             }
           }
         """
