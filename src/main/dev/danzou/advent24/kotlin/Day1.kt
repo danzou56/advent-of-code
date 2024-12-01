@@ -2,12 +2,12 @@ package dev.danzou.advent24.kotlin
 
 import dev.danzou.advent.utils.*
 import dev.danzou.advent24.AdventTestRunner24
-import java.lang.Math.abs
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import kotlin.math.abs
 
 internal class Day1 : AdventTestRunner24("") {
-  override fun part1(input: String): Any {
+  override fun part1(input: String): Int {
     val (l1, l2) =
         input
             .lines()
@@ -15,11 +15,11 @@ internal class Day1 : AdventTestRunner24("") {
             .map { (f, s) -> f.toInt() to s.toInt() }
             .unzip()
     return (l1.sorted() to l2.sorted())
-        .let { (l1, l2) -> l1.zip(l2).map { (i1, i2) -> abs(i1 - i2) } }
-        .sum()
+        .let { (l1, l2) -> l1.zip(l2) }
+        .sumOf { (i1, i2) -> abs(i1 - i2) }
   }
 
-  override fun part2(input: String): Any {
+  override fun part2(input: String): Int {
     val (l1, l2) =
         input
             .lines()
@@ -27,7 +27,7 @@ internal class Day1 : AdventTestRunner24("") {
             .map { (f, s) -> f.toInt() to s.toInt() }
             .unzip()
     val counts = l2.frequencyMap()
-    return l1.map { it * (counts[it] ?: 0) }.sum()
+    return l1.sumOf { it * (counts[it] ?: 0) }
   }
 
   @Test
