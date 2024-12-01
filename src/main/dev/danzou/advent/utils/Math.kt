@@ -46,12 +46,17 @@ fun Long.gaussianSum(): Long =
     this * (this + 1) / 2
 
 val E = 1e-10
+
+/**
+ * Find solution(s) of the quadratic equation a * x^2 + b * x + c = 0 for x.
+ * Results, if any, are returned in ascending order.
+ */
 fun quadSolve(a: Double, b: Double, c: Double): List<Double> {
     val discriminant = b * b - 4 * a * c
     return when {
         discriminant < -E -> emptyList()
         discriminant in -E..E -> listOf(-b / (2 * a))
-        else -> listOf(-b + sqrt(discriminant), -b - sqrt(discriminant)).map { it / (2 * a) }
+        else -> listOf(-b + sqrt(discriminant), -b - sqrt(discriminant)).map { it / (2 * a) }.sorted()
     }
 }
 
