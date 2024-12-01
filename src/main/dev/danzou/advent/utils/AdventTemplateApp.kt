@@ -4,13 +4,13 @@ import java.nio.file.StandardOpenOption
 import java.time.LocalDate
 import java.time.Month
 import kotlin.io.path.Path
+import kotlin.io.path.createParentDirectories
 import kotlin.io.path.writeText
 
 val adventRootPath = "src/main/dev/danzou"
 
 fun main() {
-  //    writeTomorrowsAocFile()
-  writeAocFile(20, 4)
+  writeTomorrowsAocFile()
 }
 
 fun writeTomorrowsAocFile() {
@@ -60,5 +60,6 @@ fun writeAocFile(year: Int, day: Int) {
         """
           .trimIndent()
 
+  targetFilePath.createParentDirectories()
   targetFilePath.writeText(fileText, options = arrayOf(StandardOpenOption.CREATE_NEW))
 }
