@@ -126,3 +126,5 @@ replay_pid*
 # Ignore all input files unless they're marked as example
 data/advent/advent*/inputs/*
 !data/advent/advent*/inputs/*.ex.in
+data/advent/advent*/outputs/*
+!data/advent/advent*/outputs/*.ex.out
