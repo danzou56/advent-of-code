@@ -7,7 +7,7 @@ import dev.danzou.advent.utils.geometry.times
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-internal class Day4 : AdventTestRunner24("") {
+internal class Day4 : AdventTestRunner24("Ceres Search") {
 
   fun isXmas(mat: Matrix<Char>, start: Pos, dir: Compass): Boolean {
     return "XMAS"
