@@ -29,7 +29,7 @@ fun writeAocFile(year: Int, day: Int) {
 
   val fileText =
       """
-          package dev.danzou.advent$year.kotlin
+          package dev.danzou.advent$year
   
           import dev.danzou.advent.utils.*
           import dev.danzou.advent$year.AdventTestRunner$year
