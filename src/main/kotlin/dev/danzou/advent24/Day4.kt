@@ -3,19 +3,16 @@ package dev.danzou.advent24
 import dev.danzou.advent.utils.*
 import dev.danzou.advent.utils.geometry.Compass
 import dev.danzou.advent.utils.geometry.plus
+import dev.danzou.advent.utils.geometry.times
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 internal class Day4 : AdventTestRunner24("") {
 
   fun isXmas(mat: Matrix<Char>, start: Pos, dir: Compass): Boolean {
-    return mat[start] == 'X' &&
-        mat.containsPos(start + dir.dir) &&
-        mat[start + dir.dir] == 'M' &&
-        mat.containsPos(start + dir.dir + dir.dir) &&
-        mat[start + dir.dir + dir.dir] == 'A' &&
-        mat.containsPos(start + dir.dir + dir.dir + dir.dir) &&
-        mat[start + dir.dir + dir.dir + dir.dir] == 'S'
+    return "XMAS"
+        .mapIndexed { i, c -> mat.getOrNull(start + dir.dir * i) == c }
+        .all { it }
   }
 
   override fun part1(input: String): Number {
