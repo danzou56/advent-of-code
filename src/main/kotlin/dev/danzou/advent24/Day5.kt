@@ -25,8 +25,8 @@ internal class Day5 : AdventTestRunner24("Print Queue") {
           .drop(1)
           .map { it.split(",").map(String::toInt) }
 
-  val ruleSort: (Map<Pair<Int, Int>, Int>) -> ((Int, Int) -> Int) = { rules ->
-    { i1, i2 -> rules[i1 to i2]!! }
+  val ruleSort: (Map<Pair<Int, Int>, Int>) -> (Int, Int) -> Int = { rules ->
+    { i1, i2 -> rules.getValue(i1 to i2) }
   }
 
   override fun part1(input: String): Any {
