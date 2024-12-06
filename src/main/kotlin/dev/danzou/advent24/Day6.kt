@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
-internal class Day6 : AdventTestRunner24("") {
+internal class Day6 : AdventTestRunner24("Guard Gallivant") {
 
   fun next(dir: Compass): Compass =
       when (dir) {
@@ -19,7 +19,7 @@ internal class Day6 : AdventTestRunner24("") {
       }
 
   fun visit(mat: Matrix<Char>, start: Pos): Set<Pos> {
-    val visited: MutableSet<Pos> = mutableSetOf()
+    val visited: MutableSet<Pos> = mutableSetOf(start)
 
     tailrec fun step(cur: Pos, dir: Compass) {
       visited += cur
@@ -37,6 +37,8 @@ internal class Day6 : AdventTestRunner24("") {
   }
 
   fun isLoop(mat: Matrix<Char>, start: Pos): Boolean {
+    // For the number of times this happens, this needs to be a mutable set so Kotlin isn't copying
+    // the set over and over again as elements get added (slow)
     val visited: MutableSet<Pair<Pos, Compass>> = mutableSetOf()
 
     tailrec fun step(cur: Pos, dir: Compass): Boolean {
