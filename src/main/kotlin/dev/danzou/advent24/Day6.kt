@@ -42,8 +42,7 @@ internal class Day6 : AdventTestRunner24("Guard Gallivant") {
     val visited: MutableSet<Pair<Pos, Compass>> = mutableSetOf()
 
     tailrec fun step(cur: Pos, dir: Compass): Boolean {
-      if (cur to dir in visited) return true
-      visited += cur to dir
+      if (!visited.add(cur to dir)) return true
 
       val next = cur + dir.dir
       return when (mat.getOrNull(next)) {
