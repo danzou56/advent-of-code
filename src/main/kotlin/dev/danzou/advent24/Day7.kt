@@ -28,23 +28,19 @@ internal class Day7 : AdventTestRunner24("") {
     return step(nums.first(), nums.subList(1, nums.size))
   }
 
-  override fun part1(input: String): Long {
+  fun day7(input: String, ops: List<(Long, Long) -> Long>): Long {
     val parsed = getEquations(input)
-    val ops: List<(Long, Long) -> Long> = listOf(Long::plus, Long::times)
-
     return parsed
         .filter { (target, nums) -> isSolvable(target, nums, ops) }
         .sumOf { (target, _) -> target }
   }
 
-  override fun part2(input: String): Long {
-    val parsed = getEquations(input)
-    val ops: List<(Long, Long) -> Long> =
-        listOf(Long::plus, Long::times, { l1, l2 -> "$l1$l2".toLong() })
+  override fun part1(input: String): Long {
+    return day7(input, listOf(Long::plus, Long::times))
+  }
 
-    return parsed
-        .filter { (target, nums) -> isSolvable(target, nums, ops) }
-        .sumOf { (target, _) -> target }
+  override fun part2(input: String): Long {
+    return day7(input, listOf(Long::plus, Long::times, { l1, l2 -> "$l1$l2".toLong() }))
   }
 
   @Test
