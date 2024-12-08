@@ -3,11 +3,11 @@ package dev.danzou.advent24
 import dev.danzou.advent.utils.*
 import dev.danzou.advent.utils.geometry.minus
 import dev.danzou.advent.utils.geometry.plus
-import dev.danzou.advent24.AdventTestRunner24
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 internal class Day8 : AdventTestRunner24("Resonant Collinearity") {
+
   fun getAntinodes(p1: Pos, p2: Pos): List<Pos> {
     val diff = (p2 - p1)
     val antinode1 = p1 - diff
@@ -17,20 +17,17 @@ internal class Day8 : AdventTestRunner24("Resonant Collinearity") {
 
   override fun part1(input: String): Any {
     val map = input.asMatrix<Char>()
+    val antennaMap =
+        map.indices2D.filter { map[it].isLetterOrDigit() }.groupBy { map[it] }
 
-    val antennas = map.indices2D.filter { p ->
-      map[p].isLetterOrDigit()
-    }
-    val antennaMap = antennas.groupBy { map[it] }
-
-    return antennaMap.flatMap { (key, posList) ->
-      posList.pairs().flatMap { (p1, p2) ->
-        getAntinodes(p1, p2).filter {
-          map.containsPos(it)
+    return antennaMap
+        .flatMap { (_, posList) ->
+          posList.pairs().flatMap { (p1, p2) ->
+            getAntinodes(p1, p2).filter { map.containsPos(it) }
+          }
         }
-      }
-
-    }.toSet().size
+        .toSet()
+        .size
   }
 
   fun getManyAntinodes(map: Matrix<Char>, p1: Pos, p2: Pos): List<Pos> {
@@ -46,20 +43,17 @@ internal class Day8 : AdventTestRunner24("Resonant Collinearity") {
 
   override fun part2(input: String): Any {
     val map = input.asMatrix<Char>()
+    val antennaMap =
+        map.indices2D.filter { map[it].isLetterOrDigit() }.groupBy { map[it] }
 
-    val antennas = map.indices2D.filter { p ->
-      map[p].isLetterOrDigit()
-    }
-    val antennaMap = antennas.groupBy { map[it] }
-
-    return antennaMap.flatMap { (key, posList) ->
-      posList.pairs().flatMap { (p1, p2) ->
-        getManyAntinodes(map, p1, p2)
-      }
-
-    }.toSet().size
+    return antennaMap
+        .flatMap { (_, posList) ->
+          posList.pairs().flatMap { (p1, p2) -> getManyAntinodes(map, p1, p2) }
+        }
+        .toSet()
+        .size
   }
-  
+
   @Test
   fun testExample() {
     """
@@ -79,7 +73,7 @@ internal class Day8 : AdventTestRunner24("Resonant Collinearity") {
         .trimIndent()
         .let { input ->
           assertEquals(14, part1(input))
-           assertEquals(34, part2(input))
+          assertEquals(34, part2(input))
         }
   }
 }
