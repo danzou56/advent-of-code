@@ -14,8 +14,27 @@ operator fun Pair<Long, Long>.plus(other: Pair<Long, Long>): Pair<Long, Long> =
 operator fun Pair<Int, Int>.minus(other: Pair<Int, Int>): Pair<Int, Int> =
     Pair(this.first - other.first, this.second - other.second)
 
+@JvmName("minusLong")
+operator fun Pair<Long, Long>.minus(other: Pair<Long, Long>): Pair<Long, Long> =
+    Pair(this.first - other.first, this.second - other.second)
+
 operator fun Pair<Int, Int>.times(i: Int): Pair<Int, Int> =
     Pair(this.first * i, this.second * i)
+
+@JvmName("timesLong")
+operator fun Pair<Long, Long>.times(i: Int): Pair<Long, Long> =
+    Pair(this.first * i, this.second * i)
+
+@JvmName("timesLong")
+operator fun Pair<Long, Long>.times(l: Long): Pair<Long, Long> =
+    Pair(this.first * l, this.second * l)
+
+operator fun Pair<Int, Int>.unaryMinus(): Pair<Int, Int> =
+    Pair(-this.first, -this.second)
+
+@JvmName("unaryMinusLong")
+operator fun Pair<Long, Long>.unaryMinus(): Pair<Long, Long> =
+    Pair(-this.first, -this.second)
 
 operator fun Pair<Int, Int>.rangeTo(other: Pair<Int, Int>): Iterable<Pair<Int, Int>> {
     val diff = other - this

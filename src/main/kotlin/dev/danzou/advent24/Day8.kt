@@ -3,6 +3,7 @@ package dev.danzou.advent24
 import dev.danzou.advent.utils.*
 import dev.danzou.advent.utils.geometry.minus
 import dev.danzou.advent.utils.geometry.plus
+import dev.danzou.advent.utils.geometry.unaryMinus
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -38,7 +39,7 @@ internal class Day8 : AdventTestRunner24("Resonant Collinearity") {
     }
 
     val diff = (p2 - p1)
-    return generate(p1, (0 to 0) - diff, emptyList()) + generate(p2, diff, emptyList())
+    return generate(p1, -diff, emptyList()) + generate(p2, diff, emptyList())
   }
 
   override fun part2(input: String): Any {
