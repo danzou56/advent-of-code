@@ -4,10 +4,9 @@ import dev.danzou.advent.utils.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-internal class Day10 : AdventTestRunner24("") {
+internal class Day10 : AdventTestRunner24("Hoof It") {
   override fun part1(input: String): Int {
     val map = input.asMatrix<Int>()
-
     val starts = map.indices2D.filter { map[it] == 0 }
 
     return starts
@@ -24,6 +23,7 @@ internal class Day10 : AdventTestRunner24("") {
     val starts = map.indices2D.filter { map[it] == 0 }
 
     return starts
+        // Get all start, end pairs
         .flatMap { start ->
           dfs(start) { pos ->
                 map.neighboringPos(pos).filter { map[it] == map[pos] + 1 }.toSet()
@@ -31,11 +31,13 @@ internal class Day10 : AdventTestRunner24("") {
               .filter { map[it] == 9 }
               .map { start to it }
         }
+        // Find paths between each start, end pair
         .flatMap { (start, end) ->
           findPathsBetween(start, end) { pos ->
             map.neighboringPos(pos).filter { map[it] == map[pos] + 1 }.toSet()
           }
         }
+        // How many of those were there?
         .size
   }
 
