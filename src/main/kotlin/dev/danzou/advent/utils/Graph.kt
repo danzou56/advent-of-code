@@ -85,8 +85,7 @@ fun <T> findPathsBetween(init: T, target: T, getNeighbors: NeighborFunction<T>):
         if (cur == target) return setOf(path + cur)
         return getNeighbors(cur)
             .filter { v -> v !in path }
-            .map { v -> findPaths(v, path + cur) }
-            .flatten()
+            .flatMap { v -> findPaths(v, path + cur) }
             .toSet()
     }
 
@@ -102,8 +101,7 @@ fun <T> findPathsBetween(init: T, target: T, getNeighbors: (T, List<T>) -> Set<T
     fun findPaths(cur: T, path: List<T>): Set<List<T>> {
         if (cur == target) return setOf(path + cur)
         return getNeighbors(cur, path)
-            .map { v -> findPaths(v, path + cur) }
-            .flatten()
+            .flatMap { v -> findPaths(v, path + cur) }
             .toSet()
     }
 
