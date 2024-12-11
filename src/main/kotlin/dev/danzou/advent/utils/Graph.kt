@@ -61,7 +61,7 @@ fun <T> bfsWithDistance(init: T, getNeighbors: NeighborFunction<T>): Map<T, Int>
 /**
  * Perform breadth first search, returning all discovered nodes and their shortest path
  */
-fun <T> findAllPaths(init: T, getNeighbors: NeighborFunction<T>): Set<List<T>> {
+fun <T> findPathsFrom(init: T, getNeighbors: NeighborFunction<T>): Set<List<T>> {
     val queue: Queue<T> = LinkedList()
     val discovered = mutableMapOf(init to listOf(init))
     queue.add(init)
@@ -77,7 +77,10 @@ fun <T> findAllPaths(init: T, getNeighbors: NeighborFunction<T>): Set<List<T>> {
     return discovered.values.toSet()
 }
 
-fun <T> findPaths(init: T, target: T, getNeighbors: NeighborFunction<T>): Set<List<T>> {
+/**
+ * Perform depth first search, returning all paths between the start and end node
+ */
+fun <T> findPathsBetween(init: T, target: T, getNeighbors: NeighborFunction<T>): Set<List<T>> {
     fun findPaths(cur: T, path: List<T>): Set<List<T>> {
         if (cur == target) return setOf(path + cur)
         return getNeighbors(cur)
@@ -90,11 +93,15 @@ fun <T> findPaths(init: T, target: T, getNeighbors: NeighborFunction<T>): Set<Li
     return findPaths(init, emptyList())
 }
 
-fun <T> findPaths(init: T, target: T, getNeighbors: (T, List<T>) -> Set<T>): Set<List<T>> {
+/**
+ * Perform depth first search, returning all paths between the start and end node. The
+ * `getNeighbors` function accepts the current node and current path so it is the caller's
+ * responsibility to ensure that `getNeighbors` does not return duplicate nodes in the path.
+ */
+fun <T> findPathsBetween(init: T, target: T, getNeighbors: (T, List<T>) -> Set<T>): Set<List<T>> {
     fun findPaths(cur: T, path: List<T>): Set<List<T>> {
         if (cur == target) return setOf(path + cur)
         return getNeighbors(cur, path)
-//            .filter { v -> v !in path }
             .map { v -> findPaths(v, path + cur) }
             .flatten()
             .toSet()

@@ -1,7 +1,6 @@
 package dev.danzou.advent24
 
 import dev.danzou.advent.utils.*
-import java.util.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -33,7 +32,7 @@ internal class Day10 : AdventTestRunner24("") {
               .map { start to it }
         }
         .flatMap { (start, end) ->
-          findPaths(start, end) { pos ->
+          findPathsBetween(start, end) { pos ->
             map.neighboringPos(pos).filter { map[it] == map[pos] + 1 }.toSet()
           }
         }

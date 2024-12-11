@@ -2,7 +2,7 @@ package dev.danzou.advent21
 
 import dev.danzou.advent.utils.Graph
 import dev.danzou.advent.utils.Vertex
-import dev.danzou.advent.utils.findPaths
+import dev.danzou.advent.utils.findPathsBetween
 import dev.danzou.advent.utils.geometry.toPair
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -24,7 +24,7 @@ internal class Day12 : AdventTestRunner21() {
 
     override fun part1(input: String): Any {
         val graph = getGraph(input)
-        val paths = findPaths(
+        val paths = findPathsBetween(
           init = Vertex("start"),
           target = Vertex("end"),
         ) { vertex, path ->
@@ -43,7 +43,7 @@ internal class Day12 : AdventTestRunner21() {
 
     override fun part2(input: String): Any {
         val graph = getGraph(input)
-        val paths = findPaths(
+        val paths = findPathsBetween(
           init = Vertex("start"),
           target = Vertex("end"),
         ) { vertex, path ->

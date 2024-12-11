@@ -52,7 +52,7 @@ internal class Day23 : AdventTestRunner21("Amphipod") {
                     occupied[Pos(pos.x, y)] == amphipod
                 })
             ) return emptySet()
-            return findAllPaths(pos) { cur ->
+            return findPathsFrom(pos) { cur ->
               // doing this manually instead of using Direction.CARDINAL_DIRECTIONS
               // saves about half a second of runtime
               arrayOf(

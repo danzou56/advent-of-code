@@ -16,7 +16,7 @@ internal class Day23 : AdventTestRunner23("A Long Walk") {
         val start = 1 to 0
         val target = matrix[0].size - 2 to matrix.size - 1
 
-        val paths = findPaths(start, target) { cur ->
+        val paths = findPathsBetween(start, target) { cur ->
             matrix.neighboringPos(cur)
                 .filter { pos ->
                     when (matrix[pos]) {
@@ -80,7 +80,7 @@ internal class Day23 : AdventTestRunner23("A Long Walk") {
         }
 
         // Using the contracted map, find the longest path with dfs
-        val paths = findPaths(start, target) { cur ->
+        val paths = findPathsBetween(start, target) { cur ->
             junctionMap[cur]!!
         }
         return paths.maxOf {
