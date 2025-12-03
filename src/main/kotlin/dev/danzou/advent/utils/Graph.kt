@@ -10,7 +10,7 @@ class Graph<T>(val verticies: Set<Vertex<T>>, val edges: Map<Vertex<T>, VertexSe
 
 data class Vertex<T>(val name: T)
 typealias VertexSet<T> = Set<Vertex<T>>
-typealias NeighborFunction<T> = (T) -> Set<T>
+typealias NeighborFunction<T> = (T) -> Collection<T>
 typealias CostFunction<T> = (T, T) -> Int
 
 /**
@@ -97,7 +97,7 @@ fun <T> findPathsBetween(init: T, target: T, getNeighbors: NeighborFunction<T>):
  * `getNeighbors` function accepts the current node and current path so it is the caller's
  * responsibility to ensure that `getNeighbors` does not return duplicate nodes in the path.
  */
-fun <T> findPathsBetween(init: T, target: T, getNeighbors: (T, List<T>) -> Set<T>): Set<List<T>> {
+fun <T> findPathsBetween(init: T, target: T, getNeighbors: (T, List<T>) -> Collection<T>): Set<List<T>> {
     fun findPaths(cur: T, path: List<T>): Set<List<T>> {
         if (cur == target) return setOf(path + cur)
         return getNeighbors(cur, path)
