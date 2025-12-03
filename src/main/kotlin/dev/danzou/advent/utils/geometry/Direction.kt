@@ -30,5 +30,15 @@ enum class Compass(val dir: Pos) {
         val ORDINAL_DIRECTIONS: Set<Pos> = ORDINAL.map(Compass::dir).toSet()
         val ALL: Set<Compass> = CARDINAL + ORDINAL
         val ALL_DIRECTIONS: Set<Pos> = CARDINAL_DIRECTIONS + ORDINAL_DIRECTIONS
+
+        fun fromDir(dir: Pos): Compass {
+            return when (dir) {
+                Pos(0, -1) -> NORTH
+                Pos(1, 0) -> EAST
+                Pos(0, 1) -> SOUTH
+                Pos(-1, 0) -> WEST
+                else -> TODO()
+            }
+        }
     }
 }
