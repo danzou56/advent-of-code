@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test
 import java.lang.IllegalArgumentException
 import kotlin.test.assertEquals
 
-typealias Pose = Pair<Pos, Compass>
+private typealias Pose = Pair<Pos, Compass>
 
 internal class Day22 : AdventTestRunner22("Monkey Map") {
 
