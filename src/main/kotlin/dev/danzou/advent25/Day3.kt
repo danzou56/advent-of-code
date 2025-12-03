@@ -24,7 +24,7 @@ internal class Day3 : AdventTestRunner25("Lobby") {
       input
           .lines()
           .map { it.map(Char::digitToInt) }
-          .sumOf { digits -> maxJoltage(digits, 12) }
+          .sumOf { bank -> maxJoltage(bank, 12) }
 
   @Test
   fun testExample() {
