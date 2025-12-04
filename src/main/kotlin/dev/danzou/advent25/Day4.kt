@@ -6,26 +6,22 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 internal class Day4 : AdventTestRunner25("") {
-  override fun part1(input: String): Int {
-    val map = input.asMatrix<Char>()
-    val accessible = getAccessible(map)
-    return accessible.size
-  }
-
-  fun getAccessible(map: Matrix<Char>): List<Pos> =
-      map.indices2D
+  fun getAccessible(map: Matrix<Char>): Collection<Pos> =
+    map.indices2D
           .filter { map[it] == '@' }
           .filter { pos ->
             map.neighboringPos(pos, ALL_DIRECTIONS).count { map[it] == '@' } < 4
           }
 
+  override fun part1(input: String): Int = getAccessible(input.asMatrix<Char>()).size
+
   override fun part2(input: String): Int {
+
     fun step(map: Matrix<Char>): Int {
       val accessible = getAccessible(map)
       if (accessible.isEmpty()) return 0
-      return accessible.size + step(map.mapIndexed2D { pos, el ->
-        if (pos in accessible) '.' else el
-      })
+      return accessible.size +
+          step(map.mapIndexed2D { pos, el -> if (pos in accessible) '.' else el })
     }
 
     return step(input.asMatrix<Char>())
@@ -48,7 +44,7 @@ internal class Day4 : AdventTestRunner25("") {
         .trimIndent()
         .let { input ->
           assertEquals(13, part1(input))
-           assertEquals(43, part2(input))
+          assertEquals(43, part2(input))
         }
   }
 }
