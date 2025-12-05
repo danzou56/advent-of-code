@@ -26,7 +26,7 @@ internal class Day5 : AdventTestRunner25("Cafeteria") {
     val index =
         ranges.binarySearch {
           when {
-            !it.intersects(newRange) -> 0
+            it.intersects(newRange) -> 0
             it.last < newRange.first -> 1
             else -> -1
           }
