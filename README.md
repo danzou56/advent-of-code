@@ -2,12 +2,12 @@
 
 My own solutions for Advent of Code, primarily written in Kotlin.
 
-| Year | Incomplete | Notes                                                                              | 
-|------|------------|------------------------------------------------------------------------------------|
-| 2021 | None 🎉    | 23, 24 - slow                                                                      |         
-| 2022 | None 🎉    | 16, 19 - slow, 17/2, 19 - broken on example                                        |
-| 2023 | None 🎉    | 23, 25 - slow                                                                      |   
-| 2024 | Many       | 15 - real ugly, 16/2 - works, but logic is fishy, 17/2 - broken, 18/2, 22/2 - slow |
+| Year | Incomplete         | Notes                                                                            | 
+|------|--------------------|----------------------------------------------------------------------------------|
+| 2021 | None 🎉            | 23, 24 - slow                                                                    |         
+| 2022 | None 🎉            | 16, 19 - slow, 17/2, 19 - broken on example                                      |
+| 2023 | None 🎉            | 23, 25 - slow                                                                    |   
+| 2024 | 17/2, 21, 24/2, 25 | 15 - real ugly, 16/2 - logic is fishy, 18/2, 22/2 - slow                         |
 
 ## Automation Information
 
