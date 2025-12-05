@@ -1,7 +1,6 @@
 package dev.danzou.advent25
 
 import dev.danzou.advent.utils.*
-import dev.danzou.advent.utils.geometry.toPair
 import kotlin.math.max
 import kotlin.math.min
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -10,7 +9,7 @@ import org.junit.jupiter.api.Test
 internal class Day5 : AdventTestRunner25("Cafeteria") {
 
   fun parseIngredients(input: String): Pair<List<LongRange>, List<Long>> {
-    val (rangeLines, availableLines) = input.split("\n\n").toPair()
+    val (rangeLines, availableLines) = input.split("\n\n")
     return rangeLines
         .lines()
         .map { line -> line.split("-").map(String::toLong) }
@@ -27,17 +26,17 @@ internal class Day5 : AdventTestRunner25("Cafeteria") {
         ranges.binarySearch {
           when {
             it.intersects(newRange) -> 0
-            it.last < newRange.first -> 1
-            else -> -1
+            it.last < newRange.first -> -1
+            else -> 1
           }
         }
-    if (index < 0) {
+    return if (index < 0) {
       val insertionIndex = -index - 1
-      return ranges.take(insertionIndex) + listOf(newRange) + ranges.drop(insertionIndex)
+      ranges.take(insertionIndex) + listOf(newRange) + ranges.drop(insertionIndex)
     } else {
       val target = ranges[index]
       val unioned = min(target.first, newRange.first)..max(target.last, newRange.last)
-      return merge(ranges.take(index) + ranges.drop(index + 1), unioned)
+      merge(ranges.take(index) + ranges.drop(index + 1), unioned)
     }
   }
 
