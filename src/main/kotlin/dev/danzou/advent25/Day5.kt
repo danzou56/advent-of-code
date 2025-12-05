@@ -22,7 +22,7 @@ internal class Day5 : AdventTestRunner25("Cafeteria") {
     return available.count { ingredient -> fresh.any { it.contains(ingredient) } }
   }
 
-  tailrec fun flatten(ranges: List<LongRange>, newRange: LongRange): List<LongRange> {
+  tailrec fun merge(ranges: List<LongRange>, newRange: LongRange): List<LongRange> {
     val index =
         ranges.binarySearch {
           when {
@@ -37,14 +37,14 @@ internal class Day5 : AdventTestRunner25("Cafeteria") {
     } else {
       val target = ranges[index]
       val unioned = min(target.first, newRange.first)..max(target.last, newRange.last)
-      return flatten(ranges.take(index) + ranges.drop(index + 1), unioned)
+      return merge(ranges.take(index) + ranges.drop(index + 1), unioned)
     }
   }
 
   override fun part2(input: String): Long =
       parseIngredients(input)
           .first
-          .fold(listOf<LongRange>()) { ranges, el -> flatten(ranges, el) }
+          .fold(listOf<LongRange>()) { ranges, el -> merge(ranges, el) }
           .sumOf { it.last - it.first + 1 }
 
   @Test
