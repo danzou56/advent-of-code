@@ -84,7 +84,7 @@ fun <T> Matrix<T>.row(i: Int): List<T> = this[i]
 fun <T> Matrix<T>.col(j: Int): List<T> = this.map { it[j] }
 
 val <T> Matrix<T>.indices2D: List<Pos>
-    get() = this.mapIndexed { j, it -> it.indices.map { i -> Pair(i, j) } }.flatten()
+    get() = this.flatMapIndexed { j, it -> it.indices.map { i -> Pair(i, j) } }
 
 fun <T> Matrix<T>.containsPos(p: Pos) = p.second in this.indices && p.first in this[p.second].indices
 
