@@ -25,8 +25,7 @@ internal class Day14 : AdventTestRunner24("Restroom Redoubt") {
             .map { (pX, pY, dX, dY) -> Robot(pX, pY, dX, dY) }
     val finalPos =
         robots.map { (pX, pY, dX, dY) ->
-          ((pX + dX * iters).mod(width) + width).mod(width) to
-              ((pY + dY * iters + height).mod(height) + height).mod(height)
+          (pX + dX * iters).mod(width) to (pY + dY * iters).mod(height)
         }
 
     val q1 = finalPos.count { (pX, pY) -> pX < width / 2 && pY < height / 2 }
@@ -50,11 +49,12 @@ internal class Day14 : AdventTestRunner24("Restroom Redoubt") {
     tailrec fun step(robots: List<Robot>, iters: Int): Int {
       robots.forEach {
         it.run {
-          pX = ((pX + dX).mod(width) + width).mod(width)
-          pY = ((pY + dY).mod(height) + height).mod(height)
+          pX = (pX + dX).mod(width)
+          pY = (pY + dY).mod(height)
         }
       }
-      if (robots.map { (pX, pY) -> pX to pY }.toSet().size == robots.size) return iters + 1
+      if (robots.map { (pX, pY) -> pX to pY }.toSet().size == robots.size)
+          return iters + 1
       return step(robots, iters + 1)
     }
 

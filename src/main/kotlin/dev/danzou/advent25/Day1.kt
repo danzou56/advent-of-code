@@ -20,7 +20,7 @@ internal class Day1 : AdventTestRunner25("Secret Entrance") {
   override fun part1(input: String): Int =
       parse(input)
           .fold(Pair(start, 0)) { (pos, pass), rot ->
-            val next = ((pos + rot).mod(size) + size).mod(size)
+            val next = (pos + rot).mod(size)
             if (next == 0) Pair(next, pass + 1) else Pair(next, pass)
           }
           .second
@@ -35,7 +35,7 @@ internal class Day1 : AdventTestRunner25("Secret Entrance") {
                   (size - pos - rot) / size + if (pos == 0) -1 else 0
                 }
 
-            val next = ((pos + rot).mod(size) + size).mod(size)
+            val next = (pos + rot).mod(size)
             Pair(next, pass + zeroes)
           }
           .second

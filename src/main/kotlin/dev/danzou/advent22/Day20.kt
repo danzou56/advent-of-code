@@ -107,9 +107,9 @@ class Day20 : AdventTestRunner22() {
         refs.forEach {
             // correctly choosing the direction to move the node halves
             // execution time
-            // val distance = (((it.data % mod) + mod + mod / 2) % mod) - mod / 2
-            val distance = it.data % mod
-            it.move(distance.toInt())
+            val distance = (it.data + mod / 2).mod(mod) - mod / 2
+            // val distance = it.data % mod
+            it.move(distance)
         }
     }
 

@@ -20,15 +20,15 @@ internal class Day24 : AdventTestRunner22() {
             if (pos in walls || pos.x !in 0..width + 1 || pos.y !in 0..height + 1) return true
             val isOccupiedHorizontally = (0 until width).mapNotNull { x ->
                 when (blizzards[Pos(x, pos.y - 1)]) {
-                    Direction.RIGHT -> (x + time) % width
-                    Direction.LEFT -> ((x - time) % width + width) % width
+                    Direction.RIGHT -> (x + time).mod(width)
+                    Direction.LEFT -> (x - time).mod(width)
                     else -> null
                 }
             }.any { it == pos.x - 1 }
             val isOccupiedVertically = (0 until height).mapNotNull { y ->
                 when (blizzards[Pos(pos.x - 1, y)]) {
-                    Direction.DOWN -> (y + time) % height
-                    Direction.UP -> ((y - time) % height + height) % height
+                    Direction.DOWN -> (y + time).mod(height)
+                    Direction.UP -> (y - time).mod(height)
                     else -> null
                 }
             }.any { it == pos.y - 1 }
