@@ -42,8 +42,6 @@ internal class Day16 : AdventTestRunner20("Ticket Translation") {
   }
 
   override fun part2(input: String): Any {
-    val myTicket = parseMyTicket(input)
-
     val fields = parseFields(input)
     val validRanges = fields.values.flatten()
     val validTickets =
@@ -51,25 +49,25 @@ internal class Day16 : AdventTestRunner20("Ticket Translation") {
           ticket.all { field -> validRanges.any { range -> field in range } }
         }
 
-    val fieldOrder = resolveFieldOrder(fields, validTickets)
+    val fieldMapping = resolveFieldMappings(fields, validTickets)
 
-    return fieldOrder.mapIndexed { index, field ->
-      if (field.startsWith("departure")) myTicket[index].toLong()
-      else 1L
-    }.reduce(Long::times)
+    val myTicket = parseMyTicket(input)
+    return fieldMapping.entries
+        .filter { (_, field) -> field.startsWith("departure") }
+        .map { (index, _) -> myTicket[index].toLong() }
+        .reduce(Long::times)
   }
 
-  fun resolveFieldOrder(
+  fun resolveFieldMappings(
       fields: Map<String, List<IntRange>>,
       validTickets: List<List<Int>>,
-  ): List<String> {
+  ): Map<Int, String> {
     fun step(
         knownMappings: Map<Int, String>,
         unknownIndices: Set<Int>,
         unknownFields: Set<String>,
-    ): List<String> {
-      if (unknownIndices.isEmpty())
-          return (0..<knownMappings.size).map { knownMappings[it]!! }
+    ): Map<Int, String> {
+      if (unknownIndices.isEmpty()) return knownMappings
 
       val next =
           unknownIndices.firstNotNullOf { workingIndex ->
@@ -134,8 +132,8 @@ internal class Day16 : AdventTestRunner20("Ticket Translation") {
           val fields = parseFields(input)
           val nearbyTickets = parseNearbyTickets(input)
           assertEquals(
-              listOf("row", "class", "seat"),
-              resolveFieldOrder(fields, nearbyTickets),
+              mapOf(0 to "row", 1 to "class", 2 to "seat"),
+              resolveFieldMappings(fields, nearbyTickets),
           )
         }
   }
