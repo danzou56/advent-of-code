@@ -22,15 +22,10 @@ internal class Day6 : AdventTestRunner25("Trash Compactor") {
   fun parseProblemsPart1(input: String): List<CProblem> =
       input
           .lines()
-          .map {
-            it.replace(Regex("\\s+"), " ")
-                .dropWhile { it == ' ' }
-                .dropLastWhile { it == ' ' }
-                .split(" ")
-          }
+          .map { it.trim().split(Regex("\\s+")) }
           .let { lines ->
             val operands = lines.dropLast(1)
-            val operators = lines.last().map(String::single).map(::getReducer)
+            val operators = lines.last().map { getReducer(it.single()) }
             operands.map { it.map(String::toLong) }.transpose().zip(operators)
           }
 
