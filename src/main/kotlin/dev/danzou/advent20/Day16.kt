@@ -41,7 +41,7 @@ internal class Day16 : AdventTestRunner20("Ticket Translation") {
         .sum()
   }
 
-  override fun part2(input: String): Any {
+  override fun part2(input: String): Long {
     val fields = parseFields(input)
     val validRanges = fields.values.flatten()
     val validTickets =
