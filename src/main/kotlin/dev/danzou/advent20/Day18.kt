@@ -105,7 +105,7 @@ internal class Day18 : AdventTestRunner20("Operation Order") {
     return reduce(expression + RParen())
   }
 
-  override fun part2(input: String): Any {
+  override fun part2(input: String): Long {
     val expressions = input.lines().map { line -> line.mapNotNull(Token::fromChar) }
     return expressions.sumOf { evaluate2(it) }
   }
