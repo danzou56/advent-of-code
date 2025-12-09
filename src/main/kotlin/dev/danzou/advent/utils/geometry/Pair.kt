@@ -10,6 +10,10 @@ val Pos.x: Int
     get() = this.first
 val Pos.y: Int
     get() = this.second
+val PosL.x: Long
+    get() = this.first
+val PosL.y: Long
+    get() = this.second
 
 operator fun Pair<Int, Int>.plus(other: Pair<Int, Int>): Pair<Int, Int> =
     Pair(this.first + other.first, this.second + other.second)
