@@ -2,8 +2,10 @@ package dev.danzou.advent24
 
 import dev.danzou.advent.utils.*
 import dev.danzou.advent.utils.geometry.Compass
+import dev.danzou.advent.utils.geometry.Pos
 import dev.danzou.advent.utils.geometry.minus
 import dev.danzou.advent.utils.geometry.plus
+import dev.danzou.advent.utils.geometry.y
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 

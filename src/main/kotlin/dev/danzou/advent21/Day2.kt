@@ -1,6 +1,6 @@
 package dev.danzou.advent21
 
-import dev.danzou.advent.utils.Pos
+import dev.danzou.advent.utils.geometry.Pos
 import dev.danzou.advent.utils.geometry.plus
 
 internal class Day2 : AdventTestRunner21() {

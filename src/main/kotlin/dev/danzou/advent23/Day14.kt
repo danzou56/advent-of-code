@@ -2,6 +2,9 @@ package dev.danzou.advent23
 
 import dev.danzou.advent.utils.*
 import dev.danzou.advent.utils.geometry.Compass
+import dev.danzou.advent.utils.geometry.Pos
+import dev.danzou.advent.utils.geometry.x
+import dev.danzou.advent.utils.geometry.y
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import kotlin.math.sign

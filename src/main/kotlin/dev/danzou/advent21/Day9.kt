@@ -1,6 +1,7 @@
 package dev.danzou.advent21
 
 import dev.danzou.advent.utils.*
+import dev.danzou.advent.utils.geometry.Pos
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 

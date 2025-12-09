@@ -1,8 +1,12 @@
 package dev.danzou.advent22
 
 import dev.danzou.advent.utils.*
+import dev.danzou.advent.utils.geometry.Point
+import dev.danzou.advent.utils.geometry.Pos
 import dev.danzou.advent.utils.geometry.plus
 import dev.danzou.advent.utils.geometry.toPair
+import dev.danzou.advent.utils.geometry.x
+import dev.danzou.advent.utils.geometry.y
 import org.junit.jupiter.api.Test
 import kotlin.math.max
 import kotlin.math.min

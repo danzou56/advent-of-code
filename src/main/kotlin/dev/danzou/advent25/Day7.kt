@@ -1,7 +1,9 @@
 package dev.danzou.advent25
 
 import dev.danzou.advent.utils.*
+import dev.danzou.advent.utils.geometry.Pos
 import dev.danzou.advent.utils.geometry.plus
+import dev.danzou.advent.utils.geometry.y
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 

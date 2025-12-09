@@ -2,6 +2,7 @@ package dev.danzou.advent24
 
 import dev.danzou.advent.utils.*
 import dev.danzou.advent.utils.geometry.Compass.Companion.CARDINAL_DIRECTIONS
+import dev.danzou.advent.utils.geometry.Pos
 import dev.danzou.advent.utils.geometry.plus
 import java.util.LinkedList
 import java.util.Queue
@@ -40,8 +41,8 @@ internal class Day20 : AdventTestRunner24("Race Condition") {
     var goodCheats = 0
 
     fun cheatingBfs(
-        init: Pos,
-        getNeighbors: NeighborFunction<Pos>
+      init: Pos,
+      getNeighbors: NeighborFunction<Pos>
     ): Map<Pos, Int> {
       val queue: Queue<Pos> = LinkedList()
       val discovered = mutableMapOf(init to 0)

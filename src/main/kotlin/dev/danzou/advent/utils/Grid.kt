@@ -2,8 +2,12 @@ package dev.danzou.advent.utils
 
 import dev.danzou.advent.utils.geometry.Compass
 import dev.danzou.advent.utils.geometry.Direction
+import dev.danzou.advent.utils.geometry.Point
+import dev.danzou.advent.utils.geometry.Pos
 import dev.danzou.advent.utils.geometry.plus
 import dev.danzou.advent.utils.geometry.toPair
+import dev.danzou.advent.utils.geometry.x
+import dev.danzou.advent.utils.geometry.y
 import kotlin.math.absoluteValue
 import kotlin.math.max
 
@@ -12,16 +16,8 @@ val cardinalDirections = Direction.entries.map { it.dir }.toSet()
 typealias RaggedMatrix<T> = List<List<T>>
 typealias Matrix<T> = List<List<T>>
 typealias MutableMatrix<T> = MutableList<MutableList<T>>
-typealias Pos = Pair<Int, Int>
-typealias Point = Pair<Int, Int>
 typealias SparseMatrix<T> = Map<Pos, T>
 typealias MutableSparseMatrix<T> = MutableMap<Pos, T>
-
-val Pos.x: Int
-    get() = this.first
-
-val Pos.y: Int
-    get() = this.second
 
 inline fun <reified T> String.asMatrix(): Matrix<T> {
     return when (T::class) {

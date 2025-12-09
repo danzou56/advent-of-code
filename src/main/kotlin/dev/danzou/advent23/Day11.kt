@@ -1,6 +1,8 @@
 package dev.danzou.advent23
 
 import dev.danzou.advent.utils.*
+import dev.danzou.advent.utils.geometry.x
+import dev.danzou.advent.utils.geometry.y
 import kotlin.math.max
 import kotlin.math.min
 

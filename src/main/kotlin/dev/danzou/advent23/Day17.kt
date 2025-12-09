@@ -2,6 +2,7 @@ package dev.danzou.advent23
 
 import dev.danzou.advent.utils.*
 import dev.danzou.advent.utils.geometry.Compass.Companion.CARDINAL_DIRECTIONS
+import dev.danzou.advent.utils.geometry.Pos
 import dev.danzou.advent.utils.geometry.minus
 import dev.danzou.advent.utils.geometry.plus
 import dev.danzou.advent.utils.geometry.times

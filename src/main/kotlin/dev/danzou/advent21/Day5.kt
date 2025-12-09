@@ -1,8 +1,8 @@
 package dev.danzou.advent21
 
-import dev.danzou.advent.utils.Point
-import dev.danzou.advent.utils.x
-import dev.danzou.advent.utils.y
+import dev.danzou.advent.utils.geometry.Point
+import dev.danzou.advent.utils.geometry.x
+import dev.danzou.advent.utils.geometry.y
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min

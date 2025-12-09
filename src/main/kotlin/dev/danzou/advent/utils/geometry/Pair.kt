@@ -2,7 +2,14 @@ package dev.danzou.advent.utils.geometry
 
 import java.lang.IndexOutOfBoundsException
 
+typealias Pos = Pair<Int, Int>
+typealias Point = Pair<Int, Int>
 typealias PosL = Pair<Long, Long>
+
+val Pos.x: Int
+    get() = this.first
+val Pos.y: Int
+    get() = this.second
 
 operator fun Pair<Int, Int>.plus(other: Pair<Int, Int>): Pair<Int, Int> =
     Pair(this.first + other.first, this.second + other.second)

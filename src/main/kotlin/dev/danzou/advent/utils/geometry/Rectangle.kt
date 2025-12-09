@@ -1,6 +1,5 @@
 package dev.danzou.advent.utils.geometry
 
-import dev.danzou.advent.utils.Point
 import kotlin.math.abs
 import kotlin.math.min
 

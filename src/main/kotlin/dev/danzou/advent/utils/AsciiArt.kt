@@ -1,5 +1,8 @@
 package dev.danzou.advent.utils
 
+import dev.danzou.advent.utils.geometry.Pos
+import dev.danzou.advent.utils.geometry.x
+import dev.danzou.advent.utils.geometry.y
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 

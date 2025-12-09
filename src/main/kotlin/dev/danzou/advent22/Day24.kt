@@ -3,7 +3,10 @@ package dev.danzou.advent22
 import dev.danzou.advent.utils.*
 import dev.danzou.advent.utils.geometry.Compass.Companion.CARDINAL_DIRECTIONS
 import dev.danzou.advent.utils.geometry.Direction
+import dev.danzou.advent.utils.geometry.Pos
 import dev.danzou.advent.utils.geometry.plus
+import dev.danzou.advent.utils.geometry.x
+import dev.danzou.advent.utils.geometry.y
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertEquals
