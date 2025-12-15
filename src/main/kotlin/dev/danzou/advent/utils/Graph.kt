@@ -92,6 +92,21 @@ fun <T> findPathsBetween(init: T, target: T, getNeighbors: NeighborFunction<T>):
     return findPaths(init, emptyList())
 }
 
+
+fun <T> countPathsBetween(init: T, target: T, getNeighbors: NeighborFunction<T>): Long {
+    val counts = mutableMapOf(target to 1L)
+
+    fun findPaths(cur: T, path: List<T>): Long {
+        if (cur in counts) return counts[cur]!!
+        return getNeighbors(cur)
+            .filter { v -> v !in path }
+            .sumOf { v -> findPaths(v, path + cur) }
+            .also { counts[cur] = it }
+    }
+
+    return findPaths(init, emptyList())
+}
+
 /**
  * Perform depth first search, returning all paths between the start and end node. The
  * `getNeighbors` function accepts the current node and current path so it is the caller's
