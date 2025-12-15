@@ -96,15 +96,15 @@ fun <T> findPathsBetween(init: T, target: T, getNeighbors: NeighborFunction<T>):
 fun <T> countPathsBetween(init: T, target: T, getNeighbors: NeighborFunction<T>): Long {
     val counts = mutableMapOf(target to 1L)
 
-    fun findPaths(cur: T, path: List<T>): Long {
+    fun countPaths(cur: T, path: List<T>): Long {
         if (cur in counts) return counts[cur]!!
         return getNeighbors(cur)
             .filter { v -> v !in path }
-            .sumOf { v -> findPaths(v, path + cur) }
+            .sumOf { v -> countPaths(v, path + cur) }
             .also { counts[cur] = it }
     }
 
-    return findPaths(init, emptyList())
+    return countPaths(init, emptyList())
 }
 
 /**
