@@ -7,9 +7,6 @@ import org.junit.jupiter.api.Test
 
 internal class Day11 : AdventTestRunner25("Reactor") {
 
-  override val timeout: Duration
-    get() = Duration.ofMinutes(30)
-
   fun parseGraph(input: String): Map<String, Set<String>> =
       input
           .lines()
@@ -26,14 +23,14 @@ internal class Day11 : AdventTestRunner25("Reactor") {
     val graph = parseGraph(input) + mapOf("out" to emptySet())
 
     val svrDac = countPathsBetween("svr", "dac") { graph[it]!!.filter { it != "fft" } }
-    val DacFft = countPathsBetween("dac", "fft") { graph[it]!! }
-    val FftOut = countPathsBetween("fft", "out") { graph[it]!!.filter { it != "dac" } }
+    val dacFft = countPathsBetween("dac", "fft") { graph[it]!! }
+    val fftOut = countPathsBetween("fft", "out") { graph[it]!!.filter { it != "dac" } }
 
     val svrFft = countPathsBetween("svr", "fft") { graph[it]!!.filter { it != "dac" } }
-    val FftDac = countPathsBetween("fft", "dac") { graph[it]!! }
-    val DacOut = countPathsBetween("dac", "out") { graph[it]!!.filter { it != "fft" } }
+    val fftDac = countPathsBetween("fft", "dac") { graph[it]!! }
+    val dacOut = countPathsBetween("dac", "out") { graph[it]!!.filter { it != "fft" } }
 
-    return svrDac * DacFft * FftOut + svrFft * FftDac * DacOut
+    return svrDac * dacFft * fftOut + svrFft * fftDac * dacOut
   }
 
   @Test
